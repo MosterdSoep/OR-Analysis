@@ -5,8 +5,8 @@
 #include <vector>
 using namespace std;
 
-class vehicle {
-	public:
+class Vehicle {
+  public:
 	vector<size_t> arc_durations;
 	vector<size_t> waiting_times;
 	vector<size_t> route;

@@ -66,10 +66,19 @@ double worst_removal(double s) {
 	# 1. Find the worst point in a route by looping over the vehicle vectors and calculating the difference in costs.
 	# 2. Once a location has been found, remove it from the vehicle by altering all the vectors.
 	
+	size_t best_removal = 0;
+	size_t current_removal;
+	size_t removed_node;
 	for (vector v : routes) {
-		
+		for (size_t i : v) {
+			# If first node is removed then just substract the first transportation cost
+			current_removal = Arc(v(i-1),v(i+1)) - Arc(v(i-1),v(i)) - Arc(v(i),v(i+1));
+			if (current_removal >= best_removal) { 
+				best_removal = current_removal;
+				removed_node = v(i);
+			}
+		}
 	}
-	
 	return s;
 }
 

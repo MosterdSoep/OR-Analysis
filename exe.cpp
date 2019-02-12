@@ -1,8 +1,10 @@
 #include <iostream>
 #include <vector>
 #include "vehicle.h"
-#include "solution.h"
 using namespace std;
+
+vector<Vehicle> routes;
+double ojb_val;
 
 int main() {
 	double init_solution = create_init_solution();
@@ -64,7 +66,7 @@ double worst_removal(double s) {
 	# 1. Find the worst point in a route by looping over the vehicle vectors and calculating the difference in costs.
 	# 2. Once a location has been found, remove it from the vehicle by altering all the vectors.
 	
-	for (vector v : s.routes) {
+	for (vector v : routes) {
 		
 	}
 	

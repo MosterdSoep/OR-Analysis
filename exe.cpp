@@ -16,7 +16,8 @@ Solution ALNS(double init_solution) {
 	Solution best_solution;
 	Solution current_solution;
 	
-	while(!stopping_criterion_met()) {
+	size_t loop_count = 0;
+	while(!stopping_criterion_met(loop_count)) {
 		Solution s = current_solution;
 		destroy(s);
 		repair(s);
@@ -29,6 +30,7 @@ Solution ALNS(double init_solution) {
 				current_solution = s;
 			}
 		}
+		loop_count++;
 	}
 	return best_solution;
 }

@@ -6,7 +6,7 @@ using namespace std;
 
 int main() 
 {
-	Solution init_solution = creat_init_solution();
+	Solution init_solution = create_init_solution();
 	Solution best_solution = ALNS(init_solution);
 	cout << best_solution.obj_val;
     return 0;

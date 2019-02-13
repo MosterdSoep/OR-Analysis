@@ -10,6 +10,7 @@ struct node {
 };
 
 struct time_window {
+	double node_idx, lower_bound, upper_bound;
 };
 */
 

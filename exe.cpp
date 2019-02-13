@@ -20,8 +20,8 @@ double ALNS(double init_solution) {
 	size_t loop_count = 0;
 	while(!stopping_criterion_met(loop_count)) {
 		double s = current_solution;
-		s = destroy(s);
-		s = repair(s);
+		destroy(s);
+		repair(s);
 		
 		# check feasibility and compute obj_val for s
 		
@@ -48,7 +48,7 @@ bool acceptation_criterion_met(double candid_solution, double current_solution) 
 	else { return true; }
 }
 
-double destroy(double s) {
+void destroy(double s) {
 	const int range_from = 0;
 	const int range_to = 100;
 	random_device rand_dev;
@@ -57,18 +57,18 @@ double destroy(double s) {
 
 	random_number = distr(generator);
 	
-	if (random_number <= 100) { return worst_removal(s); }
+	if (random_number <= 100) { worst_removal(s); }
 	
-	return null;
 }
 
-double worst_removal(double s) {
+void worst_removal(double s) {
 	# 1. Find the worst point in a route by looping over the vehicle vectors and calculating the difference in costs.
 	# 2. Once a location has been found, remove it from the vehicle by altering all the vectors.
 	
 	size_t best_removal = 0;
 	size_t current_removal;
 	size_t removed_node;
+	vector vehicle_removed_node;
 	for (vector v : routes) {
 		for (size_t i : v) {
 			# If first node is removed then just substract the first transportation cost
@@ -76,9 +76,11 @@ double worst_removal(double s) {
 			if (current_removal >= best_removal) { 
 				best_removal = current_removal;
 				removed_node = v(i);
+				vehicle_removed_node = v;
 			}
 		}
 	}
+	# Remove
 	return s;
 }
 

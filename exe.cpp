@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
+#include <string>
 #include "vehicle.h"
 #include "instance.h"
 using namespace std;
@@ -37,11 +38,12 @@ double ojb_val;
 
 
 void read_csv() {
-	ifstream ip("C://Users//Hp//Desktop//Master//Blok 3//OR Analysis of Complex Systems//instances.csv");
+	ifstream ip("C://Users//Hp//Desktop//Master//Blok3//ORACS//instances.csv");
 	while (ip.good()) {
 		size_t index, request_amount, transfer_location_amount, depot_amount, vehicle_capacity, travel_cost;
+		string blabla;
 		
-		getline(ip,index,',');
+		getline(ip,blabla,',');
 		getline(ip,request_amount,',');
 		getline(ip,transfer_location_amount,',');
 		getline(ip,depot_amount,',');

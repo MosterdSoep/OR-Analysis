@@ -3,15 +3,9 @@
 
 #include <iostream>
 #include <vector>
+#include <node.h>
+#include <time_window.h>
 using namespace std;
-
-struct node {
-	size_t idx, x, y, service_time;
-};
-
-struct time_window {
-	double node_idx, lower_bound, upper_bound;
-};
 
 class Instance {
   public:

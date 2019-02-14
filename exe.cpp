@@ -2,23 +2,25 @@
 #include <vector>
 #include <fstream>
 #include "vehicle.h"
+#include "instance.h"
 using namespace std;
 
-/*
+
 struct node {
 	size_t idx, x, y, service_time;
 };
 
 struct time_window {
-	double node_idx, lower_bound, upper_bound;
+	size_t node_idx, lower_bound, upper_bound;
 };
-*/
+
 
 // General variables
 String location = "";
+vector<Instance> instances;
 
 // Model variables
-/*
+
 vector<size_t> facility_costs;
 vector<node> pickup_nodes;
 vector<node> delivery_nodes;
@@ -28,48 +30,16 @@ vector<time_window> pickup_time_windows;
 vector<time_window> delivery_time_windows;
 vector<size_t> ride_times;
 vector<size_t> service_times;
-*/
+
 
 // Solution variables
 vector<Vehicle> routes;
 double ojb_val;
 
-int main() {
-	read_csv();
-	double init_solution = create_init_solution();
-	double best_solution = ALNS(init_solution);
-	cout << best_solution;
-    return 0;
-}
-
-double ALNS(double init_solution) {
-	double best_solution;
-	double current_solution;
-	
-	size_t loop_count = 0;
-	while(!stopping_criterion_met(loop_count)) {
-		double s = current_solution;
-		destroy(s);
-		repair(s);
-		
-		// check feasibility and compute obj_val for s
-		
-		if (s < best_solution) {
-			best_solution = s;
-			current_solution = s;
-		} else {
-			if (acceptation_criterion_met(s, current_solution)) {
-				current_solution = s;
-			}
-		}
-		loop_count++;
-	}
-	return best_solution;
-}
 
 void read_csv() {
-	ifstream ip(location);
-	while (ip.good) {
+	ifstream ip("C://Users//Hp//Desktop//Master//Blok 3//OR Analysis of Complex Systems//instances.csv");
+	while (ip.good()) {
 		size_t index, request_amount, transfer_location_amount, depot_amount, vehicle_capacity, travel_cost;
 		
 		getline(ip,index,',');
@@ -158,19 +128,6 @@ bool acceptation_criterion_met(double candid_solution, double current_solution) 
 	else { return true; }
 }
 
-void destroy(double s) {
-	const int range_from = 0;
-	const int range_to = 100;
-	random_device rand_dev;
-	mt19937 generator(rand_dev());
-	uniform_int_distribution<int> distr(range_from, range_to);
-
-	random_number = distr(generator);
-	
-	if (random_number <= 100) { worst_removal(s); }
-	
-}
-
 void worst_removal(double s) {
 	// 1. Find the worst point in a route by looping over the vehicle vectors and calculating the difference in costs.
 	// 2. Once a location has been found, remove it from the vehicle by altering all the vectors.
@@ -195,3 +152,48 @@ void worst_removal(double s) {
 	return s;
 }
 
+void destroy(double s) {
+	const int range_from = 0;
+	const int range_to = 100;
+	random_device rand_dev;
+	mt19937 generator(rand_dev());
+	uniform_int_distribution<int> distr(range_from, range_to);
+
+	random_number = distr(generator);
+	
+	if (random_number <= 100) { worst_removal(s); }
+	
+}
+
+double ALNS(double init_solution) {
+	double best_solution;
+	double current_solution;
+	
+	size_t loop_count = 0;
+	while(!stopping_criterion_met(loop_count)) {
+		double s = current_solution;
+		destroy(s);
+		repair(s);
+		
+		// check feasibility and compute obj_val for s
+		
+		if (s < best_solution) {
+			best_solution = s;
+			current_solution = s;
+		} else {
+			if (acceptation_criterion_met(s, current_solution)) {
+				current_solution = s;
+			}
+		}
+		loop_count++;
+	}
+	return best_solution;
+}
+
+int main() {
+	read_csv();
+	double init_solution = create_init_solution();
+	double best_solution = ALNS(init_solution);
+	cout << best_solution;
+    return 0;
+}

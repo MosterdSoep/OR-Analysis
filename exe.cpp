@@ -20,7 +20,6 @@ String location = "";
 vector<Instance> instances;
 
 // Model variables
-
 vector<size_t> facility_costs;
 vector<node> pickup_nodes;
 vector<node> delivery_nodes;

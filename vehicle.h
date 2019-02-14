@@ -7,10 +7,10 @@ using namespace std;
 
 class Vehicle {
   public:
-	vector<size_t> arc_durations;
-	vector<size_t> waiting_times;
-	vector<size_t> route;
-	vector<size_t> current_capacity;
+	vector<int> arc_durations;
+	vector<int> waiting_times;
+	vector<int> route;
+	vector<int> current_capacity;
 };
 
 #endif

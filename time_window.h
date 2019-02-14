@@ -6,7 +6,7 @@ using namespace std;
 
 class Time_window {
   public:
-	size_t node_index, lower_bound, upper_bound;
+	int node_index, lower_bound, upper_bound;
 };
 
 #endif

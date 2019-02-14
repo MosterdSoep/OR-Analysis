@@ -6,7 +6,12 @@ using namespace std;
 
 class Node {
   public:
-	size_t index, x, y, service_time;
+	int index, x, y, service_time;
+	Node();
 };
+
+Node::Node() {
+	
+}
 
 #endif

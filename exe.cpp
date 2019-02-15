@@ -12,8 +12,7 @@ using namespace std;
 string location = "C://Users//Hp//Desktop//Master//Blok3//ORACS//instances.csv";
 
 // Model variables
-int request_amount, transfer_location_amount, depot_amount, node_amount;
-vector<int> facility_costs;
+int request_amount, transfer_location_amount, depot_amount, node_amount, travel_cost, vehicle_capacity;
 vector<Pickup_Node> pickup_nodes;
 vector<Delivery_Node> delivery_nodes;
 vector<Transfer_Node> transfer_nodes;
@@ -32,7 +31,7 @@ void read_csv() {
 	if(!ip.is_open()) cout << "ERROR: File Open" << '\n';
 
 	while (ip.good()) {
-		int index, vehicle_capacity, travel_cost;
+		int index;
 		string index_str, request_amount_str, transfer_location_amount_str, depot_amount_str, vehicle_capacity_str, travel_cost_str;
 		
 		getline(ip,index_str,','); 						index = atoi(index_str.c_str());
@@ -45,6 +44,7 @@ void read_csv() {
 		node_amount = 2*request_amount + transfer_location_amount + depot_amount;
 		
 		// Facility costs
+		vector<int> facility_costs;
 		for (int i = 0; i < transfer_location_amount; i++) {
 			int facility_cost;
 			string facility_cost_str;
@@ -90,6 +90,7 @@ void read_csv() {
 			transfer_nodes[i].x = atoi(x.c_str());
 			transfer_nodes[i].y = atoi(y.c_str());
 			transfer_nodes[i].gen_idx = general_index;
+			transfer_nodes[i].costs = facility_costs[i];
 			all_nodes.push_back(transfer_nodes[i]);
 			general_index++;
 		}
@@ -193,7 +194,7 @@ size_t worst_removal(int amount_removed) {
 	size_t removed_node_index;
 	Vehicle vehicle_removed_node;
 	for (Vehicle v : routes) {
-		for (int i : v.route) {
+		for (Node n : v.route) {
 			// If first node is removed then just substract the first transportation cost
 			current_removal = arcs[v.route[i-1]][v.route[i+1]] - arcs[v.route[i-1]][v.route[i]] - arcs[v.route[i]][v.route[i+1]];
 			if (current_removal < best_removal) { 
@@ -273,6 +274,23 @@ double create_init_solution() {
 }
 
 double calculate_obj_val() {
+	// Costs:
+	// 1. Opening transfer facility -> add up the distance and then multiply with the cost per distance
+	// 2. Travel costs
+	double total_distance = 0;
+	for (Vehicle v : routes) {
+		total_distance += accumulate(v.arc_durations.begin(),v.arc_durations.end(),0);
+	}
+	double facility_costs = 0;
+	for (Transfer_Node node : transfer_nodes) {
+		if (node.open) {
+			facility_cost += node.costs;
+		}
+	}
+	return (travel_cost*total_distance + facility_cost);
+}
+
+void write_output_file() {
 	
 }
 
@@ -283,5 +301,6 @@ int main() {
 	double init_solution = create_init_solution();
 	/*double best_solution = ALNS(init_solution);
 	cout << best_solution;*/
+	write_output_file();
     return 0;
 }

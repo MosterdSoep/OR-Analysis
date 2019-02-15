@@ -32,6 +32,7 @@ class Transfer_Node: public Node{
     bool pickup; //1 if pickup, 0 if delivery
     size_t vehicle_idx;
     size_t request_idx;
+	double costs;
 };
 
 class Depot_Node: public Node{

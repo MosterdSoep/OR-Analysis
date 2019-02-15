@@ -2,6 +2,7 @@
 #include <vector>
 #include <fstream>
 #include <string>
+#include <sstream>
 #include <cmath>
 #include <random>
 #include "vehicle.h"
@@ -24,7 +25,7 @@ vector<vector<int>> arcs;
 
 // Solution variables
 vector<Vehicle> routes;
-double ojb_val;
+double obj_val;
 
 void read_csv() {
 	ifstream ip(location);
@@ -273,7 +274,7 @@ double create_init_solution() {
 	return 0;
 }
 
-double calculate_obj_val() {
+void calculate_obj_val() {
 	// Costs:
 	// 1. Opening transfer facility -> add up the distance and then multiply with the cost per distance
 	// 2. Travel costs
@@ -287,11 +288,23 @@ double calculate_obj_val() {
 			facility_cost += node.costs;
 		}
 	}
-	return (travel_cost*total_distance + facility_cost);
+	obj_val = travel_cost*total_distance + facility_cost;
 }
 
-void write_output_file() {
-	
+void write_output_file(size_t instance_number) {
+	ofstream output_file;
+	ostringstream file_name_stream;
+	file_name_stream << "oracs_" << instance_number << ".csv";
+	string file_name = file_name_stream.str();
+	output_file.open(file_name); 
+	output_file << "2\n";
+	output_file << instance_number << "\n";
+	output_file << obj_val << "\n";
+	output_file << routes.size() << "\n";
+	for (Vehicle v : routes) {
+		output_file << "";
+	}
+	output_file << "\n";
 }
 
 int main() {

@@ -17,12 +17,10 @@ vector<Instance> instances;
 // Model variables
 int request_amount, transfer_location_amount, depot_amount;
 vector<int> facility_costs;
-vector<Node> pickup_nodes;
-vector<Node> delivery_nodes;
-vector<Node> transfer_nodes;
-vector<Node> depot_nodes;
-vector<Time_window> pickup_time_windows;
-vector<Time_window> delivery_time_windows;
+vector<Pickup_Node> pickup_nodes;
+vector<Delivery_Node> delivery_nodes;
+vector<Transfer_Node> transfer_nodes;
+vector<Depot_Node> depot_nodes;
 vector<int> ride_times;
 vector<int> service_times;
 double **arcs;
@@ -98,22 +96,18 @@ void read_csv() {
 		// Pickup nodes time windows
 		for (int i = 0; i < request_amount; i++) {
 			string lower_bound, upper_bound;
-			pickup_time_windows.push_back(Time_window());
-			pickup_time_windows[i].node_index = i;
 			getline(ip,lower_bound,',');
 			getline(ip,upper_bound,',');
-			pickup_time_windows[i].lower_bound = atoi(lower_bound.c_str());
-			pickup_time_windows[i].upper_bound = atoi(upper_bound.c_str());
+			pickup_nodes[i].lower_bound = atoi(lower_bound.c_str());
+			pickup_nodes[i].upper_bound = atoi(upper_bound.c_str());
 		}
 		// Delivery nodes time windows
 		for (int i = 0; i < request_amount; i++) {
 			string lower_bound, upper_bound;
-			delivery_time_windows.push_back(Time_window());
-			delivery_time_windows[i].node_index = i;
 			getline(ip,lower_bound,',');
 			getline(ip,upper_bound,',');
-			delivery_time_windows[i].lower_bound = atoi(lower_bound.c_str());
-			delivery_time_windows[i].upper_bound = atoi(upper_bound.c_str());
+			delivery_nodes[i].lower_bound = atoi(lower_bound.c_str());
+			delivery_nodes[i].upper_bound = atoi(upper_bound.c_str());
 		}
 		// Maximum ride times
 		for (int i = 0; i < request_amount; i++) {
@@ -150,6 +144,7 @@ void read_csv() {
 }
 
 void calculate_arcs() {
+	/*
 	arcs = malloc((2*request_amount+transfer_location_amount+depot_amount)*sizeof(double*));
 	for (int i = 0; i < request_amount; i++) {
 		arcs[i] = (double*)malloc((2*request_amount+transfer_location_amount+depot_amount)**sizeof(double));
@@ -159,7 +154,7 @@ void calculate_arcs() {
 			arcs[i+2*request_amount][j+2*request_amount] = sqrt(pow(transfer_nodes[i].x-transfer_nodes[j].x,2)+pow(transfer_nodes[i].y-transfer_nodes[j].y,2));
 			arcs[i+2*request_amount][j+2*request_amount] = sqrt(pow(depot_nodes[i].x-depot_nodes[j].x,2)+pow(depot_nodes[i].y-depot_nodes[j].y,2));
 		}
-	}
+	} */
 }
 
 bool stopping_criterion_met(size_t loop_count) {
@@ -172,7 +167,7 @@ bool acceptation_criterion_met(double candid_solution, double current_solution) 
 	else { return true; }
 }
 
-void worst_removal(double s) {
+void worst_removal(int amount_removed) {
 	// 1. Find the worst point in a route by looping over the vehicle vectors and calculating the difference in costs.
 	// 2. Once a location has been found, remove it from the vehicle by altering all the vectors.
 	
@@ -192,10 +187,11 @@ void worst_removal(double s) {
 		}
 	}
 	// Remove the node from the vehicle
-	
+	//vehicle_removed_node.route
 }
 
 void destroy(double s) {
+	/*
 	const int range_from = 0;
 	const int range_to = 100;
 	random_device rand_dev;
@@ -205,7 +201,7 @@ void destroy(double s) {
 	int random_number = distr(generator);
 	
 	if (random_number <= 100) { worst_removal(s); }
-	
+	*/
 }
 
 void repair(double solution) {
@@ -245,6 +241,7 @@ double create_init_solution() {
 int main() {
 	read_csv();
 	calculate_arcs();
+	cout << pickup_nodes[0].x << '\n';
 	double init_solution = create_init_solution();
 	double best_solution = ALNS(init_solution);
 	cout << best_solution;

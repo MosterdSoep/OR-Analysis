@@ -3,6 +3,7 @@
 #include <fstream>
 #include <string>
 #include <cmath>
+#include <random>
 #include "vehicle.h"
 #include "instance.h"
 #include "node.h"
@@ -150,9 +151,9 @@ void read_csv() {
 
 void calculate_arcs() {
 	arcs = malloc((2*request_amount+transfer_location_amount+depot_amount)*sizeof(double*));
-	for (i = 0; i < request_amount; i++) {
+	for (int i = 0; i < request_amount; i++) {
 		arcs[i] = (double*)malloc((2*request_amount+transfer_location_amount+depot_amount)**sizeof(double));
-		for (j = 0; j < request_amount; j++) {
+		for (int j = 0; j < request_amount; j++) {
 			arcs[i][j] = sqrt(pow(pickup_nodes[i].x-pickup_nodes[j].x,2)+pow(pickup_nodes[i].y-pickup_nodes[j].y,2));
 			arcs[i+request_amount][j+request_amount] = sqrt(pow(delivery_nodes[i].x-delivery_nodes[j].x,2)+pow(delivery_nodes[i].y-delivery_nodes[j].y,2));
 			arcs[i+2*request_amount][j+2*request_amount] = sqrt(pow(transfer_nodes[i].x-transfer_nodes[j].x,2)+pow(transfer_nodes[i].y-transfer_nodes[j].y,2));
@@ -178,21 +179,20 @@ void worst_removal(double s) {
 	size_t best_removal = 0;
 	size_t current_removal;
 	size_t removed_node;
-	vector<Vehicle> vehicle_removed_node;
+	Vehicle vehicle_removed_node;
 	for (Vehicle v : routes) {
 		for (int i : v.route) {
 			// If first node is removed then just substract the first transportation cost
 			current_removal = arcs[v.route[i-1]][v.route[i+1]] - arcs[v.route[i-1]][v.route[i]] - arcs[v.route[i]][v.route[i+1]];
 			if (current_removal >= best_removal) { 
 				best_removal = current_removal;
-				removed_node = v[i];
+				removed_node = v.route[i];
 				vehicle_removed_node = v;
 			}
 		}
 	}
 	// Remove the node from the vehicle
 	
-	return s;
 }
 
 void destroy(double s) {
@@ -202,9 +202,13 @@ void destroy(double s) {
 	mt19937 generator(rand_dev());
 	uniform_int_distribution<int> distr(range_from, range_to);
 
-	random_number = distr(generator);
+	int random_number = distr(generator);
 	
 	if (random_number <= 100) { worst_removal(s); }
+	
+}
+
+void repair(double solution) {
 	
 }
 
@@ -235,7 +239,7 @@ double ALNS(double init_solution) {
 
 double create_init_solution() {
 	
-	return nanl;
+	return 0;
 }
 
 int main() {

@@ -5,13 +5,11 @@
 #include <cmath>
 #include <random>
 #include "vehicle.h"
-#include "instance.h"
 #include "node.h"
 using namespace std;
 
 // General variables
 string location = "C://Users//Hp//Desktop//Master//Blok3//ORACS//instances.csv";
-vector<Instance> instances;
 
 // Model variables
 int request_amount, transfer_location_amount, depot_amount, node_amount;
@@ -20,6 +18,7 @@ vector<Pickup_Node> pickup_nodes;
 vector<Delivery_Node> delivery_nodes;
 vector<Transfer_Node> transfer_nodes;
 vector<Depot_Node> depot_nodes;
+vector<Node> all_nodes;
 vector<int> ride_times;
 vector<int> service_times;
 vector<vector<int>> arcs;
@@ -58,49 +57,53 @@ void read_csv() {
 		// Pickup nodes
 		for (int i = 0; i < request_amount; i++) {
 			string x,y;
-			pickup_nodes.push_back(Node());
+			pickup_nodes.push_back(Pickup_Node());
 			pickup_nodes[i].index = i;
 			getline(ip,x,',');
 			getline(ip,y,',');
 			pickup_nodes[i].x = atoi(x.c_str());
 			pickup_nodes[i].y = atoi(y.c_str());
 			pickup_nodes[i].gen_idx = general_index;
+			all_nodes.push_back(pickup_nodes[i]);
 			general_index++;
 		}
 		// Delivery nodes
 		for (int i = 0; i < request_amount; i++) {
 			string x,y;
-			delivery_nodes.push_back(Node());
+			delivery_nodes.push_back(Delivery_Node());
 			delivery_nodes[i].index = i;
 			getline(ip,x,',');
 			getline(ip,y,',');
 			delivery_nodes[i].x = atoi(x.c_str());
 			delivery_nodes[i].y = atoi(y.c_str());
 			delivery_nodes[i].gen_idx = general_index;
+			all_nodes.push_back(delivery_nodes[i]);
 			general_index++;
 		}
 		// Transfer nodes
 		for (int i = 0; i < transfer_location_amount; i++) {
 			string x,y;
-			transfer_nodes.push_back(Node());
+			transfer_nodes.push_back(Transfer_Node());
 			transfer_nodes[i].index = i;
 			getline(ip,x,',');
 			getline(ip,y,',');
 			transfer_nodes[i].x = atoi(x.c_str());
 			transfer_nodes[i].y = atoi(y.c_str());
 			transfer_nodes[i].gen_idx = general_index;
+			all_nodes.push_back(transfer_nodes[i]);
 			general_index++;
 		}
 		// Depot nodes
 		for (int i = 0; i < depot_amount; i++) {
 			string x,y;
-			depot_nodes.push_back(Node());
+			depot_nodes.push_back(Depot_Node());
 			depot_nodes[i].index = i;
 			getline(ip,x,',');
 			getline(ip,y,',');
 			depot_nodes[i].x = atoi(x.c_str());
 			depot_nodes[i].y = atoi(y.c_str());
 			depot_nodes[i].gen_idx = general_index;
+			all_nodes.push_back(depot_nodes[i]);
 			general_index++;
 		}
 		// Pickup nodes time windows
@@ -162,11 +165,6 @@ void calculate_arcs() {
 	for (int i = 0; i < node_amount; i++) {
 		arcs[i].resize(node_amount);
 	}
-	vector<Node> all_nodes;
-	all_nodes.push_back(pickup_nodes);
-	all_nodes.push_back(delivery_nodes);
-	all_nodes.push_back(transfer_nodes);
-	all_nodes.push_back(depot_nodes);
 	for (int i = 0; i < node_amount; i++) {
 		for (int j = i + 1; j < node_amount; j++) {
 			arcs[i][j] = eucledian_distance(all_nodes[i],all_nodes[j]);
@@ -185,14 +183,14 @@ bool acceptation_criterion_met(double candid_solution, double current_solution) 
 	else { return true; }
 }
 
-Node worst_removal(int amount_removed) {
+size_t worst_removal(int amount_removed) {
 	// 1. Find the worst point in a route by looping over the vehicle vectors and calculating the difference in costs.
 	// 2. Once a location has been found, remove it from the vehicle by altering all the vectors.
 	
 	size_t best_removal = 0;
 	size_t current_removal;
 	size_t index_removed_node;
-	Node node removed_node;
+	size_t removed_node_index;
 	Vehicle vehicle_removed_node;
 	for (Vehicle v : routes) {
 		for (int i : v.route) {
@@ -201,22 +199,24 @@ Node worst_removal(int amount_removed) {
 			if (current_removal < best_removal) { 
 				best_removal = current_removal;
 				index_removed_node = i;
-				removed_node = v.route[i];
+				removed_node_index = i;
 				vehicle_removed_node = v;
 			}
 		}
 	}
 	// Remove the node from the vehicle
-	vehicle_removed_node.route.erase(i);
+	vehicle_removed_node.route.erase(index_removed_node);
+	return removed_node_index;
 }
 
-Node destroy() {
-	Node destroyed_node = worst_removal(1);
+size_t destroy() {
+	size_t destroyed_node_index = worst_removal(1);
 }
 
-void greedy_insertion(Node node) {
+void greedy_insertion(size_t node_index) {
 	// 1. Find the worst point in a route by looping over the vehicle vectors and calculating the difference in costs.
 	// 2. Once a location has been found, remove it from the vehicle by altering all the vectors.
+	node = all_nodes[node_index];
 	bool first = true;
 	size_t best_insertion = 0;
 	size_t current_insertion;
@@ -238,8 +238,8 @@ void greedy_insertion(Node node) {
 	vehicle_insertion.route.insert(index_insertion+1);
 }
 
-void repair(Node node) {
-	greedy_insertion(node);
+void repair(size_t node_index) {
+	greedy_insertion(node_index);
 }
 
 double ALNS(double init_solution) {
@@ -249,8 +249,8 @@ double ALNS(double init_solution) {
 	size_t loop_count = 0;
 	while(!stopping_criterion_met(loop_count)) {
 		double s = current_solution;
-		Node destroyed_node = destroy();
-		repair(destroyed_node);
+		size_t destroyed_node_index = destroy();
+		repair(destroyed_node_index);
 		
 		// check feasibility and compute obj_val for s
 		
@@ -281,7 +281,7 @@ int main() {
 	calculate_arcs();
 	cout << pickup_nodes[0].x << '\n';
 	double init_solution = create_init_solution();
-	double best_solution = ALNS(init_solution);
-	cout << best_solution;
+	/*double best_solution = ALNS(init_solution);
+	cout << best_solution;*/
     return 0;
 }

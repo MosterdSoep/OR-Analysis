@@ -7,7 +7,6 @@
 #include "vehicle.h"
 #include "instance.h"
 #include "node.h"
-#include "time_window.h"
 using namespace std;
 
 // General variables

@@ -14,6 +14,7 @@ string location = "C://Users//Hp//Desktop//Master//Blok3//ORACS//instances.csv";
 vector<Instance> instances;
 
 // Model variables
+int request_amount, transfer_location_amount, depot_amount;
 vector<int> facility_costs;
 vector<Node> pickup_nodes;
 vector<Node> delivery_nodes;
@@ -35,7 +36,7 @@ void read_csv() {
 	if(!ip.is_open()) cout << "ERROR: File Open" << '\n';
 
 	while (ip.good()) {
-		int index, request_amount, transfer_location_amount, depot_amount, vehicle_capacity, travel_cost;
+		int index, vehicle_capacity, travel_cost;
 		string index_str, request_amount_str, transfer_location_amount_str, depot_amount_str, vehicle_capacity_str, travel_cost_str;
 		
 		getline(ip,index_str,','); 						index = atoi(index_str.c_str());
@@ -150,7 +151,7 @@ void read_csv() {
 void calculate_arcs() {
 	arcs = malloc((2*request_amount+transfer_location_amount+depot_amount)*sizeof(double*));
 	for (i = 0; i < request_amount; i++) {
-		arcs[i] = (double*)malloc(rows*sizeof(double));
+		arcs[i] = (double*)malloc((2*request_amount+transfer_location_amount+depot_amount)**sizeof(double));
 		for (j = 0; j < request_amount; j++) {
 			arcs[i][j] = sqrt(pow(pickup_nodes[i].x-pickup_nodes[j].x,2)+pow(pickup_nodes[i].y-pickup_nodes[j].y,2));
 			arcs[i+request_amount][j+request_amount] = sqrt(pow(delivery_nodes[i].x-delivery_nodes[j].x,2)+pow(delivery_nodes[i].y-delivery_nodes[j].y,2));
@@ -181,10 +182,10 @@ void worst_removal(double s) {
 	for (Vehicle v : routes) {
 		for (int i : v.route) {
 			// If first node is removed then just substract the first transportation cost
-			current_removal = Arc(v(i-1),v(i+1)) - Arc(v(i-1),v(i)) - Arc(v(i),v(i+1));
+			current_removal = arcs[v.route[i-1]][v.route[i+1]] - arcs[v.route[i-1]][v.route[i]] - arcs[v.route[i]][v.route[i+1]];
 			if (current_removal >= best_removal) { 
 				best_removal = current_removal;
-				removed_node = v(i);
+				removed_node = v[i];
 				vehicle_removed_node = v;
 			}
 		}
@@ -230,6 +231,11 @@ double ALNS(double init_solution) {
 		loop_count++;
 	}
 	return best_solution;
+}
+
+double create_init_solution() {
+	
+	return nanl;
 }
 
 int main() {

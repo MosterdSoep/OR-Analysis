@@ -309,6 +309,7 @@ void solve_instance(int ins){
     preprocess();
 	//double init_solution = create_init_solution();
 	//double best_solution = ALNS(init_solution);
+	//write_output_file();
 }
 
 void solve_all_instances(){
@@ -317,6 +318,7 @@ void solve_all_instances(){
         solve_instance(idx);
 		//double init_solution = create_init_solution();
 		//double best_solution = ALNS(init_solution);
+		//write_output_file();
     }
 }
 
@@ -349,10 +351,5 @@ int main() {
             }
         }
 	}
-	
-	double init_solution = create_init_solution();
-	/*double best_solution = ALNS(init_solution);
-	cout << best_solution;*/
-	//write_output_file();
     return 0;
 }

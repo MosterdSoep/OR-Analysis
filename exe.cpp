@@ -12,6 +12,7 @@ using namespace std;
 // General variables
 string location = "D://Downloads//instances.csv";
 vector<vector<int>> input_data;
+
 // Model variables
 int request_amount, transfer_location_amount, depot_amount, node_amount, travel_cost, vehicle_capacity;
 vector<Pickup_Node> pickup_nodes;

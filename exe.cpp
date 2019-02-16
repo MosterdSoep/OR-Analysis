@@ -11,7 +11,8 @@
 using namespace std;
 
 // General variables
-string location = "D://Downloads//instances.csv";
+//string location = "D://Downloads//instances.csv";
+string location = "C://Users//Hp//Desktop//Master//Blok3//ORACS//instances.csv";
 vector<vector<int>> input_data;
 
 // Model variables
@@ -306,18 +307,22 @@ void preprocess(){
 void solve_instance(int ins){
     calculate_arcs();
     preprocess();
+	//double init_solution = create_init_solution();
+	//double best_solution = ALNS(init_solution);
 }
 
 void solve_all_instances(){
     for(size_t idx = 0; idx < input_data.size(); idx++){
         create_instance(idx);
         solve_instance(idx);
+		//double init_solution = create_init_solution();
+		//double best_solution = ALNS(init_solution);
     }
 }
 
 int main() {
 	read_csv();
-
+	
 	bool eol = 0;
 	while(!eol){ // Create instance based on user input
 	    char response[20];
@@ -340,13 +345,11 @@ int main() {
                     solve_instance(atoi(response));
                 }
             }else{
-            cout << "Not a number, please try again\n";
+				cout << "Not a number, please try again\n";
             }
         }
 	}
-
-	/*calculate_arcs();
-	cout << pickup_nodes[0].x << '\n';
+	
 	double init_solution = create_init_solution();
 	/*double best_solution = ALNS(init_solution);
 	cout << best_solution;*/

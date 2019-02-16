@@ -267,8 +267,11 @@ void create_instance(int ins){
 
 void preprocess(){
     for(size_t idx = 0; idx < request_amount; idx++){
-        if(delivery_nodes[idx].lower_bound - pickup_nodes[idx].lower_bound - pickup_nodes[idx].service_time < arcs[pickup_nodes[idx].gen_idx][delivery_nodes[idx].gen_idx])
-            cout << idx << '\n';
+        // e_i+1 < e_i + s_i + t_i,j
+        if(delivery_nodes[idx].lower_bound < pickup_nodes[idx].lower_bound + pickup_nodes[idx].service_time + arcs[idx][request_amount + idx])
+            delivery_nodes[idx].lower_bound = pickup_nodes[idx].lower_bound + pickup_nodes[idx].service_time + arcs[idx][request_amount + idx];
+        if(pickup_nodes[idx].lower_bound > delivery_nodes[idx].lower_bound + pickup_nodes[idx].service_time + arcs[idx][request_amount + idx])
+            pickup_nodes[idx].lower_bound = delivery_nodes[idx].lower_bound + pickup_nodes[idx].service_time + arcs[idx][request_amount + idx];
     }
 }
 

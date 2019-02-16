@@ -6,8 +6,8 @@ using namespace std;
 
 class Node {
   public:
-	double index, x, y, service_time, gen_idx;
-	Node(double index, double x, double y, double st, double g_idx);
+	int index, x, y, service_time, gen_idx;
+	Node(int index, int x, int y, int st, int g_idx);
 	Node(){};
 };
 
@@ -30,7 +30,7 @@ class Transfer_Node: public Node{
     using Node::Node;
     bool open;
     bool pickup; //1 if pickup, 0 if delivery
-    size_t vehicle_idx;
+    size_t vehicle_idx;// Create instance based on user input
     size_t request_idx;
 	double costs;
 };
@@ -41,7 +41,7 @@ class Depot_Node: public Node{
 };
 
 // Constructor with all attributes
-Node::Node(double index, double x, double y, double st, double g_idx){
+Node::Node(int idx, int a, int b, int st, int g_idx){
   index = idx;
   x = a;
   y = b;

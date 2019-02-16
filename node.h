@@ -30,7 +30,7 @@ class Transfer_Node: public Node{
     using Node::Node;
     bool open;
     bool pickup; //1 if pickup, 0 if delivery
-    size_t vehicle_idx;
+    size_t vehicle_idx;// Create instance based on user input
     size_t request_idx;
 	double costs;
 };

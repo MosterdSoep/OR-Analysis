@@ -5,6 +5,7 @@
 #include <sstream>
 #include <cmath>
 #include <random>
+#include <limits>
 #include "vehicle.h"
 #include "node.h"
 using namespace std;
@@ -268,11 +269,37 @@ void create_instance(int ins){
 
 void preprocess(){
     for(size_t idx = 0; idx < request_amount; idx++){
-        // e_i+1 < e_i + s_i + t_i,j
+        // e_i+n < e_i + s_i + t_i,i+n
         if(delivery_nodes[idx].lower_bound < pickup_nodes[idx].lower_bound + pickup_nodes[idx].service_time + arcs[idx][request_amount + idx])
             delivery_nodes[idx].lower_bound = pickup_nodes[idx].lower_bound + pickup_nodes[idx].service_time + arcs[idx][request_amount + idx];
-        if(pickup_nodes[idx].lower_bound > delivery_nodes[idx].lower_bound + pickup_nodes[idx].service_time + arcs[idx][request_amount + idx])
-            pickup_nodes[idx].lower_bound = delivery_nodes[idx].lower_bound + pickup_nodes[idx].service_time + arcs[idx][request_amount + idx];
+        // l_i > l_i+n - s_i - t_i,i+n
+        if(pickup_nodes[idx].upper_bound > delivery_nodes[idx].upper_bound + pickup_nodes[idx].service_time + arcs[idx][request_amount + idx])
+            pickup_nodes[idx].upper_bound = delivery_nodes[idx].upper_bound + pickup_nodes[idx].service_time + arcs[idx][request_amount + idx];
+
+        // no delivery before its pickup
+        arcs[idx + request_amount][idx] = numeric_limits<double>::max();
+
+        // no routes directly from depot to delivery, or pickup to depot
+        for(size_t adx = depot_nodes[0].gen_idx; adx < depot_nodes[0].gen_idx + depot_amount; adx++){
+            arcs[adx][idx + request_amount] = numeric_limits<double>::max();
+            arcs[idx][adx] = numeric_limits<double>::max();
+        }
+    }
+    for(size_t idx = 0; idx < request_amount; idx++){
+        for(size_t adx = 0; adx < request_amount; adx++){
+            if(pickup_nodes[idx].lower_bound + arcs[idx][adx] > pickup_nodes[adx].upper_bound){
+                arcs[idx][adx] = numeric_limits<double>::max();
+            }
+            if(pickup_nodes[idx].lower_bound + arcs[idx][adx] > delivery_nodes[adx].upper_bound){
+                arcs[idx][adx] = numeric_limits<double>::max();
+            }
+            if(delivery_nodes[idx].lower_bound + arcs[idx][adx] > pickup_nodes[adx].upper_bound){
+                arcs[idx][adx] = numeric_limits<double>::max();
+            }
+            if(delivery_nodes[idx].lower_bound + arcs[idx][adx] > delivery_nodes[adx].upper_bound){
+                arcs[idx][adx] = numeric_limits<double>::max();
+            }
+        }
     }
 }
 

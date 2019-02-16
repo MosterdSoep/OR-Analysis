@@ -6,8 +6,8 @@ using namespace std;
 
 class Node {
   public:
-	int index, x, y, service_time, gen_idx;
-	Node(int index, int x, int y, int st, int g_idx);
+	double index, x, y, service_time, gen_idx;
+	Node(double index, double x, double y, double st, double g_idx);
 	Node(){};
 };
 
@@ -41,7 +41,7 @@ class Depot_Node: public Node{
 };
 
 // Constructor with all attributes
-Node::Node(int idx, int a, int b, int st, int g_idx){
+Node::Node(double index, double x, double y, double st, double g_idx){
   index = idx;
   x = a;
   y = b;

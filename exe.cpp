@@ -21,7 +21,7 @@ vector<Depot_Node> depot_nodes;
 vector<Node> all_nodes;
 vector<int> ride_times;
 vector<int> service_times;
-vector<vector<int>> arcs;
+vector<vector<double>> arcs;
 
 // Solution variables
 vector<Vehicle> routes;
@@ -49,7 +49,7 @@ double eucledian_distance(Node a, Node b) {
 	return sqrt(pow(a.x - b.x,2) + pow(a.y - b.y,2));
 }
 
-/*
+
 void calculate_arcs() {
 	arcs.resize(node_amount);
 	for (int i = 0; i < node_amount; i++) {
@@ -62,6 +62,8 @@ void calculate_arcs() {
 		}
 	}
 }
+
+/*
 
 bool stopping_criterion_met(size_t loop_count) {
 	if (loop_count <= 1000) { return false; }
@@ -207,7 +209,8 @@ void create_instance(int ins){
     size_t transfer_cost_idx = 6;
     size_t coordinate_idx = transfer_cost_idx + transfer_location_amount;
     size_t time_window_idx = coordinate_idx + 2 * node_amount;
-    size_t service_time_idx = time_window_idx + 4 * request_amount;
+    size_t ride_times_idx = time_window_idx + 4 * request_amount;
+    size_t service_time_idx = ride_times_idx + request_amount;
 
     for(size_t idx = 0; idx < request_amount; idx++){
         // Create pickup nodes
@@ -218,7 +221,7 @@ void create_instance(int ins){
         pickup_nodes[idx].service_time = input_data[ins][service_time_idx + idx];
         pickup_nodes[idx].gen_idx = idx;
         pickup_nodes[idx].lower_bound = input_data[ins][time_window_idx + 2* idx];
-        pickup_nodes[idx].lower_bound = input_data[ins][time_window_idx + 2* idx + 1];
+        pickup_nodes[idx].upper_bound = input_data[ins][time_window_idx + 2* idx + 1];
 
         // Create delivery nodes
         delivery_nodes.push_back(Delivery_Node());
@@ -228,7 +231,7 @@ void create_instance(int ins){
         delivery_nodes[idx].service_time = input_data[ins][service_time_idx + request_amount + idx];
         delivery_nodes[idx].gen_idx = request_amount + idx;
         delivery_nodes[idx].lower_bound = input_data[ins][time_window_idx + 2 * request_amount + 2 * idx];
-        delivery_nodes[idx].lower_bound = input_data[ins][time_window_idx + 2 * request_amount + 2 * idx + 1];
+        delivery_nodes[idx].upper_bound = input_data[ins][time_window_idx + 2 * request_amount + 2 * idx + 1];
     }
 
     for(size_t idx = 0; idx < transfer_location_amount; idx++){
@@ -242,26 +245,50 @@ void create_instance(int ins){
         transfer_nodes[idx].costs = input_data[ins][transfer_cost_idx + idx];
     }
 
-
     for(size_t idx = 0; idx < depot_amount; idx++){
         //Create depot nodes
         depot_nodes.push_back(Depot_Node());
         depot_nodes[idx].index = idx;
         depot_nodes[idx].x = input_data[ins][coordinate_idx + 4 * request_amount + 2 * transfer_location_amount + 2 * idx];
         depot_nodes[idx].y = input_data[ins][coordinate_idx + 4 * request_amount + 2 * transfer_location_amount + 2 * idx + 1];
-        depot_nodes[idx].service_time = input_data[ins][service_time_idx + 2 * request_amount + transfer_location_amount + idx];
+        depot_nodes[idx].service_time = 0;
         depot_nodes[idx].gen_idx = 2 * request_amount + transfer_location_amount + idx;
+    }
+
+    for(size_t idx = 0; idx < request_amount; idx++){
+        ride_times.push_back(input_data[ins][ride_times_idx + idx]);
+    }
+
+    all_nodes.insert(all_nodes.end(), pickup_nodes.begin(), pickup_nodes.end());
+    all_nodes.insert(all_nodes.end(), delivery_nodes.begin(), delivery_nodes.end());
+    all_nodes.insert(all_nodes.end(), transfer_nodes.begin(), transfer_nodes.end());
+    all_nodes.insert(all_nodes.end(), depot_nodes.begin(), depot_nodes.end());
+}
+
+void preprocess(){
+    for(size_t idx = 0; idx < request_amount; idx++){
+        if(delivery_nodes[idx].lower_bound - pickup_nodes[idx].lower_bound - pickup_nodes[idx].service_time < arcs[pickup_nodes[idx].gen_idx][delivery_nodes[idx].gen_idx])
+            cout << idx << '\n';
     }
 }
 
+void solve_instance(int ins){
+    calculate_arcs();
+    preprocess();
+}
+
 void solve_all_instances(){
+    for(size_t idx = 0; idx < input_data.size(); idx++){
+        create_instance(idx);
+        solve_instance(idx);
+    }
 }
 
 int main() {
 	read_csv();
 
-	bool eol = 0; // Create instance based on user input
-	while(!eol){
+	bool eol = 0;
+	while(!eol){ // Create instance based on user input
 	    char response[20];
 	    cout << "Which instances do you want to solve?\nType a number for a specific instance (starting with 0), type A for all instances, type B to abort.\n";
         cin >> response;
@@ -278,7 +305,8 @@ int main() {
                 if(atoi(response) >= input_data.size()){
                     cout << "Number too large, please try again\n";
                 }else{
-                create_instance(atoi(response));
+                    create_instance(atoi(response));
+                    solve_instance(atoi(response));
                 }
             }else{
             cout << "Not a number, please try again\n";

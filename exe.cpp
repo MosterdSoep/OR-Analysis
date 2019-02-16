@@ -28,7 +28,8 @@ vector<Vehicle> routes;
 double obj_val;
 
 void read_csv() {
-
+	ifstream ip(location);
+	if(!ip.is_open()) cout << "ERROR: File Open" << '\n';
 	while (ip.good()) {
 		int index;
 		string index_str, request_amount_str, transfer_location_amount_str, depot_amount_str, vehicle_capacity_str, travel_cost_str;
@@ -306,13 +307,6 @@ void write_output_file(size_t instance_number) {
 }
 
 int main() {
-	ifstream ip(location);
-	if(!ip.is_open()) cout << "ERROR: File Open" << '\n';
-	while (ip.good()) {
-		// Loop over every instance and perform the ALNS algorithm
-		// First read in data, calculate arcs, get initial solution then perform ALNS
-		read_csv(ip);
-	}
 	read_csv();
 	calculate_arcs();
 	cout << pickup_nodes[0].x << '\n';

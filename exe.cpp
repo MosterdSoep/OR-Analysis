@@ -328,7 +328,7 @@ int main() {
 	bool eol = 0;
 	while(!eol){ // Create instance based on user input
 	    char response[20];
-	    cout << "Which instances do you want to solve?\nType a number for a specific instance (starting with 0), type A for all instances, type B to abort.\n";
+	    cout << "There are " << input_data.size() << " instances.\nType a number for a specific instance (starting with 0), type A for all instances, type B to abort.\n";
         cin >> response;
         switch(response[0])
         {
@@ -342,11 +342,11 @@ int main() {
             if(isdigit(response[0])){
                 if(atoi(response) >= input_data.size()){
                     cout << "Number too large, please try again\n";
-                }else{
+                } else {
                     create_instance(atoi(response));
                     solve_instance(atoi(response));
                 }
-            }else{
+            } else {
 				cout << "Not a number, please try again\n";
             }
         }

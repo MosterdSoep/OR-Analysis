@@ -9,6 +9,9 @@ class Node {
 	int index, x, y, service_time, gen_idx;
 	Node(int index, int x, int y, int st, int g_idx);
 	Node(){};
+	bool is_transfer();
+	bool is_pickup();
+	bool is_delivery();
 };
 
 class Pickup_Node: public Node{

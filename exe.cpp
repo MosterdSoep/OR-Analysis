@@ -167,10 +167,9 @@ double create_init_solution() {
 	return 0;
 }
 
+*/
+
 void calculate_obj_val() {
-	// Costs:
-	// 1. Opening transfer facility -> add up the distance and then multiply with the cost per distance
-	// 2. Travel costs
 	double total_distance = 0;
 	for (Vehicle v : routes) {
 		total_distance += accumulate(v.arc_durations.begin(),v.arc_durations.end(),0);
@@ -178,28 +177,12 @@ void calculate_obj_val() {
 	double facility_costs = 0;
 	for (Transfer_Node node : transfer_nodes) {
 		if (node.open) {
-			facility_cost += node.costs;
+			facility_costs += node.costs;
 		}
 	}
-	obj_val = travel_cost*total_distance + facility_cost;
+	obj_val = travel_cost*total_distance + facility_costs;
 }
 
-void write_output_file(size_t instance_number) {
-	ofstream output_file;
-	ostringstream file_name_stream;
-	file_name_stream << "oracs_" << instance_number << ".csv";
-	string file_name = file_name_stream.str();
-	output_file.open(file_name);
-	output_file << "2\n";
-	output_file << instance_number << "\n";
-	output_file << obj_val << "\n";
-	output_file << routes.size() << "\n";
-	for (Vehicle v : routes) {
-		output_file << "";
-	}
-	output_file << "\n";
-}
-*/
 void create_instance(int ins){
     int index = input_data[ins][0];
     request_amount = input_data[ins][1];
@@ -326,6 +309,8 @@ int main() {
         case 'A':
             for(size_t idx = 0; idx < input_data.size(); idx++){
 				solve_instance(idx);
+				cout << "Instance " << idx << " succesfully solved!\n";
+				cout << "\n";
 			}
             break;
         case 'B':
@@ -337,6 +322,8 @@ int main() {
                     cout << "Number too large, please try again\n";
                 } else {
                     solve_instance(atoi(response));
+					cout << "Instance " << atoi(response) << " succesfully solved!\n";
+					cout << "\n";
                 }
             } else {
 				cout << "Not a number, please try again\n";

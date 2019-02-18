@@ -9,9 +9,10 @@ using namespace std;
 class Vehicle {
   public:
 	size_t index;
-	vector<double> arc_durations;
-	vector<double> waiting_times;
 	vector<Node> route;
+	vector<double> arc_durations;
+	vector<double> arrival_times;
+	vector<double> waiting_times;
 	vector<size_t> current_capacity;
 	
 	void remove_node(size_t location);
@@ -22,10 +23,27 @@ class Vehicle {
 };
 
 void Vehicle::remove_node(size_t location){
-	this->arc_durations.erase(arc_durations.begin() + location);
-	this->waiting_times.erase(waiting_times.begin() + location);
-	this->route.erase(route.begin() + location);
-	this->current_capacity.erase(current_capacity.begin() + location);
+	if (location == 0) {
+		// Removing starting depot
+		this->arc_durations.erase(arc_durations.begin());
+		this->route.erase(route.begin());
+		this->waiting_times.erase(route.begin());
+	} else if (location == this.route.size()) {
+		// Removing ending depot
+		this->arc_durations.erase(arc_durations.end());
+		this->route.erase(route.end());
+		this->waiting_times.erase(route.end());
+	} else {
+		// Removing pickup, delivery or transfer node
+		this->arc_durations.erase(arc_durations.begin() + location - 1);
+		this->arc_durations[arc_durations.begin() + location] = get_arc(route[route.begin() + location - 1].gen_idx,route[route.begin() + location + 1].gen_idx);
+		this->route.erase(route.begin() + location);
+		this->waiting_times.erase(route.begin() + location);
+		
+		// Changing of current_capacity
+		// Dependent on the type of the node
+		
+	}
 };
 
 // Add transfer node

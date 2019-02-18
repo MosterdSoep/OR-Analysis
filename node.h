@@ -7,11 +7,9 @@ using namespace std;
 class Node {
   public:
 	int index, x, y, service_time, gen_idx;
+	char type;
 	Node(int index, int x, int y, int st, int g_idx);
 	Node(){};
-	bool is_transfer();
-	bool is_pickup();
-	bool is_delivery();
 };
 
 class Pickup_Node: public Node{
@@ -19,6 +17,7 @@ class Pickup_Node: public Node{
     using Node::Node;
     double lower_bound = 0;
     double upper_bound = 0;
+	type = 'p';
 };
 
 class Delivery_Node: public Node{
@@ -26,6 +25,7 @@ class Delivery_Node: public Node{
     using Node::Node;
     double lower_bound = 0;
     double upper_bound = 0;
+	type = 'd';
 };
 
 class Transfer_Node: public Node{
@@ -36,10 +36,12 @@ class Transfer_Node: public Node{
     size_t vehicle_idx;// Create instance based on user input
     size_t request_idx;
 	double costs;
+	type = 't';
 };
 
 class Depot_Node: public Node{
   public:
     using Node::Node;
+	type = 'o';
 };
 #endif

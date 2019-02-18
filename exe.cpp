@@ -11,9 +11,6 @@ using namespace std;
 string location = "X://My Documents//Master//ORACS//OR-Analysis-master//OR-Analysis-master//instances.csv";
 vector<vector<int>> input_data;
 
-// Solution variables
-double obj_val;
-
 void read_csv() {
 	ifstream ip(location);
 	if(!ip.is_open()) cout << "ERROR: File Open" << '\n';
@@ -137,20 +134,6 @@ double create_init_solution() {
 	return 0;
 }
 */
-
-void calculate_obj_val() {
-	double total_distance = 0;
-	for (Vehicle v : routes) {
-		total_distance += accumulate(v.arc_durations.begin(),v.arc_durations.end(),0);
-	}
-	double facility_costs = 0;
-	for (Transfer_Node node : transfer_nodes) {
-		if (node.open) {
-			facility_costs += node.costs;
-		}
-	}
-	obj_val = travel_cost*total_distance + facility_costs;
-}
 
 void solve_instance(vector<vector<int>> &input_data, int ins){
 	Instance i;

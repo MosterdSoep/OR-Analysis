@@ -20,13 +20,31 @@ class Instance{
 	vector<int> service_times;
 	vector<vector<double>> arcs;
 	
+	// Solution variables
 	vector<Vehicle> routes;
+	double obj_val;
 	
 	public:
 		instance(){};
 		void create_instance(vector<vector<int>> &input_data, int ins);
 		void preprocess();
 		void calculate_arcs();
+		void calculate_obj_val();
 		void initial::solution();
 };
+
+void Instance::calculate_obj_val() {
+	double total_distance = 0;
+	for (Vehicle v : routes) {
+		total_distance += accumulate(v.arc_durations.begin(),v.arc_durations.end(),0);
+	}
+	double facility_costs = 0;
+	for (Transfer_Node node : transfer_nodes) {
+		if (node.open) {
+			facility_costs += node.costs;
+		}
+	}
+	obj_val = travel_cost*total_distance + facility_costs;
+}
+
 #endif

@@ -30,6 +30,7 @@ class Instance{
 		void preprocess();
 		void calculate_arcs();
 		void calculate_obj_val();
+		double get_arc(size_t row, size_t column);
 		void initial::solution();
 };
 
@@ -45,6 +46,10 @@ void Instance::calculate_obj_val() {
 		}
 	}
 	obj_val = travel_cost*total_distance + facility_costs;
+}
+
+double Instance::get_arc(size_t row, size_t column) {
+	return arcs[row][column];
 }
 
 #endif

@@ -1,33 +1,17 @@
-#include <iostream>
-#include <vector>
 #include <fstream>
-#include <string>
 #include <sstream>
 #include <cmath>
 #include <random>
-#include <limits>
-#include "vehicle.h"
-#include "node.h"
+#include "instance.h"
 using namespace std;
 
 // General variables
 //string location = "D://Downloads//instances.csv";
-string location = "C://Users//Hp//Desktop//Master//Blok3//ORACS//instances.csv";
+//string location = "C://Users//Hp//Desktop//Master//Blok3//ORACS//instances.csv";
+string location = "X://My Documents//Master//ORACS//OR-Analysis-master//OR-Analysis-master//instances.csv";
 vector<vector<int>> input_data;
 
-// Model variables
-int request_amount, transfer_location_amount, depot_amount, node_amount, travel_cost, vehicle_capacity;
-vector<Pickup_Node> pickup_nodes;
-vector<Delivery_Node> delivery_nodes;
-vector<Transfer_Node> transfer_nodes;
-vector<Depot_Node> depot_nodes;
-vector<Node> all_nodes;
-vector<int> ride_times;
-vector<int> service_times;
-vector<vector<double>> arcs;
-
 // Solution variables
-vector<Vehicle> routes;
 double obj_val;
 
 void read_csv() {
@@ -48,22 +32,8 @@ void read_csv() {
 	ip.close();
 }
 
-double eucledian_distance(Node a, Node b) {
+double euclidian_distance(Node a, Node b) {
 	return sqrt(pow(a.x - b.x,2) + pow(a.y - b.y,2));
-}
-
-
-void calculate_arcs() {
-	arcs.resize(node_amount);
-	for (int i = 0; i < node_amount; i++) {
-		arcs[i].resize(node_amount);
-	}
-	for (int i = 0; i < node_amount; i++) {
-		for (int j = i + 1; j < node_amount; j++) {
-			arcs[i][j] = eucledian_distance(all_nodes[i],all_nodes[j]);
-			arcs[j][i] = arcs[i][j];
-		}
-	}
 }
 
 /*
@@ -167,9 +137,10 @@ double create_init_solution() {
 	return 0;
 }
 
-*/
-
 void calculate_obj_val() {
+	// Costs:
+	// 1. Opening transfer facility -> add up the distance and then multiply with the cost per distance
+	// 2. Travel costs
 	double total_distance = 0;
 	for (Vehicle v : routes) {
 		total_distance += accumulate(v.arc_durations.begin(),v.arc_durations.end(),0);
@@ -177,120 +148,35 @@ void calculate_obj_val() {
 	double facility_costs = 0;
 	for (Transfer_Node node : transfer_nodes) {
 		if (node.open) {
-			facility_costs += node.costs;
+			facility_cost += node.costs;
 		}
 	}
-	obj_val = travel_cost*total_distance + facility_costs;
+	obj_val = travel_cost*total_distance + facility_cost;
 }
 
-void create_instance(int ins){
-    int index = input_data[ins][0];
-    request_amount = input_data[ins][1];
-    transfer_location_amount = input_data[ins][2];
-    depot_amount = input_data[ins][3];
-    vehicle_capacity = input_data[ins][4];
-    travel_cost = input_data[ins][5];
-    node_amount = 2 * request_amount + transfer_location_amount + depot_amount;
-
-    size_t transfer_cost_idx = 6;
-    size_t coordinate_idx = transfer_cost_idx + transfer_location_amount;
-    size_t time_window_idx = coordinate_idx + 2 * node_amount;
-    size_t ride_times_idx = time_window_idx + 4 * request_amount;
-    size_t service_time_idx = ride_times_idx + request_amount;
-
-    for(size_t idx = 0; idx < request_amount; idx++){
-        // Create pickup nodes
-        pickup_nodes.push_back(Pickup_Node());
-        pickup_nodes[idx].index = idx;
-        pickup_nodes[idx].x = input_data[ins][coordinate_idx + 2 * idx];
-        pickup_nodes[idx].y = input_data[ins][coordinate_idx + 2 * idx + 1];
-        pickup_nodes[idx].service_time = input_data[ins][service_time_idx + idx];
-        pickup_nodes[idx].gen_idx = idx;
-        pickup_nodes[idx].lower_bound = input_data[ins][time_window_idx + 2* idx];
-        pickup_nodes[idx].upper_bound = input_data[ins][time_window_idx + 2* idx + 1];
-
-        // Create delivery nodes
-        delivery_nodes.push_back(Delivery_Node());
-        delivery_nodes[idx].index = idx;
-        delivery_nodes[idx].x = input_data[ins][coordinate_idx + 2 * request_amount + 2 * idx];
-        delivery_nodes[idx].y = input_data[ins][coordinate_idx + 2 * request_amount + 2 * idx + 1];
-        delivery_nodes[idx].service_time = input_data[ins][service_time_idx + request_amount + idx];
-        delivery_nodes[idx].gen_idx = request_amount + idx;
-        delivery_nodes[idx].lower_bound = input_data[ins][time_window_idx + 2 * request_amount + 2 * idx];
-        delivery_nodes[idx].upper_bound = input_data[ins][time_window_idx + 2 * request_amount + 2 * idx + 1];
-    }
-
-    for(size_t idx = 0; idx < transfer_location_amount; idx++){
-        //Create transfer nodes
-        transfer_nodes.push_back(Transfer_Node());
-        transfer_nodes[idx].index = idx;
-        transfer_nodes[idx].x = input_data[ins][coordinate_idx + 4 * request_amount + 2 * idx];
-        transfer_nodes[idx].y = input_data[ins][coordinate_idx + 4 * request_amount + 2 * idx + 1];
-        transfer_nodes[idx].service_time = input_data[ins][service_time_idx + 2 * request_amount + idx];
-        transfer_nodes[idx].gen_idx = 2 * request_amount + idx;
-        transfer_nodes[idx].costs = input_data[ins][transfer_cost_idx + idx];
-    }
-
-    for(size_t idx = 0; idx < depot_amount; idx++){
-        //Create depot nodes
-        depot_nodes.push_back(Depot_Node());
-        depot_nodes[idx].index = idx;
-        depot_nodes[idx].x = input_data[ins][coordinate_idx + 4 * request_amount + 2 * transfer_location_amount + 2 * idx];
-        depot_nodes[idx].y = input_data[ins][coordinate_idx + 4 * request_amount + 2 * transfer_location_amount + 2 * idx + 1];
-        depot_nodes[idx].service_time = 0;
-        depot_nodes[idx].gen_idx = 2 * request_amount + transfer_location_amount + idx;
-    }
-
-    for(size_t idx = 0; idx < request_amount; idx++){
-        ride_times.push_back(input_data[ins][ride_times_idx + idx]);
-    }
-
-    all_nodes.insert(all_nodes.end(), pickup_nodes.begin(), pickup_nodes.end());
-    all_nodes.insert(all_nodes.end(), delivery_nodes.begin(), delivery_nodes.end());
-    all_nodes.insert(all_nodes.end(), transfer_nodes.begin(), transfer_nodes.end());
-    all_nodes.insert(all_nodes.end(), depot_nodes.begin(), depot_nodes.end());
+void write_output_file(size_t instance_number) {
+	ofstream output_file;
+	ostringstream file_name_stream;
+	file_name_stream << "oracs_" << instance_number << ".csv";
+	string file_name = file_name_stream.str();
+	output_file.open(file_name);
+	output_file << "2\n";
+	output_file << instance_number << "\n";
+	output_file << obj_val << "\n";
+	output_file << routes.size() << "\n";
+	for (Vehicle v : routes) {
+		output_file << "";
+	}
+	output_file << "\n";
 }
+*/
 
-void preprocess(){
-    for(size_t idx = 0; idx < request_amount; idx++){
-        // e_i+n < e_i + s_i + t_i,i+n
-        if(delivery_nodes[idx].lower_bound < pickup_nodes[idx].lower_bound + pickup_nodes[idx].service_time + arcs[idx][request_amount + idx])
-            delivery_nodes[idx].lower_bound = pickup_nodes[idx].lower_bound + pickup_nodes[idx].service_time + arcs[idx][request_amount + idx];
-        // l_i > l_i+n - s_i - t_i,i+n
-        if(pickup_nodes[idx].upper_bound > delivery_nodes[idx].upper_bound + pickup_nodes[idx].service_time + arcs[idx][request_amount + idx])
-            pickup_nodes[idx].upper_bound = delivery_nodes[idx].upper_bound + pickup_nodes[idx].service_time + arcs[idx][request_amount + idx];
 
-        // no delivery before its pickup
-        arcs[idx + request_amount][idx] = numeric_limits<double>::max();
-
-        // no routes directly from depot to delivery, or pickup to depot
-        for(size_t adx = depot_nodes[0].gen_idx; adx < depot_nodes[0].gen_idx + depot_amount; adx++){
-            arcs[adx][idx + request_amount] = numeric_limits<double>::max();
-            arcs[idx][adx] = numeric_limits<double>::max();
-        }
-    }
-    for(size_t idx = 0; idx < request_amount; idx++){
-        for(size_t adx = 0; adx < request_amount; adx++){
-            if(pickup_nodes[idx].lower_bound + arcs[idx][adx] > pickup_nodes[adx].upper_bound){
-                arcs[idx][adx] = numeric_limits<double>::max();
-            }
-            if(pickup_nodes[idx].lower_bound + arcs[idx][adx] > delivery_nodes[adx].upper_bound){
-                arcs[idx][adx] = numeric_limits<double>::max();
-            }
-            if(delivery_nodes[idx].lower_bound + arcs[idx][adx] > pickup_nodes[adx].upper_bound){
-                arcs[idx][adx] = numeric_limits<double>::max();
-            }
-            if(delivery_nodes[idx].lower_bound + arcs[idx][adx] > delivery_nodes[adx].upper_bound){
-                arcs[idx][adx] = numeric_limits<double>::max();
-            }
-        }
-    }
-}
-
-void solve_instance(int ins){
-	create_instance(ins);
-    calculate_arcs();
-    preprocess();
+void solve_instance(vector<vector<int>> &input_data, int ins){
+	Instance i;
+	i.create_instance(input_data, ins);
+    i.calculate_arcs();
+    i.preprocess();
 	//double init_solution = create_init_solution();
 	//double best_solution = ALNS(init_solution);
 	//write_output_file();
@@ -308,7 +194,7 @@ int main() {
         {
         case 'A':
             for(size_t idx = 0; idx < input_data.size(); idx++){
-				solve_instance(idx);
+				solve_instance(input_data, idx);
 				cout << "Instance " << idx << " succesfully solved!\n";
 				cout << "\n";
 			}
@@ -321,8 +207,8 @@ int main() {
                 if(atoi(response) >= input_data.size()){
                     cout << "Number too large, please try again\n";
                 } else {
-                    solve_instance(atoi(response));
-					cout << "Instance " << atoi(response) << " succesfully solved!\n";
+                    solve_instance(input_data, atoi(response));
+					cout << "Instance " << idx << " succesfully solved!\n";
 					cout << "\n";
                 }
             } else {

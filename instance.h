@@ -2,6 +2,7 @@
 #define INSTANCE_H
 
 #include "vehicle.h"
+#include "instance.h"
 #include <string>
 #include <iostream>
 #include <vector>
@@ -24,13 +25,13 @@ class Instance{
 	double obj_val;
 	
 	public:
-		instance(){};
+		Instance(){};
 		void create_instance(vector<vector<int>> &input_data, int ins);
 		void preprocess();
 		void calculate_arcs();
 		void calculate_obj_val();
 		double get_arc(size_t row, size_t column);
-		void initial::solution();
+		void initial_solution();
 };
 
 void Instance::calculate_obj_val() {

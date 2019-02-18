@@ -17,7 +17,7 @@ class Pickup_Node: public Node{
     using Node::Node;
     double lower_bound = 0;
     double upper_bound = 0;
-	type = 'p';
+	char type = 'p';
 };
 
 class Delivery_Node: public Node{
@@ -25,7 +25,7 @@ class Delivery_Node: public Node{
     using Node::Node;
     double lower_bound = 0;
     double upper_bound = 0;
-	type = 'd';
+	char type = 'd';
 };
 
 class Transfer_Node: public Node{
@@ -36,12 +36,12 @@ class Transfer_Node: public Node{
     size_t vehicle_idx;// Create instance based on user input
     size_t request_idx;
 	double costs;
-	type = 't';
+	char type = 't';
 };
 
 class Depot_Node: public Node{
   public:
     using Node::Node;
-	type = 'o';
+	char type = 'o';
 };
 #endif

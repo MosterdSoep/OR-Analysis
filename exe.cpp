@@ -171,7 +171,7 @@ int main() {
                     cout << "Number too large, please try again\n";
                 } else {
                     solve_instance(input_data, atoi(response));
-					cout << "Instance " << idx << " succesfully solved!\n";
+					cout << "Instance " << atoi(response) << " succesfully solved!\n";
 					cout << "\n";
                 }
             } else {

@@ -17,7 +17,6 @@ class Instance{
 	vector<Depot_Node> depot_nodes;
 	vector<Node> all_nodes;
 	vector<int> ride_times;
-	vector<int> service_times;
 	vector<vector<double>> arcs;
 	
 	// Solution variables

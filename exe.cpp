@@ -305,21 +305,12 @@ void preprocess(){
 }
 
 void solve_instance(int ins){
+	create_instance(ins);
     calculate_arcs();
     preprocess();
 	//double init_solution = create_init_solution();
 	//double best_solution = ALNS(init_solution);
 	//write_output_file();
-}
-
-void solve_all_instances(){
-    for(size_t idx = 0; idx < input_data.size(); idx++){
-        create_instance(idx);
-        solve_instance(idx);
-		//double init_solution = create_init_solution();
-		//double best_solution = ALNS(init_solution);
-		//write_output_file();
-    }
 }
 
 int main() {
@@ -333,7 +324,9 @@ int main() {
         switch(response[0])
         {
         case 'A':
-            solve_all_instances();
+            for(size_t idx = 0; idx < input_data.size(); idx++){
+				solve_instance(idx);
+			}
             break;
         case 'B':
             eol = 1;
@@ -343,7 +336,6 @@ int main() {
                 if(atoi(response) >= input_data.size()){
                     cout << "Number too large, please try again\n";
                 } else {
-                    create_instance(atoi(response));
                     solve_instance(atoi(response));
                 }
             } else {

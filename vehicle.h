@@ -13,6 +13,7 @@ class Vehicle {
 	vector<double> waiting_times;
 	vector<Node> route;
 	vector<size_t> current_capacity;
+	vector<double> time_at_node; //mist nog implementatie
 	
 	void remove_node(size_t location);
 	void add_node(size_t location, Pickup_Node node, double arc1, double arc2);

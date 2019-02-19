@@ -44,7 +44,8 @@ void Instance::initial_solution(){
 		//add different nodes
 		size_t adx = 0;
 		size_t inserted = 1;
-		while(inserted && bank_empty){ //add while requests are left, and we added a request last iteration
+		while(inserted && (bank.size() == 0)){ //add while requests are left, and we added a request last iteration
+		//while(inserted && bank_empty){ //add while requests are left, and we added a request last iteration
 			adx += 2;
 			min_arc = numeric_limits<double>::max();
 			for(size_t idx = 0; idx < bank.size(); idx++){

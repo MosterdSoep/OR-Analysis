@@ -3,7 +3,7 @@
 using namespace std;
 
 void Vehicle::remove_node(size_t location){
-	if (route.size() == 1) }
+	if (route.size() == 1) {
 		// Only 1 node in the route hence the route is cleared
 		route.clear();
 		arc_durations.clear();

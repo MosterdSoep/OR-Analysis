@@ -33,14 +33,14 @@ bool Instance::maximum_ride_time_not_exceeded() {
 	double transfer_delivery_time = 0;
 	double transfer_pickup_time = 0;
 	bool transfered = false;
-	for (size_t req_idx = 0; idx < request_amount; req_idx++) {
+	for (size_t req_idx = 0; req_idx < request_amount; req_idx++) {
 		for (Vehicle v : routes) {
 			for (Node n : v.route) {
 				if (n.index == req_idx) {
 					if (n.type == 'p') {
-						pickup_time = v.time_at_node[];
+						//pickup_time = v.time_at_node[];
 					} else if (n.type == 'd') {
-						delivery_time = v.time_at_node[];
+						//delivery_time = v.time_at_node[];
 					} else if (n.type == 't') {
 						
 					}
@@ -48,11 +48,12 @@ bool Instance::maximum_ride_time_not_exceeded() {
 			}
 		}
 	}
+	return false;
 }
 
 bool Instance::time_windows_met() {
 	
-	
+	return false;
 }
 
 bool Instance::capacity_feasible() {
@@ -67,5 +68,5 @@ bool Instance::capacity_feasible() {
 
 bool Instance::correct_routes() {
 	// Check whether routes start and end at a depot
-	
+	return false;
 }

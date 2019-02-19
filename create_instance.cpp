@@ -115,6 +115,7 @@ void Instance::calculate_arcs() {
 		for (int j = i + 1; j < node_amount; j++) {
 			arcs[i][j] = euclidian_distance(all_nodes[i],all_nodes[j]);
 			arcs[j][i] = arcs[i][j];
+			std::cout << "From " << i << " to " << j << " = " << arcs[i][j]; 
 		}
 	}
 }

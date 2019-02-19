@@ -33,6 +33,14 @@ class Instance{
 		void calculate_obj_val();
 		double get_arc(size_t row, size_t column);
 		void initial_solution();
+		void write_output_file(size_t instance_number);
+		
+		bool is_feasible();
+		bool is_request_bank_empty();
+		bool maximum_ride_time_not_exceeded();
+		bool time_windows_met();
+		bool capacity_feasible();
+		bool correct_routes();
 };
 
 void Instance::calculate_obj_val() {

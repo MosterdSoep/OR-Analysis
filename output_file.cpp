@@ -47,8 +47,8 @@ void Instance::write_output_file(size_t instance_number) {
 				}
 			}
 		}
-		for (double service_time : v.arrival_times) {
-			if (service_time == v.arrival_times.back()) {
+		for (double service_time : v.time_at_node) {
+			if (service_time == v.time_at_node.back()) {
 				output_file << service_time << '\n';
 			} else {
 				output_file << service_time << ',';

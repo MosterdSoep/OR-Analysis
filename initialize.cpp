@@ -15,7 +15,7 @@ void Instance::initial_solution(){
 	{
 		//add vehicle
 		routes.push_back(Vehicle());
-	
+		
 		//look for request with first time window
 		double min_window = numeric_limits<double>::max();
 		size_t min_index = 0;

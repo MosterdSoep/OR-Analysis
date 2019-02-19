@@ -2,10 +2,11 @@
 #define INSTANCE_H
 
 #include "vehicle.h"
-#include "instance.h"
+#include <numeric>
 #include <string>
 #include <iostream>
 #include <vector>
+#include <limits>
 
 double euclidian_distance(Node a, Node b);
 

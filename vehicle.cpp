@@ -1,5 +1,6 @@
 #include "vehicle.h"
 #include "instance.h"
+using namespace std;
 
 void Vehicle::remove_node(size_t location){
 	if (route.size() == 1) }

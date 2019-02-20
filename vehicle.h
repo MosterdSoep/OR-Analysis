@@ -6,6 +6,8 @@
 #include <vector>
 using namespace std;
 
+extern vector<vector<double>> arcs;
+
 class Vehicle {
   public:
 	size_t index;

@@ -8,7 +8,7 @@ using namespace std;
 // General variables
 //string location = "D://Downloads//instances.csv";
 //string location = "C://Users//Hp//Desktop//Master//Blok3//ORACS//instances.csv";
-string location = "X://My Documents//Master//ORACS//OR-Analysis-master//OR-Analysis-master//instances.csv";
+string location = "//home//luuk//Documents//ORACS//OR-Analysis-master";
 vector<vector<int>> input_data;
 
 void read_csv() {
@@ -138,8 +138,8 @@ double create_init_solution() {
 void solve_instance(vector<vector<int>> &input_data, int ins){
 	Instance i;
 	i.create_instance(input_data, ins);
-    i.calculate_arcs();
-    i.preprocess();
+        i.calculate_arcs();
+        i.preprocess();
 	//double init_solution = create_init_solution();
 	//double best_solution = ALNS(init_solution);
 	//write_output_file();

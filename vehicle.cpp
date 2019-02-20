@@ -2,6 +2,7 @@
 #include "instance.h"
 
 using namespace std;
+vector<vector<double>> arcs = {};
 
 void Vehicle::remove_node(size_t location){
 	if (route.size() == 1) {

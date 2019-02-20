@@ -140,9 +140,10 @@ void solve_instance(vector<vector<int>> &input_data, int ins){
 	i.create_instance(input_data, ins);
         i.calculate_arcs();
         i.preprocess();
+	i.initial_solution();
 	//double init_solution = create_init_solution();
 	//double best_solution = ALNS(init_solution);
-	//write_output_file();
+	i.write_output_file(0);
 }
 
 int main() {

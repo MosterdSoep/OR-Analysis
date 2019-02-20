@@ -11,6 +11,7 @@ class Node {
 	char type;
 	bool pickup;
 	bool delivery;
+        size_t request_idx;
 	Node(int index, int x, int y, int st, int g_idx);
 	Node(){};
 };

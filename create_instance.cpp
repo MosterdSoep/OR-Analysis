@@ -79,6 +79,11 @@ void Instance::preprocess(){
         if(pickup_nodes[idx].upper_bound > delivery_nodes[idx].upper_bound + pickup_nodes[idx].service_time + arcs[idx][request_amount + idx])
             pickup_nodes[idx].upper_bound = delivery_nodes[idx].upper_bound + pickup_nodes[idx].service_time + arcs[idx][request_amount + idx];
 
+	if(pickup_nodes[idx].lower_bound < delivery_nodes[idx].lower_bound - ride_times[idx])
+	    pickup_nodes[idx].lower_bound =	 delivery_nodes[idx].lower_bound - ride_times[idx];
+
+	if(pickup_nodes[idx].upper_bound < delivery_nodes[idx].upper_bound - ride_times[idx])
+	    delivery_nodes[idx].upper_bound = pickup_nodes[idx].upper_bound + ride_times[idx];
         // no delivery before its pickup
         arcs[idx + request_amount][idx] = numeric_limits<double>::max();
 

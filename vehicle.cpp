@@ -1,5 +1,6 @@
 #include "vehicle.h"
 #include "instance.h"
+
 using namespace std;
 
 void Vehicle::remove_node(size_t location){
@@ -14,32 +15,37 @@ void Vehicle::remove_node(size_t location){
 		if (location == 0) {
 			route.erase(route.begin());
 			arc_durations.erase(arc_durations.begin());
-			waiting_times.erase(route.begin());
-			current_capacity.erase(route.begin());
+			waiting_times.erase(waiting_times.begin());
+			current_capacity.erase(current_capacity.begin());
 			//time_at_node.erase(route.begin());
-		} else if (location == route.size()) {
+		} else if (location == route.size() - 1) {
 			route.erase(route.end());
 			arc_durations.erase(arc_durations.end());
-			waiting_times.erase(route.end());
-			current_capacity.erase(route.end());
+			waiting_times.erase(waiting_times.end());
+			current_capacity.erase(current_capacity.end());
 			//time_at_node.erase(route.end());
 		} else {
 			arc_durations.erase(arc_durations.begin() + location - 1);
-			arc_durations[arc_durations.begin() + location] = get_arc(route[route.begin() + location - 1].gen_idx, route[route.begin() + location + 1].gen_idx);
+			arc_durations[location] = arcs[route[location - 1].gen_idx][route[location + 1].gen_idx];
 			waiting_times.erase(waiting_times.begin() + location); // Waiting times not optimal, could possibly wait less in other nodes but that may change feasibility
 			
 			// Changing the capacity of the vehicle depends on the node that is being removed
-			if (route[location].type == 'p' || (route[location].pickup && route[location].type == 't')) {
+			if (route[location].type == 'p') {
 				// Pickup will be removed
 				for (size_t i = location + 1; i < current_capacity.size(); i++) {
-					current_capacity[i]--;
+					current_capacity[i]++;
 				}
 			} else if (route[location].type == 'd' || (!route[location].pickup && route[location].type == 't')) {
 				// Delivery will be removed
 				for (size_t i = location + 1; i < current_capacity.size(); i++) {
+					current_capacity[i]--;
+				}
+			} else if (route[location].pickup && route[location].type == 't'){
+			        for (size_t i = location + 1; i < current_capacity.size(); i++) {
 					current_capacity[i]++;
 				}
-			} else {
+			}
+			else {
 				cout << "ERROR: Inserting non pickup, non delivery and non transfer node!\n";
 			}
 			route.erase(route.begin() + location);
@@ -61,17 +67,17 @@ void Vehicle::remove_node(size_t location){
 // Add transfer node
 void Vehicle::add_node(size_t location, Transfer_Node node){
 	if (location == 0) {
-		arc_durations.insert(arc_durations.begin(), get_arc(node.gen_idx, route[0].gen_idx));
-		waiting_times.insert(arc_durations.begin(), 0);
+		arc_durations.insert(arc_durations.begin(), arcs[node.gen_idx][route[0].gen_idx]);
+		waiting_times.insert(waiting_times.begin(), 0);
 		current_capacity.insert(current_capacity.begin(), current_capacity[0]);
 		route.insert(route.begin(), node);
-	} else if (location == route.size()) {
-		arc_durations.insert(arc_durations.end(), get_arc(node.gen_idx, route[route.size()].gen_idx));
-		waiting_times.insert(arc_durations.end(), 0);
+	} else if (location == route.size() - 1) {
+		arc_durations.insert(arc_durations.end(), arcs[node.gen_idx][route[route.size() - 1].gen_idx]);
+		waiting_times.insert(waiting_times.end(), 0);
 		
 		// Capacity depends on what happens at the transfer facility
 		if (node.pickup && node.delivery) {
-			current_capacity.insert(current_capacity.begin(), current_capacity[route.size()]);
+			current_capacity.insert(current_capacity.begin(), current_capacity[route.size() - 1]);
 		} else if (node.pickup) {
 			current_capacity.insert(current_capacity.begin(), current_capacity[route.size()] + 1);
 		} else if (node.delivery) {
@@ -79,12 +85,12 @@ void Vehicle::add_node(size_t location, Transfer_Node node){
 		} else {
 			cout << "ERROR: Non pickup, non delivery transfer node!\n";
 		}
-		route.insert(route.end(), node)
+		route.insert(route.end(), node);
 	} else {
-		arc_durations.erase(route.begin() + location - 1);
-		arc_durations.insert(route.begin() + location - 1, get_arc(route[location - 1], node.gen_idx));
-		arc_durations.insert(route.begin() + location, get_arc(node.gen_idx, route[location]));
-		waiting_times.insert(arc_durations.begin() + location, 0);
+		arc_durations.erase(arc_durations.begin() + location - 1);
+		arc_durations.insert(arc_durations.begin() + location - 1, arcs[route[location - 1].gen_idx][node.gen_idx]);
+		arc_durations.insert(arc_durations.begin() + location, arcs[node.gen_idx][route[location].gen_idx]);
+		waiting_times.insert(waiting_times.begin() + location, 0);
 		current_capacity.insert(current_capacity.begin() + location, current_capacity[location - 1] + 1);
 		for (size_t i = location + 1; i < current_capacity.size(); i++) {
 			current_capacity[i]++;
@@ -96,20 +102,20 @@ void Vehicle::add_node(size_t location, Transfer_Node node){
 // Add pickup node
 void Vehicle::add_node(size_t location, Pickup_Node node){
 	if (location == 0) {
-		arc_durations.insert(arc_durations.begin(), get_arc(node.gen_idx, route[0].gen_idx));
-		waiting_times.insert(arc_durations.begin(), 0);
+		arc_durations.insert(arc_durations.begin(), arcs[node.gen_idx][route[0].gen_idx]);
+		waiting_times.insert(waiting_times.begin(), 0);
 		current_capacity.insert(current_capacity.begin(), current_capacity[0]);
 		route.insert(route.begin(), node);
 	} else if (location == route.size()) {
-		arc_durations.insert(arc_durations.end(), get_arc(node.gen_idx, route[route.size()].gen_idx));
-		waiting_times.insert(arc_durations.end(), 0);
+		arc_durations.insert(arc_durations.end(), arcs[node.gen_idx][route[route.size()].gen_idx]);
+		waiting_times.insert(waiting_times.end(), 0);
 		current_capacity.insert(current_capacity.begin(), current_capacity[route.size()] + 1);
-		route.insert(route.end(), node)
+		route.insert(route.end(), node);
 	} else {
-		arc_durations.erase(route.begin() + location - 1);
-		arc_durations.insert(route.begin() + location - 1, get_arc(route[location - 1], node.gen_idx));
-		arc_durations.insert(route.begin() + location, get_arc(node.gen_idx, route[location]));
-		waiting_times.insert(arc_durations.begin() + location, 0);
+		arc_durations.erase(arc_durations.begin() + location - 1);
+		arc_durations.insert(arc_durations.begin() + location - 1, arcs[route[location - 1].gen_idx][node.gen_idx]);
+		arc_durations.insert(arc_durations.begin() + location, arcs[node.gen_idx][route[location].gen_idx]);
+		waiting_times.insert(waiting_times.begin() + location, 0);
 		current_capacity.insert(current_capacity.begin() + location, current_capacity[location - 1] + 1);
 		for (size_t i = location + 1; i < current_capacity.size(); i++) {
 			current_capacity[i]++;
@@ -121,21 +127,21 @@ void Vehicle::add_node(size_t location, Pickup_Node node){
 // Add delivery node
 void Vehicle::add_node(size_t location, Delivery_Node node){
 	if (location == 0) {
-		arc_durations.insert(arc_durations.begin(), get_arc(node.gen_idx, route[0].gen_idx));
-		waiting_times.insert(arc_durations.begin(), 0);
+		arc_durations.insert(arc_durations.begin(), arcs[node.gen_idx][route[0].gen_idx]);
+		waiting_times.insert(waiting_times.begin(), 0);
 		current_capacity.insert(current_capacity.begin(), current_capacity[0]);
 		route.insert(route.begin(), node);
 	} else if (location == route.size()) {
-		arc_durations.insert(arc_durations.end(), get_arc(node.gen_idx, route[route.size()].gen_idx));
-		waiting_times.insert(arc_durations.end(), 0);
+		arc_durations.insert(arc_durations.end(), arcs[node.gen_idx][route[route.size()-1].gen_idx]);
+		waiting_times.insert(waiting_times.end(), 0);
 		current_capacity.insert(current_capacity.begin(), current_capacity[route.size()] - 1);
-		route.insert(route.end(), node)
+		route.insert(route.end(), node);
 	} else {
-		arc_durations.erase(route.begin() + location - 1);
-		arc_durations.insert(route.begin() + location - 1, get_arc(route[location - 1], node.gen_idx));
-		arc_durations.insert(route.begin() + location, get_arc(node.gen_idx, route[location]));
-		waiting_times.insert(arc_durations.begin() + location, 0);
-		current_capacity.insert(current_capacity.begin() + location, current_capacity[location - 1] - 1);
+		arc_durations.erase(arc_durations.begin() + location - 1);
+		arc_durations.insert(arc_durations.begin() + location - 1, arcs[route[location].gen_idx][node.gen_idx]);
+		arc_durations.insert(arc_durations.begin() + location, arcs[node.gen_idx][route[location -1].gen_idx]);
+		waiting_times.insert(waiting_times.begin() + location, 0);
+		current_capacity.insert(current_capacity.begin() + location, current_capacity[location -1] - 1);
 		for (size_t i = location + 1; i < current_capacity.size(); i++) {
 			current_capacity[i]--;
 		}
@@ -145,8 +151,8 @@ void Vehicle::add_node(size_t location, Delivery_Node node){
 
 // Add depot node
 void Vehicle::add_node(size_t location, Depot_Node node){
-	this->arc_durations.insert(arc_durations.begin() + location, arc1);
-	this->arc_durations.insert(arc_durations.begin() + location + 1, arc2);
+	this->arc_durations.insert(arc_durations.begin() + location, arcs[node.gen_idx][route[location -1].gen_idx] );
+	this->arc_durations.insert(arc_durations.begin() + location + 1, arcs[route[location -1].gen_idx][node.gen_idx]);
 	this->route.insert(route.begin() + location, node);
 	
 	// Waiting times and current capacity may need to be changed according

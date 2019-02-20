@@ -2,12 +2,16 @@
 #define NODE_H
 
 #include <iostream>
+#include <vector>
 using namespace std;
+vector<vector<double>> arcs;
 
 class Node {
   public:
 	int index, x, y, service_time, gen_idx;
 	char type;
+	bool pickup;
+	bool delivery;
 	Node(int index, int x, int y, int st, int g_idx);
 	Node(){};
 };
@@ -33,7 +37,7 @@ class Transfer_Node: public Node{
     using Node::Node;
     bool open;
     bool pickup;
-	bool delivery;
+    bool delivery;
     size_t vehicle_idx;// Create instance based on user input
     size_t request_idx;
 	double costs;

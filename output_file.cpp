@@ -1,5 +1,8 @@
 #include "instance.h"
-
+#include <fstream>
+#include <sstream>
+#include <cmath>
+/*
 void Instance::write_output_file(size_t instance_number) {
 	ofstream output_file;
 	ostringstream file_name_stream;
@@ -16,7 +19,7 @@ void Instance::write_output_file(size_t instance_number) {
 			if ((node.gen_idx >= (2*request_amount)) && (node.gen_idx <= (2*request_amount+transfer_location_amount-1))) {
 				// node is a transfer node
 				string rep = "";
-				if (node.pickup) { rep.append('0'); }
+				if (node.type == 'p') { rep.append('0'); }
 				else { rep.append('1') }
 				
 				// Node
@@ -57,3 +60,4 @@ void Instance::write_output_file(size_t instance_number) {
 	}
 	output_file << "\n";
 }
+*/

@@ -19,7 +19,6 @@ class Instance{
 	vector<Depot_Node> depot_nodes;
 	vector<Node> all_nodes;
 	vector<int> ride_times;
-	vector<vector<double>> arcs;
 	
 	// Solution variables
 	vector<Vehicle> routes;
@@ -31,7 +30,6 @@ class Instance{
 		void preprocess();
 		void calculate_arcs();
 		void calculate_obj_val();
-		double get_arc(size_t row, size_t column);
 		void initial_solution();
 		void write_output_file(size_t instance_number);
 		
@@ -43,22 +41,5 @@ class Instance{
 		bool correct_routes();
 };
 
-void Instance::calculate_obj_val() {
-	double total_distance = 0;
-	for (Vehicle v : routes) {
-		total_distance += accumulate(v.arc_durations.begin(),v.arc_durations.end(),0);
-	}
-	double facility_costs = 0;
-	for (Transfer_Node node : transfer_nodes) {
-		if (node.open) {
-			facility_costs += node.costs;
-		}
-	}
-	obj_val = travel_cost*total_distance + facility_costs;
-}
-
-double Instance::get_arc(size_t row, size_t column) {
-	return arcs[row][column];
-}
 
 #endif

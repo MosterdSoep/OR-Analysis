@@ -7,7 +7,7 @@ using namespace std;
 
 // General variables
 //string location = "D://Downloads//instances.csv";
-string location = "C://Users//Hp//Desktop//Master//Blok3//ORACS//instances.csv";
+string location = "C://Users//Hp//Documents//GitHub//OR-Analysis//instances.csv";
 //string location = "//home//luuk//Documents//ORACS//OR-Analysis-master";
 vector<vector<int>> input_data;
 

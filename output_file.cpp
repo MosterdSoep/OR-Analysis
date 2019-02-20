@@ -7,14 +7,11 @@
 
 
 void Instance::write_output_file(size_t instance_number) {
-	SetCurrentDirectory("C:\\Users\\Hp\\Desktop\\Master\\Blok3\\ORACS");
-	cout << GetCurrentDirectory;
 	ostringstream file_name_stream;
-	file_name_stream << "/oracs_" << instance_number << ".csv";
+	file_name_stream << "oracs_" << instance_number << ".csv";
 	string file_name = file_name_stream.str();
-	//cout << file_name_stream;
-	ofstream output_file("iets.csv");
-	if(output_file.fail()){ cout << "failed\n";}
+	ofstream output_file(file_name.c_str());
+	if (output_file.fail()) { cout << "failed\n"; }
 	output_file << "2\n";
 	output_file << instance_number << "\n";
 	output_file << (roundf(obj_val * 100) / 100) << "\n";
@@ -22,7 +19,8 @@ void Instance::write_output_file(size_t instance_number) {
 	for (Vehicle v : routes) {
 		output_file << "\n";
 		for (Node node : v.route) {
-			if ((node.gen_idx >= (2*request_amount)) && (node.gen_idx <= (2*request_amount+transfer_location_amount-1))) {
+			if (node.type == 't') {
+				cout << "test\n";
 				// node is a transfer node
 				string rep = "";
 				if (node.type == 'p') { rep.append("0"); }
@@ -50,8 +48,10 @@ void Instance::write_output_file(size_t instance_number) {
 			} else {
 				// node is not a transfer node
 				if (node.gen_idx == v.route.back().gen_idx) {
+					cout << node.index << '\n';
 					output_file << node.index << '\n';
 				} else {
+					cout << node.index << '\n';
 					output_file << node.index << ',';
 				}
 			}

@@ -7,8 +7,8 @@ using namespace std;
 
 // General variables
 //string location = "D://Downloads//instances.csv";
-//string location = "C://Users//Hp//Desktop//Master//Blok3//ORACS//instances.csv";
-string location = "//home//luuk//Documents//ORACS//OR-Analysis-master";
+string location = "C://Users//Hp//Desktop//Master//Blok3//ORACS//instances.csv";
+//string location = "//home//luuk//Documents//ORACS//OR-Analysis-master";
 vector<vector<int>> input_data;
 
 void read_csv() {
@@ -140,7 +140,19 @@ void solve_instance(vector<vector<int>> &input_data, int ins){
 	i.create_instance(input_data, ins);
         i.calculate_arcs();
         i.preprocess();
-	i.initial_solution();
+	i.routes.push_back(Vehicle());
+	i.routes.push_back(Vehicle());
+	i.routes[0].route.push_back(i.depot_nodes[2]);
+	i.routes[0].route.push_back(i.pickup_nodes[3]);
+	i.routes[0].route.push_back(i.delivery_nodes[3]);
+	i.routes[0].route.push_back(i.pickup_nodes[1]);
+	i.routes[0].route.push_back(i.delivery_nodes[1]);
+	i.routes[0].route.push_back(i.depot_nodes[1]);
+	i.routes[1].route.push_back(i.depot_nodes[2]);
+	i.routes[1].route.push_back(i.pickup_nodes[2]);
+	i.routes[1].route.push_back(i.delivery_nodes[2]);
+	i.routes[1].route.push_back(i.depot_nodes[1]);
+	i.obj_val = 872.2;
 	//double init_solution = create_init_solution();
 	//double best_solution = ALNS(init_solution);
 	i.write_output_file(0);

@@ -12,6 +12,7 @@ double euclidian_distance(Node a, Node b);
 
 class Instance{
 	// Model variables
+	public:
 	int index, request_amount, transfer_location_amount, depot_amount, node_amount, travel_cost, vehicle_capacity;
 	vector<Pickup_Node> pickup_nodes;
 	vector<Delivery_Node> delivery_nodes;

@@ -15,7 +15,6 @@ void Instance::initial_solution(){
 	{
 		//add vehicle
 		routes.push_back(Vehicle());
-		
 		//look for request with first time window
 		double min_window = numeric_limits<double>::max();
 		size_t min_index = 0;
@@ -29,7 +28,6 @@ void Instance::initial_solution(){
 		routes[v_idx].add_node(routes[v_idx].route.size(), pickup_nodes[min_index]);
 		routes[v_idx].add_node(routes[v_idx].route.size(), delivery_nodes[min_index]);
 		bank_not_empty = (bank.size() == 0) ? 1 : 0;
-		
 		//look for nearest depot and insert
 		double min_arc = numeric_limits<double>::max();
 		size_t min_arc_index = 0;

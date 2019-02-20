@@ -3,14 +3,18 @@
 #include <sstream>
 #include <cmath>
 #include <string>
+#include <windows.h>
 
 
 void Instance::write_output_file(size_t instance_number) {
-	ofstream output_file;
+	SetCurrentDirectory("C:\\Users\\Hp\\Desktop\\Master\\Blok3\\ORACS");
+	cout << GetCurrentDirectory;
 	ostringstream file_name_stream;
-	file_name_stream << "oracs_" << instance_number << ".csv";
+	file_name_stream << "/oracs_" << instance_number << ".csv";
 	string file_name = file_name_stream.str();
-	output_file.open(file_name);
+	//cout << file_name_stream;
+	ofstream output_file("iets.csv");
+	if(output_file.fail()){ cout << "failed\n";}
 	output_file << "2\n";
 	output_file << instance_number << "\n";
 	output_file << (roundf(obj_val * 100) / 100) << "\n";
@@ -61,5 +65,6 @@ void Instance::write_output_file(size_t instance_number) {
 		}
 	}
 	output_file << "\n";
+	output_file.close();
 }
 

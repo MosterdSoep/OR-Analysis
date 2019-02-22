@@ -13,18 +13,14 @@ double euclidian_distance(Node a, Node b);
 class Instance{
 	// Model variables
 	public:
-	int index, request_amount, transfer_location_amount, depot_amount, node_amount, travel_cost, vehicle_capacity;
-	vector<Pickup_Node> pickup_nodes;
-	vector<Delivery_Node> delivery_nodes;
-	vector<Transfer_Node> transfer_nodes;
-	vector<Depot_Node> depot_nodes;
-	vector<Node> all_nodes;
+	int index=0, request_amount=0, transfer_location_amount=0, depot_amount=0, node_amount=0, travel_cost=0, vehicle_capacity=0;
+
 	vector<int> ride_times;
-	
+
 	// Solution variables
-	vector<Vehicle> routes;
-	double obj_val;
-	
+	vector<Vehicle> routes = {};
+	double obj_val = 0;
+
 	public:
 		Instance(){};
 		void create_instance(vector<vector<int>> &input_data, int ins);
@@ -33,7 +29,7 @@ class Instance{
 		void calculate_obj_val();
 		void initial_solution();
 		void write_output_file(size_t instance_number);
-		
+
 		bool is_feasible();
 		bool is_request_bank_empty();
 		bool maximum_ride_time_not_exceeded();

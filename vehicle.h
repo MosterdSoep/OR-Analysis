@@ -7,21 +7,30 @@
 using namespace std;
 
 extern vector<vector<double>> arcs;
+extern vector<Pickup_Node> pickup_nodes;
+extern vector<Delivery_Node> delivery_nodes;
+extern vector<Transfer_Node> transfer_nodes;
+extern vector<Depot_Node> depot_nodes;
+extern vector<Node> all_nodes;
 
 class Vehicle {
   public:
-	size_t index;
-	vector<Node> route;
-	vector<double> arc_durations;		// Length of every arc that the vehicle traverses
-	vector<double> waiting_times;		// The amount of time the vehicle waits at every node
-	vector<size_t> current_capacity;	// The amount of requests in the vehicle at every node
-	vector<double> time_at_node;		// The arrival time and consequently the begin of service time at every node
-	
+	size_t index = 0;
+	vector<Node> route = {};
+	vector<double> arc_durations = {0};		// Length of every arc that the vehicle traverses
+	vector<double> waiting_times = {0,0};		// The amount of time the vehicle waits at every node
+	vector<size_t> current_capacity = {0,0};	// The amount of requests in the vehicle at every node
+	vector<double> time_at_node = {0,0};		// The arrival time and consequently the begin of service time at every node
+
 	void remove_node(size_t location);
-	void add_node(size_t location, Pickup_Node node);
-	void add_node(size_t location, Delivery_Node node);
-	void add_node(size_t location, Transfer_Node node);
-	void add_node(size_t location, Depot_Node node);
+	void add_node(size_t location, Pickup_Node &node);
+	void add_node(size_t location, Delivery_Node &node);
+    double add_delivery_transfer(size_t location, Transfer_Node &node);
+    void add_pickup_transfer(size_t location, Transfer_Node &node, double min_time);
+
+	void change_first_depot();
+	void change_last_depot();
+	Vehicle();
 };
 
 #endif

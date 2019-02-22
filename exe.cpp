@@ -6,8 +6,8 @@
 using namespace std;
 
 // General variables
-//string location = "D://Downloads//instances.csv";
-string location = "C://Users//Hp//Documents//GitHub//OR-Analysis//instances.csv";
+string location = "D://Downloads//instances.csv";
+//string location = "C://Users//Hp//Documents//GitHub//OR-Analysis//instances.csv";
 //string location = "//home//luuk//Documents//ORACS//OR-Analysis-master";
 vector<vector<int>> input_data;
 
@@ -138,29 +138,18 @@ double create_init_solution() {
 void solve_instance(vector<vector<int>> &input_data, int ins){
 	Instance i;
 	i.create_instance(input_data, ins);
-        i.calculate_arcs();
-        i.preprocess();
-	i.routes.push_back(Vehicle());
-	i.routes.push_back(Vehicle());
-	i.routes[0].route.push_back(i.depot_nodes[1]);
-	i.routes[0].route.push_back(i.pickup_nodes[2]);
-	i.routes[0].route.push_back(i.delivery_nodes[2]);
-	i.routes[0].route.push_back(i.pickup_nodes[0]);
-	i.routes[0].route.push_back(i.delivery_nodes[0]);
-	i.routes[0].route.push_back(i.depot_nodes[0]);
-	i.routes[1].route.push_back(i.depot_nodes[1]);
-	i.routes[1].route.push_back(i.pickup_nodes[1]);
-	i.routes[1].route.push_back(i.delivery_nodes[1]);
-	i.routes[1].route.push_back(i.depot_nodes[0]);
-	i.obj_val = 872.2;
-	//double init_solution = create_init_solution();
-	//double best_solution = ALNS(init_solution);
-	i.write_output_file(0);
+    i.calculate_arcs();
+    i.preprocess();
+    i.initial_solution();
+    cout << i.routes[0].route.size() << "\n";
+    i.routes[0].remove_node(1);
+    cout << i.routes[0].route.size() << "\n";
+
 }
 
 int main() {
 	read_csv();
-	
+
 	bool eol = 0;
 	while(!eol){ // Create instance based on user input
 	    char response[20];
@@ -168,6 +157,7 @@ int main() {
         cin >> response;
         switch(response[0])
         {
+        case 'a':
         case 'A':
             for(size_t idx = 0; idx < input_data.size(); idx++){
 				solve_instance(input_data, idx);
@@ -175,17 +165,18 @@ int main() {
 				cout << "\n";
 			}
             break;
+        case 'b':
         case 'B':
             eol = 1;
             break;
         default :
             if(isdigit(response[0])){
-                if(atoi(response) >= input_data.size()){
+                unsigned int resp = atoi(response);
+                if(resp >= input_data.size()){
                     cout << "Number too large, please try again\n";
                 } else {
-                    solve_instance(input_data, atoi(response));
-					cout << "Instance " << atoi(response) << " succesfully solved!\n";
-					cout << "\n";
+                    solve_instance(input_data, resp);
+					cout << "Instance " << resp << " succesfully solved!\n\n";
                 }
             } else {
 				cout << "Not a number, please try again\n";

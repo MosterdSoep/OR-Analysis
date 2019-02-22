@@ -27,6 +27,8 @@ void Instance::create_instance(vector<vector<int>> &input_data, int ins){
         pickup_nodes[idx].gen_idx = idx;
         pickup_nodes[idx].lower_bound = input_data[ins][time_window_idx + 2* idx];
         pickup_nodes[idx].upper_bound = input_data[ins][time_window_idx + 2* idx + 1];
+        pickup_nodes[idx].type = 'p';
+
 
         // Create delivery nodes
         delivery_nodes.push_back(Delivery_Node());
@@ -37,6 +39,7 @@ void Instance::create_instance(vector<vector<int>> &input_data, int ins){
         delivery_nodes[idx].gen_idx = request_amount + idx;
         delivery_nodes[idx].lower_bound = input_data[ins][time_window_idx + 2 * request_amount + 2 * idx];
         delivery_nodes[idx].upper_bound = input_data[ins][time_window_idx + 2 * request_amount + 2 * idx + 1];
+        delivery_nodes[idx].type = 'd';
     }
 
     for(int idx = 0; idx < transfer_location_amount; idx++){
@@ -48,6 +51,7 @@ void Instance::create_instance(vector<vector<int>> &input_data, int ins){
         transfer_nodes[idx].service_time = input_data[ins][service_time_idx + 2 * request_amount + idx];
         transfer_nodes[idx].gen_idx = 2 * request_amount + idx;
         transfer_nodes[idx].costs = input_data[ins][transfer_cost_idx + idx];
+        transfer_nodes[idx].type = 't';
     }
 
     for(int idx = 0; idx < depot_amount; idx++){
@@ -58,6 +62,7 @@ void Instance::create_instance(vector<vector<int>> &input_data, int ins){
         depot_nodes[idx].y = input_data[ins][coordinate_idx + 4 * request_amount + 2 * transfer_location_amount + 2 * idx + 1];
         depot_nodes[idx].service_time = 0;
         depot_nodes[idx].gen_idx = 2 * request_amount + transfer_location_amount + idx;
+        depot_nodes[idx].type = 'o';
     }
 
     for(int idx = 0; idx < request_amount; idx++){

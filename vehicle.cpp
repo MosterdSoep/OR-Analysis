@@ -1,163 +1,182 @@
 #include "vehicle.h"
 #include "instance.h"
 
+#include <limits>
+
 using namespace std;
-vector<vector<double>> arcs = {};
+
+//defined here so vehicles can reach this global variable
+vector<vector<double>> arcs ={};
+vector<Pickup_Node> pickup_nodes={};
+vector<Delivery_Node> delivery_nodes={};
+vector<Transfer_Node> transfer_nodes={};
+vector<Depot_Node> depot_nodes={};
+vector<Node> all_nodes={};
+
+Vehicle::Vehicle(){ //vehicles get initialized with a random depot node
+    route.push_back(depot_nodes[0]);
+    route.push_back(depot_nodes[0]);
+}
+
+void Vehicle::change_first_depot(){ //automatically change first depot to optimal one
+    route.erase(route.begin());
+    size_t min_idx = 0;
+    double min_val = numeric_limits<double>::max();
+    for(size_t idx = 0; idx < depot_nodes.size(); idx++){
+        if(min_val > arcs[depot_nodes[idx].gen_idx][route[0].gen_idx]){
+            min_val = arcs[depot_nodes[idx].gen_idx][route[0].gen_idx];
+            min_idx = idx;
+        }
+    }
+    route.insert(route.begin(), depot_nodes[min_idx]);
+}
+
+void Vehicle::change_last_depot(){ //automatically changes last depot to optimal one
+    route.erase(route.end());
+    size_t min_idx = 0;
+    double min_val = numeric_limits<double>::max();
+    for(size_t idx = 0; idx < depot_nodes.size(); idx++){
+        if(min_val > arcs[route[route.size() - 1].gen_idx][depot_nodes[idx].gen_idx]){
+            min_val = arcs[route[route.size() - 1].gen_idx][depot_nodes[idx].gen_idx];
+            min_idx = idx;
+        }
+    }
+    route.insert(route.end(), depot_nodes[min_idx]);
+}
+
+void Vehicle::add_node(size_t location, Pickup_Node &node){
+    route.insert(route.begin() + location, node);
+    if (location == 1){
+        change_first_depot();
+    }
+    if (location == route.size() - 2){
+        change_last_depot();
+    }
+
+    arc_durations.insert(arc_durations.begin() + location - 1, arcs[route[location - 1].gen_idx][node.gen_idx]);
+    arc_durations[location] = arcs[node.gen_idx][route[location + 1].gen_idx];
+
+    //update capacity and times
+    current_capacity.insert(current_capacity.begin() + location, current_capacity[location - 1]);
+    waiting_times.insert(waiting_times.begin() + location, 0);
+    time_at_node.insert(time_at_node.begin() + location, 0);
+    for(size_t idx = location; idx < route.size(); idx++){
+        current_capacity[idx]++;
+        time_at_node[idx] = time_at_node[idx - 1] + arc_durations[idx - 1] + route[idx - 1].service_time + waiting_times[idx - 1];
+        if(time_at_node[idx] < route[idx].lower_bound){
+            waiting_times[idx] = route[idx].lower_bound - time_at_node[idx];
+        }
+    }
+}
+
+void Vehicle::add_node(size_t location, Delivery_Node &node){
+    route.insert(route.begin() + location, node);
+    if (location == 1){
+        change_first_depot();
+    }
+    if (location == route.size() - 2){
+        change_last_depot();
+    }
+    arc_durations.insert(arc_durations.begin() + location - 1, arcs[route[location - 1].gen_idx][node.gen_idx]);
+    arc_durations[location] = arcs[node.gen_idx][route[location + 1].gen_idx];
+    //update capacity and times
+    current_capacity.insert(current_capacity.begin() + location, current_capacity[location - 1]);
+    waiting_times.insert(waiting_times.begin() + location, 0);
+    time_at_node.insert(time_at_node.begin() + location, 0);
+    for(size_t idx = location; idx < route.size(); idx++){
+        current_capacity[idx]--;
+        time_at_node[idx] = time_at_node[idx - 1] + arc_durations[idx - 1] + route[idx - 1].service_time + waiting_times[idx - 1];
+        if(time_at_node[idx] < route[idx].lower_bound){
+            waiting_times[idx] = route[idx].lower_bound - time_at_node[idx];
+        }
+    }
+}
+
+double Vehicle::add_delivery_transfer(size_t location, Transfer_Node &node){
+    //Creates fictional new node
+    Transfer_Node fictional_node = node;
+    fictional_node.pickup = 0;
+
+    route.insert(route.begin() + location, fictional_node);
+    if (location == 1){
+        change_first_depot();
+    }
+    if (location == route.size() - 2){
+        change_last_depot();
+    }
+    arc_durations.insert(arc_durations.begin() + location - 1, arcs[route[location - 1].gen_idx][fictional_node.gen_idx]);
+    arc_durations[location] = arcs[fictional_node.gen_idx][route[location + 1].gen_idx];
+
+    //update capacity and times
+    current_capacity.insert(current_capacity.begin() + location, current_capacity[location - 1]);
+    waiting_times.insert(waiting_times.begin() + location, 0);
+    time_at_node.insert(time_at_node.begin() + location, 0);
+    for(size_t idx = location; idx < route.size(); idx++){
+        current_capacity[idx]--;
+        time_at_node[idx] = time_at_node[idx - 1] + arc_durations[idx - 1] + route[idx - 1].service_time + waiting_times[idx - 1];
+        if(time_at_node[idx] < route[idx].lower_bound){
+            waiting_times[idx] = route[idx].lower_bound - time_at_node[idx];
+        }
+    }
+    return time_at_node[location] + node.service_time; //returns the time at which pickup can start
+}
+
+void Vehicle::add_pickup_transfer(size_t location, Transfer_Node &node, double min_time){
+    //Creates fictional new node
+    Transfer_Node fictional_node = node;
+    fictional_node.pickup = 1;
+    fictional_node.lower_bound = min_time; //update the lower bound for pickup to the time at which the transfer is ready
+
+    route.insert(route.begin() + location, fictional_node);
+    if (location == 1){
+        change_first_depot();
+    }
+    if (location == route.size() - 2){
+        change_last_depot();
+    }
+    arc_durations.insert(arc_durations.begin() + location - 1, arcs[route[location - 1].gen_idx][fictional_node.gen_idx]);
+    arc_durations[location] = arcs[fictional_node.gen_idx][route[location + 1].gen_idx];
+
+    //update capacity and times
+    current_capacity.insert(current_capacity.begin() + location, current_capacity[location - 1]);
+    waiting_times.insert(waiting_times.begin() + location, 0);
+    time_at_node.insert(time_at_node.begin() + location, 0);
+    for(size_t idx = location; idx < route.size(); idx++){
+        current_capacity[idx]++;
+        time_at_node[idx] = time_at_node[idx - 1] + arc_durations[idx - 1] + route[idx - 1].service_time + waiting_times[idx - 1];
+        if(time_at_node[idx] < route[idx].lower_bound){
+            waiting_times[idx] = route[idx].lower_bound - time_at_node[idx];
+        }
+    }
+}
 
 void Vehicle::remove_node(size_t location){
-	if (route.size() == 1) {
-		// Only 1 node in the route hence the route is cleared
-		route.clear();
-		arc_durations.clear();
-		waiting_times.clear();
-		current_capacity.clear();
-		time_at_node.clear();
-	} else {
-		if (location == 0) {
-			route.erase(route.begin());
-			arc_durations.erase(arc_durations.begin());
-			waiting_times.erase(waiting_times.begin());
-			current_capacity.erase(current_capacity.begin());
-			//time_at_node.erase(route.begin());
-		} else if (location == route.size() - 1) {
-			route.erase(route.end());
-			arc_durations.erase(arc_durations.end());
-			waiting_times.erase(waiting_times.end());
-			current_capacity.erase(current_capacity.end());
-			//time_at_node.erase(route.end());
-		} else {
-			arc_durations.erase(arc_durations.begin() + location - 1);
-			arc_durations[location] = arcs[route[location - 1].gen_idx][route[location + 1].gen_idx];
-			waiting_times.erase(waiting_times.begin() + location); // Waiting times not optimal, could possibly wait less in other nodes but that may change feasibility
-			
-			// Changing the capacity of the vehicle depends on the node that is being removed
-			if (route[location].type == 'p') {
-				// Pickup will be removed
-				for (size_t i = location + 1; i < current_capacity.size(); i++) {
-					current_capacity[i]++;
-				}
-			} else if (route[location].type == 'd' || (!route[location].pickup && route[location].type == 't')) {
-				// Delivery will be removed
-				for (size_t i = location + 1; i < current_capacity.size(); i++) {
-					current_capacity[i]--;
-				}
-			} else if (route[location].pickup && route[location].type == 't'){
-			        for (size_t i = location + 1; i < current_capacity.size(); i++) {
-					current_capacity[i]++;
-				}
-			}
-			else {
-				cout << "ERROR: Inserting non pickup, non delivery and non transfer node!\n";
-			}
-			route.erase(route.begin() + location);
-		}
-		
-		
-		// Calculating time_at_node
-		for (size_t i = location + 1; i < time_at_node.size(); i++) {
-			if (location == 0) {
-				// time_at_node[i] is now the first node so there is no previous arrival time
-				time_at_node[i] = 0 + arc_durations[i - 1];
-			} else {
-				time_at_node[i] = time_at_node[i - 1] + arc_durations[i - 1];
-			}
-		}
-	}
-};
+	arc_durations[location] = arcs[route[location - 1].gen_idx][route[location + 1].gen_idx];
+	arc_durations.erase(arc_durations.begin() + location - 1);
+	waiting_times.erase(waiting_times.begin() + location); // Waiting times not optimal, could possibly wait less in other nodes but that may change feasibility
 
-// Add transfer node
-void Vehicle::add_node(size_t location, Transfer_Node node){
-	if (location == 0) {
-		arc_durations.insert(arc_durations.begin(), arcs[node.gen_idx][route[0].gen_idx]);
-		waiting_times.insert(waiting_times.begin(), 0);
-		current_capacity.insert(current_capacity.begin(), current_capacity[0]);
-		route.insert(route.begin(), node);
-	} else if (location == route.size() - 1) {
-		arc_durations.insert(arc_durations.end(), arcs[node.gen_idx][route[route.size() - 1].gen_idx]);
-		waiting_times.insert(waiting_times.end(), 0);
-		
-		// Capacity depends on what happens at the transfer facility
-		if (node.pickup && node.delivery) {
-			current_capacity.insert(current_capacity.begin(), current_capacity[route.size() - 1]);
-		} else if (node.pickup) {
-			current_capacity.insert(current_capacity.begin(), current_capacity[route.size()] + 1);
-		} else if (node.delivery) {
-			current_capacity.insert(current_capacity.begin(), current_capacity[route.size()] - 1);
-		} else {
-			cout << "ERROR: Non pickup, non delivery transfer node!\n";
-		}
-		route.insert(route.end(), node);
-	} else {
-		arc_durations.erase(arc_durations.begin() + location - 1);
-		arc_durations.insert(arc_durations.begin() + location - 1, arcs[route[location - 1].gen_idx][node.gen_idx]);
-		arc_durations.insert(arc_durations.begin() + location, arcs[node.gen_idx][route[location].gen_idx]);
-		waiting_times.insert(waiting_times.begin() + location, 0);
-		current_capacity.insert(current_capacity.begin() + location, current_capacity[location - 1] + 1);
-		for (size_t i = location + 1; i < current_capacity.size(); i++) {
-			current_capacity[i]++;
-		}
-		route.insert(route.begin() + location, node);
-	}
-};
-
-// Add pickup node
-void Vehicle::add_node(size_t location, Pickup_Node node){
-	if (location == 0) {
-		arc_durations.insert(arc_durations.begin(), arcs[node.gen_idx][route[0].gen_idx]);
-		waiting_times.insert(waiting_times.begin(), 0);
-		current_capacity.insert(current_capacity.begin(), current_capacity[0]);
-		route.insert(route.begin(), node);
-	} else if (location == route.size()) {
-		arc_durations.insert(arc_durations.end(), arcs[node.gen_idx][route[route.size()].gen_idx]);
-		waiting_times.insert(waiting_times.end(), 0);
-		current_capacity.insert(current_capacity.begin(), current_capacity[route.size()] + 1);
-		route.insert(route.end(), node);
-	} else {
-		arc_durations.erase(arc_durations.begin() + location - 1);
-		arc_durations.insert(arc_durations.begin() + location - 1, arcs[route[location - 1].gen_idx][node.gen_idx]);
-		arc_durations.insert(arc_durations.begin() + location, arcs[node.gen_idx][route[location].gen_idx]);
-		waiting_times.insert(waiting_times.begin() + location, 0);
-		current_capacity.insert(current_capacity.begin() + location, current_capacity[location - 1] + 1);
-		for (size_t i = location + 1; i < current_capacity.size(); i++) {
-			current_capacity[i]++;
-		}
-		route.insert(route.begin() + location, node);
-	}
-};
-
-// Add delivery node
-void Vehicle::add_node(size_t location, Delivery_Node node){
-	if (location == 0) {
-		arc_durations.insert(arc_durations.begin(), arcs[node.gen_idx][route[0].gen_idx]);
-		waiting_times.insert(waiting_times.begin(), 0);
-		current_capacity.insert(current_capacity.begin(), current_capacity[0]);
-		route.insert(route.begin(), node);
-	} else if (location == route.size()) {
-		arc_durations.insert(arc_durations.end(), arcs[node.gen_idx][route[route.size()-1].gen_idx]);
-		waiting_times.insert(waiting_times.end(), 0);
-		current_capacity.insert(current_capacity.begin(), current_capacity[route.size()] - 1);
-		route.insert(route.end(), node);
-	} else {
-		arc_durations.erase(arc_durations.begin() + location - 1);
-		arc_durations.insert(arc_durations.begin() + location - 1, arcs[route[location].gen_idx][node.gen_idx]);
-		arc_durations.insert(arc_durations.begin() + location, arcs[node.gen_idx][route[location -1].gen_idx]);
-		waiting_times.insert(waiting_times.begin() + location, 0);
-		current_capacity.insert(current_capacity.begin() + location, current_capacity[location -1] - 1);
-		for (size_t i = location + 1; i < current_capacity.size(); i++) {
+	// Changing the capacity of the vehicle depends on the node that is being removed
+	if (route[location].type == 'p' || (route[location].pickup && route[location].type == 't')) {
+		// Pickup will be removed
+        for (size_t i = location + 1; i < current_capacity.size(); i++) {
 			current_capacity[i]--;
 		}
-		route.insert(route.begin() + location, node);
+    } else if (route[location].type == 'd' || (!route[location].pickup && route[location].type == 't')) {
+		// Delivery will be removed
+		for (size_t i = location + 1; i < current_capacity.size(); i++) {
+			current_capacity[i]++;
+		}
+	}else {
+        cout << "ERROR: Inserting non pickup, non delivery and non transfer node!\n";
 	}
+	route.erase(route.begin() + location);
+
+    for(size_t idx = location; idx < route.size(); idx++){
+        current_capacity[idx]++;
+        time_at_node[idx] = time_at_node[idx - 1] + arc_durations[idx - 1] + route[idx - 1].service_time + waiting_times[idx - 1];
+        if(time_at_node[idx] < route[idx].lower_bound){
+            waiting_times[idx] = route[idx].lower_bound - time_at_node[idx];
+        }
+    }
 };
 
-// Add depot node
-void Vehicle::add_node(size_t location, Depot_Node node){
-	this->arc_durations.insert(arc_durations.begin() + location, arcs[node.gen_idx][route[location -1].gen_idx] );
-	this->arc_durations.insert(arc_durations.begin() + location + 1, arcs[route[location -1].gen_idx][node.gen_idx]);
-	this->route.insert(route.begin() + location, node);
-	
-	// Waiting times and current capacity may need to be changed according
-	// to the specific node that is added
-	this->waiting_times.insert(waiting_times.begin() + location, 2, waiting_times[location]);
-	this->current_capacity.insert(current_capacity.begin() + location, 2, current_capacity[location]);
-};

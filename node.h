@@ -3,15 +3,18 @@
 
 #include <iostream>
 #include <vector>
+#include <limits>
 using namespace std;
 
 class Node {
   public:
-	int index, x, y, service_time, gen_idx;
+	int index = 0, x = 0, y = 0, service_time = 0, gen_idx = 0;
 	char type;
 	bool pickup;
 	bool delivery;
-        size_t request_idx;
+    size_t request_idx;
+    double lower_bound = 0;
+    double upper_bound = numeric_limits<double>::max();
 	Node(int index, int x, int y, int st, int g_idx);
 	Node(){};
 };
@@ -19,17 +22,11 @@ class Node {
 class Pickup_Node: public Node{
   public:
     using Node::Node;
-    double lower_bound = 0;
-    double upper_bound = 0;
-	char type = 'p';
 };
 
 class Delivery_Node: public Node{
   public:
     using Node::Node;
-    double lower_bound = 0;
-    double upper_bound = 0;
-	char type = 'd';
 };
 
 class Transfer_Node: public Node{
@@ -41,12 +38,10 @@ class Transfer_Node: public Node{
     size_t vehicle_idx;// Create instance based on user input
     size_t request_idx;
 	double costs;
-	char type = 't';
 };
 
 class Depot_Node: public Node{
   public:
     using Node::Node;
-	char type = 'o';
 };
 #endif

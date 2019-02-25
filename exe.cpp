@@ -6,7 +6,7 @@
 using namespace std;
 
 // General variables
-string location = "D://Downloads//instances.csv";
+string location = "D://Documenten//Studie//OR analysis//OR Analysis//instances.csv";
 //string location = "C://Users//Hp//Documents//GitHub//OR-Analysis//instances.csv";
 //string location = "//home//luuk//Documents//ORACS//OR-Analysis-master";
 vector<vector<int>> input_data;
@@ -68,7 +68,7 @@ size_t worst_removal(int amount_removed) {
 	}
 	// Remove the node from the vehicle
 	vehicle_removed_node.route.erase(index_removed_node);
-	return removed_node_index;
+	return removed_node_index;D:\Documenten\Studie\OR analysis\OR Analysis
 }
 
 size_t destroy() {
@@ -134,6 +134,14 @@ double create_init_solution() {
 	return 0;
 }
 */
+void clear_global(){
+    arcs.clear();
+    pickup_nodes.clear();
+    delivery_nodes.clear();
+    transfer_nodes.clear();
+    depot_nodes.clear();
+    all_nodes.clear();
+}
 
 void solve_instance(vector<vector<int>> &input_data, int ins){
 	Instance i;
@@ -141,10 +149,12 @@ void solve_instance(vector<vector<int>> &input_data, int ins){
     i.calculate_arcs();
     i.preprocess();
     i.initial_solution();
-    cout << i.routes[0].route.size() << "\n";
-    i.routes[0].remove_node(1);
-    cout << i.routes[0].route.size() << "\n";
-
+    //if(i.capacity_feasible()){cout << "correct\n";}
+    //i.routes[1].add_node( 3, pickup_nodes[1]);
+    if(i.maximum_ride_time_not_exceeded()){cout << "correct\n";}
+    i.write_output_file(ins);
+        //for(size_t idx = 0; idx < i.request_amount; idx++){cout << i.ride_times[idx] << '\n';}
+    clear_global();
 }
 
 int main() {

@@ -13,7 +13,7 @@ double euclidian_distance(Node a, Node b);
 class Instance{
 	// Model variables
 	public:
-	int index=0, request_amount=0, transfer_location_amount=0, depot_amount=0, node_amount=0, travel_cost=0, vehicle_capacity=0;
+	size_t index=0, request_amount=0, transfer_location_amount=0, depot_amount=0, node_amount=0, travel_cost=0, vehicle_capacity=0;
 
 	vector<int> ride_times;
 
@@ -35,7 +35,6 @@ class Instance{
 		bool maximum_ride_time_not_exceeded();
 		bool time_windows_met();
 		bool capacity_feasible();
-		bool correct_routes();
 };
 
 

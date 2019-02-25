@@ -81,8 +81,8 @@ void Instance::preprocess(){
         if(delivery_nodes[idx].lower_bound < pickup_nodes[idx].lower_bound + pickup_nodes[idx].service_time + arcs[idx][request_amount + idx])
             delivery_nodes[idx].lower_bound = pickup_nodes[idx].lower_bound + pickup_nodes[idx].service_time + arcs[idx][request_amount + idx];
         // l_i > l_i+n - s_i - t_i,i+n
-        if(pickup_nodes[idx].upper_bound > delivery_nodes[idx].upper_bound + pickup_nodes[idx].service_time + arcs[idx][request_amount + idx])
-            pickup_nodes[idx].upper_bound = delivery_nodes[idx].upper_bound + pickup_nodes[idx].service_time + arcs[idx][request_amount + idx];
+        if(pickup_nodes[idx].upper_bound > delivery_nodes[idx].upper_bound - pickup_nodes[idx].service_time - arcs[idx][request_amount + idx])
+            pickup_nodes[idx].upper_bound = delivery_nodes[idx].upper_bound - pickup_nodes[idx].service_time - arcs[idx][request_amount + idx];
 
 	if(pickup_nodes[idx].lower_bound < delivery_nodes[idx].lower_bound - ride_times[idx])
 	    pickup_nodes[idx].lower_bound =	 delivery_nodes[idx].lower_bound - ride_times[idx];

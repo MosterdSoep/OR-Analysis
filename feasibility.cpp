@@ -1,4 +1,5 @@
 #include "instance.h"
+#include <algorithm>
 
 bool Instance::is_feasible() {
 	// Things to check:
@@ -6,16 +7,15 @@ bool Instance::is_feasible() {
 	//  - Request bank empty
 	// 	- Maximum ride time not exceeded
 	//  - Pickup and delivery time windows met
-	
+
 	// 2. Vehicle/route related:
 	//	- Capacity constraint
 	//  - Beginning and ending at a depot
-	
+
 	if (is_request_bank_empty() &&
 		maximum_ride_time_not_exceeded() &&
 		time_windows_met() &&
-		capacity_feasible() &&
-		correct_routes()) {
+		capacity_feasible()){
 		return true;
 	} else {
 		return false;
@@ -28,45 +28,44 @@ bool Instance::is_request_bank_empty() {
 }
 
 bool Instance::maximum_ride_time_not_exceeded() {
-	double pickup_time = 0;
-	double delivery_time = 0;
-	double transfer_delivery_time = 0;
-	double transfer_pickup_time = 0;
+	vector<double> pickup_time(request_amount, 0);
+	vector<double> delivery_time(request_amount, 0);
+	vector<double> trans_pickup_time(request_amount, 0);
+	vector<double> trans_delivery_time(request_amount, 0);
+
 	bool transfered = false;
-	for (size_t req_idx = 0; req_idx < request_amount; req_idx++) {
-		for (Vehicle v : routes) {
-			for (Node n : v.route) {
-				if (n.index == req_idx) {
-					if (n.type == 'p') {
-						//pickup_time = v.time_at_node[];
-					} else if (n.type == 'd') {
-						//delivery_time = v.time_at_node[];
-					} else if (n.type == 't') {
-						
-					}
-				}
+    for (Vehicle v : routes) {
+		for (size_t idx = 0; idx < v.route.size(); idx++){
+            if (v.route[idx].type == 'p') {
+				pickup_time[v.route[idx].index] = v.time_at_node[idx] + v.route[idx].service_time + v.waiting_times[idx];
+			} else if (v.route[idx].type == 'd') {
+				delivery_time[v.route[idx].index] = v.time_at_node[idx] + v.waiting_times[idx];
 			}
 		}
 	}
-	return false;
+    for(size_t idx = 0; idx < request_amount; idx++){
+        if(delivery_time[idx] - pickup_time[idx] > ride_times[idx]){
+            cout << idx << '\n';
+            cout << delivery_time[idx] << "  " << pickup_time[idx] << "   " << ride_times[idx] << '\n';
+            return false;
+        }
+	}
+	return true;
 }
 
 bool Instance::time_windows_met() {
-	
+
 	return false;
 }
 
 bool Instance::capacity_feasible() {
 	// Loop over every vehicle and see what the capacity is at the node
 	for (Vehicle v : routes) {
-		for (size_t c : v.current_capacity) {
-			if (c > vehicle_capacity) return false;
-		}
+		if (*max_element(v.current_capacity.begin(), v.current_capacity.end()) > vehicle_capacity)
+        {
+            return false;
+        }
 	}
 	return true;
 }
 
-bool Instance::correct_routes() {
-	// Check whether routes start and end at a depot
-	return false;
-}

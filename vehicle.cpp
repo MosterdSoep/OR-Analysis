@@ -172,7 +172,6 @@ void Vehicle::remove_node(size_t location){
 	route.erase(route.begin() + location);
 
     for(size_t idx = location; idx < route.size(); idx++){
-        current_capacity[idx]++;
         time_at_node[idx] = time_at_node[idx - 1] + arc_durations[idx - 1] + route[idx - 1].service_time + waiting_times[idx - 1];
         if(time_at_node[idx] < route[idx].lower_bound){
             waiting_times[idx] = route[idx].lower_bound - time_at_node[idx];

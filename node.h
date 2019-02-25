@@ -33,8 +33,6 @@ class Transfer_Node: public Node{
   public:
     using Node::Node;
     bool open;
-    bool pickup;
-    bool delivery;
     size_t vehicle_idx;// Create instance based on user input
     size_t request_idx;
 	double costs;

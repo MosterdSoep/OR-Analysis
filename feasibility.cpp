@@ -45,8 +45,8 @@ bool Instance::maximum_ride_time_not_exceeded() {
 	}
     for(size_t idx = 0; idx < request_amount; idx++){
         if(delivery_time[idx] - pickup_time[idx] > ride_times[idx]){
-            cout << idx << '\n';
-            cout << delivery_time[idx] << "  " << pickup_time[idx] << "   " << ride_times[idx] << '\n';
+            /*cout << idx << '\n';
+            cout << delivery_time[idx] << "  " << pickup_time[idx] << "   " << ride_times[idx] << '\n';*/
             return false;
         }
 	}

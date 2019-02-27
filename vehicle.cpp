@@ -6,12 +6,14 @@
 using namespace std;
 
 //defined here so vehicles can reach this global variable
-vector<vector<double>> arcs ={};
-vector<Pickup_Node> pickup_nodes={};
-vector<Delivery_Node> delivery_nodes={};
-vector<Transfer_Node> transfer_nodes={};
-vector<Depot_Node> depot_nodes={};
-vector<Node> all_nodes={};
+vector<vector<double>> arcs = {};
+vector<Pickup_Node> pickup_nodes = {};
+vector<Delivery_Node> delivery_nodes = {};
+vector<Transfer_Node> transfer_nodes = {};
+vector<Depot_Node> depot_nodes = {};
+vector<Node> all_nodes = {};
+vector<size_t> pickup_vehicle = {};
+vector<size_t> delivery_vehicle = {};
 
 Vehicle::Vehicle(){ //vehicles get initialized with a random depot node
     route.push_back(depot_nodes[0]);
@@ -67,6 +69,7 @@ void Vehicle::add_node(size_t location, Pickup_Node &node){
             waiting_times[idx] = route[idx].lower_bound - time_at_node[idx];
         }
     }
+	pickup_vehicle[node.index] = this->index;
 }
 
 void Vehicle::add_node(size_t location, Delivery_Node &node){
@@ -90,6 +93,7 @@ void Vehicle::add_node(size_t location, Delivery_Node &node){
             waiting_times[idx] = route[idx].lower_bound - time_at_node[idx];
         }
     }
+	delivery_vehicle[node.index] = this->index;
 }
 
 double Vehicle::add_delivery_transfer(size_t location, Transfer_Node &node){
@@ -166,8 +170,10 @@ void Vehicle::remove_node(size_t location){
 		for (size_t i = location + 1; i < current_capacity.size(); i++) {
 			current_capacity[i]++;
 		}
-	}else {
-        cout << "ERROR: Inserting non pickup, non delivery and non transfer node!\n";
+	} else if (route[location].type == 'o') {
+        cout << "ERROR: Removing depot node!\n";
+	} else {
+		cout << "ERROR: Removing non pickup, non delivery and non transfer node!\n";
 	}
 	route.erase(route.begin() + location);
 

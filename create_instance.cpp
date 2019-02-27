@@ -10,6 +10,10 @@ void Instance::create_instance(vector<vector<int>> &input_data, int ins){
     vehicle_capacity = input_data[ins][4];
     travel_cost = input_data[ins][5];
     node_amount = 2 * request_amount + transfer_location_amount + depot_amount;
+	
+	// Initialize request arrays with request_amount as size
+	pickup_vehicle.resize(request_amount, 0);
+	delivery_vehicle.resize(request_amount, 0);
 
     size_t transfer_cost_idx = 6;
     size_t coordinate_idx = transfer_cost_idx + transfer_location_amount;

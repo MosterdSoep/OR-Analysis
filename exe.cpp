@@ -6,10 +6,34 @@
 using namespace std;
 
 // General variables
-string location = "D://Documenten//Studie//OR analysis//OR Analysis//instances.csv";
-//string location = "C://Users//Hp//Documents//GitHub//OR-Analysis//instances.csv";
+//string location = "D://Documenten//Studie//OR analysis//OR Analysis//instances.csv";
+string location = "C://Users//Hp//Documents//GitHub//OR-Analysis//instances.csv";
 //string location = "//home//luuk//Documents//ORACS//OR-Analysis-master";
 vector<vector<int>> input_data;
+
+/*
+void ALNS() {
+	double best_solution;
+	double current_solution;
+	size_t loop_count = 0;
+	while(!stopping_criterion_met(loop_count)) {
+		double s = current_solution;
+		size_t destroyed_node_index = destroy();
+		repair(destroyed_node_index);
+		// check feasibility and compute obj_val for s
+		if (s < best_solution) {
+			best_solution = s;
+			current_solution = s;
+		} else {
+			if (acceptation_criterion_met(s, current_solution)) {
+				current_solution = s;
+			}
+		}
+		loop_count++;
+	}
+	return best_solution;
+}
+*/
 
 void read_csv() {
 	ifstream ip(location);
@@ -48,6 +72,11 @@ void solve_instance(vector<vector<int>> &input_data, int ins){
     i.calculate_arcs();
     i.preprocess();
     i.initial_solution();
+	
+	size_t request = i.greedy_request_deletion();
+	cout << "Deletion complete\n";
+	i.greedy_request_insertion(request);
+	
     //if(i.capacity_feasible()){cout << "correct\n";}
     //i.routes[1].add_node( 3, pickup_nodes[1]);
     if(i.maximum_ride_time_not_exceeded()){cout << "correct\n";}

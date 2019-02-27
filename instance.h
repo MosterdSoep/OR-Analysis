@@ -13,12 +13,13 @@ double euclidian_distance(Node a, Node b);
 class Instance{
 	// Model variables
 	public:
-	size_t index=0, request_amount=0, transfer_location_amount=0, depot_amount=0, node_amount=0, travel_cost=0, vehicle_capacity=0;
+	size_t index = 0, request_amount = 0, transfer_location_amount = 0, depot_amount = 0, node_amount = 0, travel_cost = 0, vehicle_capacity = 0;
 
 	vector<int> ride_times;
 
 	// Solution variables
 	vector<Vehicle> routes = {};
+	vector<Vehicle> candidate_routes = {};
 	double obj_val = 0;
 
 	public:
@@ -29,13 +30,27 @@ class Instance{
 		void calculate_obj_val();
 		void initial_solution();
 		void write_output_file(size_t instance_number);
-
+		
+		// Deletion
+		size_t greedy_request_deletion();
+		void random_request_deletion();
+		void greedy_route_deletion();
+		void random_route_deletion() ;
+		double costs_of_removing_request(size_t request);
+		
+		// Insertion
+		void greedy_request_insertion(size_t request);
+		void random_request_insertion();
+		void greedy_route_insertion();
+		void random_route_insertion();
+		double costs_of_inserting_request(Vehicle v, size_t p, size_t d, size_t request);
+		
+		// Feasibility
 		bool is_feasible();
 		bool is_request_bank_empty();
 		bool maximum_ride_time_not_exceeded();
 		bool time_windows_met();
 		bool capacity_feasible();
 };
-
 
 #endif

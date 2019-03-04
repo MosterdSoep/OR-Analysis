@@ -82,6 +82,7 @@ void Vehicle::add_node(size_t location, Delivery_Node &node){
     }
     arc_durations.insert(arc_durations.begin() + location - 1, arcs[route[location - 1].gen_idx][node.gen_idx]);
     arc_durations[location] = arcs[node.gen_idx][route[location + 1].gen_idx];
+	
     //update capacity and times
     current_capacity.insert(current_capacity.begin() + location, current_capacity[location - 1]);
     waiting_times.insert(waiting_times.begin() + location, 0);

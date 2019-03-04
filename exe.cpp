@@ -7,8 +7,8 @@ using namespace std;
 
 // General variables
 //string location = "D://Documenten//Studie//OR analysis//OR Analysis//instances.csv";
-string location = "C://Users//Hp//Documents//GitHub//OR-Analysis//instances.csv";
-//string location = "//home//luuk//Documents//ORACS//OR-Analysis-master";
+//string location = "C://Users//Hp//Documents//GitHub//OR-Analysis//instances.csv";
+string location = "C://Users//Luuk//Documents//Codeblocks projecten//OR_analysis//instances.csv";
 vector<vector<int>> input_data;
 
 /*
@@ -64,6 +64,8 @@ void clear_global(){
     transfer_nodes.clear();
     depot_nodes.clear();
     all_nodes.clear();
+    pickup_vehicle.clear();
+    delivery_vehicle.clear();
 }
 
 void solve_instance(vector<vector<int>> &input_data, int ins){
@@ -72,17 +74,33 @@ void solve_instance(vector<vector<int>> &input_data, int ins){
     i.calculate_arcs();
     i.preprocess();
     i.initial_solution();
-	
-	size_t request = i.greedy_request_deletion();
-	cout << "Deletion complete\n";
-	i.greedy_request_insertion(request);
-	
+    if(i.is_feasible()){cout << "correct\n";}
+    size_t request = 0;
+    i.old_routes = i.routes;
+    for(size_t idx = 0; idx < 10; idx++){
+        i.print_routes();
+        request = i.random_request_deletion();
+        cout << "Removed request " << request << '\n';
+        i.print_routes();
+        i.greedy_request_insertion(request);
+        cout << "Inserted\n";
+        i.print_routes();
+        if(i.is_feasible()){
+            cout << "accepted\n";
+            i.old_routes = i.routes;
+        } else{
+            i.routes.clear();
+            i.routes = i.old_routes;
+        }
+    }
     //if(i.capacity_feasible()){cout << "correct\n";}
     //i.routes[1].add_node( 3, pickup_nodes[1]);
-    if(i.maximum_ride_time_not_exceeded()){cout << "correct\n";}
+    if(i.is_feasible()){cout << "correct\n";}
     i.write_output_file(ins);
         //for(size_t idx = 0; idx < i.request_amount; idx++){cout << i.ride_times[idx] << '\n';}
+
     clear_global();
+
 }
 
 int main() {

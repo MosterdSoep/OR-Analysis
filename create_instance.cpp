@@ -10,7 +10,7 @@ void Instance::create_instance(vector<vector<int>> &input_data, int ins){
     vehicle_capacity = input_data[ins][4];
     travel_cost = input_data[ins][5];
     node_amount = 2 * request_amount + transfer_location_amount + depot_amount;
-	
+
 	// Initialize request arrays with request_amount as size
 	pickup_vehicle.resize(request_amount, 0);
 	delivery_vehicle.resize(request_amount, 0);
@@ -88,11 +88,11 @@ void Instance::preprocess(){
         if(pickup_nodes[idx].upper_bound > delivery_nodes[idx].upper_bound - pickup_nodes[idx].service_time - arcs[idx][request_amount + idx])
             pickup_nodes[idx].upper_bound = delivery_nodes[idx].upper_bound - pickup_nodes[idx].service_time - arcs[idx][request_amount + idx];
 
-	if(pickup_nodes[idx].lower_bound < delivery_nodes[idx].lower_bound - ride_times[idx])
-	    pickup_nodes[idx].lower_bound =	 delivery_nodes[idx].lower_bound - ride_times[idx];
+        if(pickup_nodes[idx].lower_bound + pickup_nodes[idx].service_time < delivery_nodes[idx].lower_bound - ride_times[idx])
+            pickup_nodes[idx].lower_bound =	 delivery_nodes[idx].lower_bound - ride_times[idx] - pickup_nodes[idx].service_time ;
 
-	if(pickup_nodes[idx].upper_bound < delivery_nodes[idx].upper_bound - ride_times[idx])
-	    delivery_nodes[idx].upper_bound = pickup_nodes[idx].upper_bound + ride_times[idx];
+        if(pickup_nodes[idx].upper_bound + pickup_nodes[idx].service_time < delivery_nodes[idx].upper_bound - ride_times[idx])
+            delivery_nodes[idx].upper_bound = pickup_nodes[idx].upper_bound + ride_times[idx] + pickup_nodes[idx].service_time;
         // no delivery before its pickup
         arcs[idx + request_amount][idx] = numeric_limits<double>::max();
 
@@ -117,6 +117,10 @@ void Instance::preprocess(){
                 arcs[idx][adx] = numeric_limits<double>::max();
             }
         }
+    }
+    for(int idx = 0; idx < request_amount; idx++){
+        if(pickup_nodes[idx].lower_bound > pickup_nodes[idx].upper_bound){cout << "Time window pickups infeasible\n";}
+        if(delivery_nodes[idx].lower_bound > delivery_nodes[idx].upper_bound){cout << "Time window deliveries infeasible\n";}
     }
 }
 

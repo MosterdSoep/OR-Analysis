@@ -18,7 +18,7 @@ extern vector<size_t> delivery_vehicle;
 
 class Vehicle {
   public:
-	size_t index = 0;
+	size_t v_index = 0;
 	vector<Node> route = {};
 	vector<double> arc_durations = {0};			// Length of every arc that the vehicle traverses
 	vector<double> waiting_times = {0,0};		// The amount of time the vehicle waits at every node
@@ -28,8 +28,8 @@ class Vehicle {
 	void remove_node(size_t location);
 	void add_node(size_t location, Pickup_Node &node);
 	void add_node(size_t location, Delivery_Node &node);
-    double add_delivery_transfer(size_t location, Transfer_Node &node);
-    void add_pickup_transfer(size_t location, Transfer_Node &node, double min_time);
+    double add_delivery_transfer(size_t location, Transfer_Node &node, size_t r);
+    void add_pickup_transfer(size_t location, Transfer_Node &node, double min_time, size_t r);
 
 	void change_first_depot();
 	void change_last_depot();

@@ -15,7 +15,7 @@ void Instance::initial_solution(){
 	{
 		//add vehicle
 		routes.push_back(Vehicle());
-		routes[routes.size()-1].index = routes.size()-1;
+		routes[routes.size()-1].v_index = routes.size()-1;
 		//look for request with first time window
 		double min_window = numeric_limits<double>::max();
 		size_t min_index = 0;
@@ -27,11 +27,6 @@ void Instance::initial_solution(){
 		}
 
 		routes[v_idx].add_node(1, pickup_nodes[bank[min_index]]);
-		if(routes[v_idx].time_at_node[1] + pickup_nodes[bank[min_index]].service_time +
-            arcs[pickup_nodes[bank[min_index]].gen_idx][delivery_nodes[bank[min_index]].gen_idx] < delivery_nodes[bank[min_index]].lower_bound){
-                routes[v_idx].waiting_times[1] = delivery_nodes[bank[min_index]].lower_bound - routes[v_idx].time_at_node[1] - pickup_nodes[bank[min_index]].service_time -
-                arcs[pickup_nodes[bank[min_index]].gen_idx][delivery_nodes[bank[min_index]].gen_idx];
-            }
 		routes[v_idx].add_node(2, delivery_nodes[bank[min_index]]);
         bank.erase(bank.begin() + min_index);
 		bank_not_empty = (bank.size() > 0) ? 1 : 0;
@@ -62,11 +57,6 @@ void Instance::initial_solution(){
 			//remove node from bank, and add pickup and delivery to route
 
 			routes[v_idx].add_node(routes[v_idx].route.size()-1, pickup_nodes[bank[min_arc_index]]);
-            if(routes[v_idx].time_at_node[routes[v_idx].route.size()-1] + pickup_nodes[bank[min_arc_index]].service_time +
-            arcs[pickup_nodes[bank[min_arc_index]].gen_idx][delivery_nodes[bank[min_arc_index]].gen_idx] < delivery_nodes[bank[min_arc_index]].lower_bound){
-                routes[v_idx].waiting_times[routes[v_idx].route.size()-1] = delivery_nodes[bank[min_arc_index]].lower_bound - routes[v_idx].time_at_node[routes[v_idx].route.size()-1] - pickup_nodes[bank[min_arc_index]].service_time -
-                arcs[pickup_nodes[bank[min_arc_index]].gen_idx][delivery_nodes[bank[min_arc_index]].gen_idx];
-            }
 			routes[v_idx].add_node(routes[v_idx].route.size()-1, delivery_nodes[bank[min_arc_index]]);
 			bank.erase(bank.begin() + min_arc_index);
 			bank_not_empty = (bank.size() > 0) ? 1 : 0;

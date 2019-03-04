@@ -184,4 +184,3 @@ void Vehicle::remove_node(size_t location){
         }
     }
 };
-

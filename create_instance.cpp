@@ -150,4 +150,3 @@ void Instance::calculate_obj_val() {
 	}
 	obj_val = travel_cost*total_distance + facility_costs;
 }
-

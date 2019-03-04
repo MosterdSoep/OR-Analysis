@@ -2,6 +2,7 @@
 #include <sstream>
 #include <cmath>
 #include <random>
+#include <numeric>
 #include "instance.h"
 using namespace std;
 
@@ -11,29 +12,94 @@ using namespace std;
 string location = "C://Users//Luuk//Documents//Codeblocks projecten//OR_analysis//instances.csv";
 vector<vector<int>> input_data;
 
-/*
-void ALNS() {
-	double best_solution;
-	double current_solution;
+bool acceptation_criterion_met(double s, double current_solution) {
+	
+	return false;
+}
+
+bool stopping_criterion_met(size_t loop_count) {
+	if (loop_count < 1000) return false;
+	else return true;
+}
+
+void ALNS(Instance i) {
+	double best_solution = i.calculate_obj_val;
+	double current_solution = best_solution;
 	size_t loop_count = 0;
+	
+	vector<size_t> deletion_scores = {0,0};
+	vector<size_t> deletion_rewards = {0,0};
+	vector<size_t> insertion_scores = {0};
+	vector<size_t> insertion_rewards = {0};
 	while(!stopping_criterion_met(loop_count)) {
-		double s = current_solution;
-		size_t destroyed_node_index = destroy();
-		repair(destroyed_node_index);
-		// check feasibility and compute obj_val for s
+		loop_count++;
+		if (loop_count % 100) {
+			for (size_t i = 0; i < deletion_scores.size(); i++) {
+				deletion_scores[i] += deletion_rewards[i];
+			}
+			for (size_t i = 0; i < insertion_scores.size(); i++) {
+				insertion_scores[i] += insertion_rewards[i];
+			}
+		}
+		size_t request = 0;
+		
+		// Roulette wheel to determine deletion operator
+		size_t delete_total = std::accumulate(deletion_scores.begin(), deletion_scores.end(), 0);
+		size_t delete_rand = rand() % delete_total;
+		size_t delete_operator = 0;
+		for (size_t i = 0; i < deletion_scores.size(); i++) {
+			if (delete_rand < delete_scores[i]) {
+				delete_operator = i;
+			}
+		}
+		switch (delete_operator) {
+			case 0 : 
+				request = greedy_request_deletion();
+				break;
+			case 1 :
+				request = random_request_deletion();
+				break;
+		}
+		
+		// Roulette wheel to determine insertion operator
+		size_t insert_total = std::accumulate(insertion_scores.begin(), insertion_scores.end(), 0);
+		size_t insert_rand = rand() % insert_total;
+		size_t insert_operator = 0;
+		for (size_t i = 0; i < insertion_scores.size(); i++) {
+			if (insert_rand < insertion_scores[i]) {
+				insert_operator = i;
+			}
+		}
+		switch (insert_operator) {
+			case 0 :
+				greedy_request_insertion(request);
+				break;
+		}
+		
+		s = i.calculate_obj_val;
 		if (s < best_solution) {
 			best_solution = s;
 			current_solution = s;
-		} else {
-			if (acceptation_criterion_met(s, current_solution)) {
+			
+			// New solution is the best solution, reward sigma_1 = 33 to both the destory and repair operator
+			deletion_rewards[delete_operator] += 33;
+			insertion_rewards[insert_operator] += 33;
+		} else if (s < current_solution) {
+			current_solution = s;
+			
+			// New solution is better than the current_solution, reward sigma_2 = 20 to both the destory and repair operator
+			deletion_rewards[delete_operator] += 20;
+			insertion_rewards[insert_operator] += 20;
+		} else if (acceptation_criterion_met(s, current_solution)) {
 				current_solution = s;
+				
+				// New solution accepted, reward sigma_3 = 15 to both the destroy and repair operator
+				deletion_rewards[delete_operator] += 15;
+				insertion_rewards[insert_operator] += 15;
 			}
 		}
-		loop_count++;
 	}
-	return best_solution;
 }
-*/
 
 void read_csv() {
 	ifstream ip(location);
@@ -95,6 +161,8 @@ void solve_instance(vector<vector<int>> &input_data, int ins){
     }
     //if(i.capacity_feasible()){cout << "correct\n";}
     //i.routes[1].add_node( 3, pickup_nodes[1]);
+	
+	//ALNS(i);
     if(i.is_feasible()){cout << "correct\n";}
     i.write_output_file(ins);
         //for(size_t idx = 0; idx < i.request_amount; idx++){cout << i.ride_times[idx] << '\n';}
@@ -105,7 +173,6 @@ void solve_instance(vector<vector<int>> &input_data, int ins){
 
 int main() {
 	read_csv();
-
 	bool eol = 0;
 	while(!eol){ // Create instance based on user input
 	    char response[20];

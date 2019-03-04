@@ -33,7 +33,7 @@ void Instance::greedy_route_insertion() {
 }
 
 void Instance::random_route_insertion() {
-
+	
 }
 
 double Instance::costs_of_inserting_request(Vehicle v, size_t p, size_t d, size_t request) {

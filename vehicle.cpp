@@ -69,7 +69,7 @@ void Vehicle::add_node(size_t location, Pickup_Node &node){
             waiting_times[idx] = route[idx].lower_bound - time_at_node[idx];
         }
     }
-	pickup_vehicle[node.index] = this->index;
+	pickup_vehicle[node.index] = v_index;
 }
 
 void Vehicle::add_node(size_t location, Delivery_Node &node){
@@ -94,13 +94,14 @@ void Vehicle::add_node(size_t location, Delivery_Node &node){
             waiting_times[idx] = route[idx].lower_bound - time_at_node[idx];
         }
     }
-	delivery_vehicle[node.index] = this->index;
+	delivery_vehicle[node.index] = v_index;
 }
 
-double Vehicle::add_delivery_transfer(size_t location, Transfer_Node &node){
+double Vehicle::add_delivery_transfer(size_t location, Transfer_Node &node, size_t r){
     //Creates fictional new node
     Transfer_Node fictional_node = node;
     fictional_node.pickup = 0;
+    fictional_node.request_idx = r;
 
     route.insert(route.begin() + location, fictional_node);
     if (location == 1){
@@ -126,10 +127,11 @@ double Vehicle::add_delivery_transfer(size_t location, Transfer_Node &node){
     return time_at_node[location] + node.service_time; //returns the time at which pickup can start
 }
 
-void Vehicle::add_pickup_transfer(size_t location, Transfer_Node &node, double min_time){
+void Vehicle::add_pickup_transfer(size_t location, Transfer_Node &node, double min_time, size_t r){
     //Creates fictional new node
     Transfer_Node fictional_node = node;
     fictional_node.pickup = 1;
+    fictional_node.request_idx = r;
     fictional_node.lower_bound = min_time; //update the lower bound for pickup to the time at which the transfer is ready
 
     route.insert(route.begin() + location, fictional_node);
@@ -177,6 +179,13 @@ void Vehicle::remove_node(size_t location){
 		cout << "ERROR: Removing non pickup, non delivery and non transfer node!\n";
 	}
 	route.erase(route.begin() + location);
+
+    if (location == 1){
+        change_first_depot();
+    }
+    if (location == route.size() - 2){
+        change_last_depot();
+    }
 
     for(size_t idx = location; idx < route.size(); idx++){
         time_at_node[idx] = time_at_node[idx - 1] + arc_durations[idx - 1] + route[idx - 1].service_time + waiting_times[idx - 1];

@@ -15,12 +15,12 @@ size_t Instance::greedy_request_deletion() {
 	if (pickup_vehicle[best_request] != delivery_vehicle[best_request]) {
 		// Transferred request
 		for (size_t i = 1; i < routes[pickup_vehicle[best_request]].route.size() - 1; i++) {
-			if (routes[pickup_vehicle[best_request]].route[i].index == best_request) {
+			if (routes[pickup_vehicle[best_request]].route[i].request_idx == best_request) {
 				routes[pickup_vehicle[best_request]].remove_node(i);
 			}
 		}
 		for (size_t i = 1; i < routes[delivery_vehicle[best_request]].route.size() - 1; i++) {
-			if (routes[delivery_vehicle[best_request]].route[i].index == best_request) {
+			if (routes[delivery_vehicle[best_request]].route[i].request_idx == best_request) {
 				routes[delivery_vehicle[best_request]].remove_node(i);
 			}
 		}
@@ -29,22 +29,46 @@ size_t Instance::greedy_request_deletion() {
 		for (size_t i = 1; i < routes[pickup_vehicle[best_request]].route.size() - 1; i++) {
 			if (routes[pickup_vehicle[best_request]].route[i].index == best_request) {
 				routes[pickup_vehicle[best_request]].remove_node(i);
+				i--;
 			}
 		}
 	}
 	return best_request;
 }
 
-void Instance::random_request_deletion() {
-	
+size_t Instance::random_request_deletion() {
+    size_t request = rand() % (request_amount);
+
+	if (pickup_vehicle[request] != delivery_vehicle[request]) {
+		// Transferred request
+		for (size_t i = 1; i < routes[pickup_vehicle[request]].route.size() - 1; i++) {
+			if (routes[pickup_vehicle[request]].route[i].request_idx == request) {
+				routes[pickup_vehicle[request]].remove_node(i);
+			}
+		}
+		for (size_t i = 1; i < routes[delivery_vehicle[request]].route.size() - 1; i++) {
+			if (routes[delivery_vehicle[request]].route[i].request_idx == request) {
+				routes[delivery_vehicle[request]].remove_node(i);
+			}
+		}
+	} else {
+		// Non transfer request
+		for (size_t i = 1; i < routes[pickup_vehicle[request]].route.size() - 1; i++) {
+			if (routes[pickup_vehicle[request]].route[i].index == request) {
+				routes[pickup_vehicle[request]].remove_node(i);
+				i--;
+			}
+		}
+	}
+	return request;
 }
 
 void Instance::greedy_route_deletion() {
-	
+
 }
 
 void Instance::random_route_deletion() {
-	
+
 }
 
 double Instance::costs_of_removing_request(size_t request) {
@@ -54,9 +78,8 @@ double Instance::costs_of_removing_request(size_t request) {
 	vector<double> new_arc_durations = routes[pu_vehicle].arc_durations;
 	vector<Node> new_route = routes[pu_vehicle].route;
 	vector<double> new_arc_durations_de = routes[de_vehicle].arc_durations;
-	
+
 	if (pu_vehicle != de_vehicle) {
-		cout << "Transfer!\n";
 		// Request is transfered
 		// Remove pickup node and delivery transfer node from pickup vehicle
 		for (size_t i = 0; i < routes[pu_vehicle].route.size(); i++) {
@@ -79,7 +102,6 @@ double Instance::costs_of_removing_request(size_t request) {
 			}
 		}
 	} else {
-		cout << "No transfer deletion\n";
 		// Pickup and delivery is done by the same vehicle
 		// Gain in costs of removing pickup
 		for (size_t i = 1; i < new_route.size() - 1; i++) {
@@ -88,19 +110,12 @@ double Instance::costs_of_removing_request(size_t request) {
 				new_route.erase(new_route.begin() + i);
 				// Either pickup or delivery node of the request
 				// Remove arcs (i-1, i), (i, i+1) then create arc (i-1, i+1)
-				cout << "Here0\n";
 				arc_lengths = arc_lengths + arcs[routes[pu_vehicle].route[i-1].gen_idx][routes[pu_vehicle].route[i+1].gen_idx] - new_arc_durations[i-1] - new_arc_durations[i];
-				cout << "Here1\n";
 				new_arc_durations.erase(new_arc_durations.begin() + i);
-				cout << "Here2\n";
 				new_arc_durations.erase(new_arc_durations.begin() + i - 1);
-				cout << "Here3\n";
 				new_arc_durations.insert(new_arc_durations.begin() + i - 1, arcs[routes[pu_vehicle].route[i-1].gen_idx][routes[pu_vehicle].route[i+1].gen_idx]);
-				cout << "After arc_durations?\n";
 			}
 		}
-		cout << "Here?\n";
 	}
-	cout << "After deletion\n";
 	return travel_cost*arc_lengths;
 }

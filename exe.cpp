@@ -12,9 +12,16 @@ string location = "C://Users//Hp//Documents//GitHub//OR-Analysis//instances.csv"
 //string location = "C://Users//Luuk//Documents//Codeblocks projecten//OR_analysis//instances.csv";
 vector<vector<int>> input_data;
 
-bool acceptation_criterion_met(double s, double current_solution) {
-	
-	return false;
+bool acceptation_criterion_met(double s, double current_solution, size_t loop_count) {
+	double temperature = 1/loop_count;
+	double probability = exp(min(current_solution - s,0.0)/temperature);
+	double percentage = probability*100;
+	double outcome = rand() % 100;
+	if (outcome < percentage) {
+		return true;
+	} else {
+		return false;
+	}
 }
 
 bool stopping_criterion_met(size_t loop_count) {
@@ -89,7 +96,7 @@ void ALNS(Instance &i) {
 		} else if (s < current_solution) {
 			accepted2 = true;
 			current_solution = s;
-		} else if (acceptation_criterion_met(s, current_solution)) {
+		} else if (acceptation_criterion_met(s, current_solution, loop_count)) {
 			accepted3 = true;
 			current_solution = s;
 		}

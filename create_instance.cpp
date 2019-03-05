@@ -104,16 +104,16 @@ void Instance::preprocess(){
     }
     for(int idx = 0; idx < request_amount; idx++){
         for(int adx = 0; adx < request_amount; adx++){
-            if(pickup_nodes[idx].lower_bound + arcs[idx][adx] > pickup_nodes[adx].upper_bound){
+            if(pickup_nodes[idx].lower_bound + arcs[idx][adx] + service_time[idx] > pickup_nodes[adx].upper_bound){
                 arcs[idx][adx] = numeric_limits<double>::max();
             }
-            if(pickup_nodes[idx].lower_bound + arcs[idx][adx] > delivery_nodes[adx].upper_bound){
+            if(pickup_nodes[idx].lower_bound + arcs[idx][adx] + service_time[idx] > delivery_nodes[adx].upper_bound){
                 arcs[idx][adx] = numeric_limits<double>::max();
             }
-            if(delivery_nodes[idx].lower_bound + arcs[idx][adx] > pickup_nodes[adx].upper_bound){
+            if(delivery_nodes[idx].lower_bound + arcs[idx][adx] + service_time[idx] > pickup_nodes[adx].upper_bound){
                 arcs[idx][adx] = numeric_limits<double>::max();
             }
-            if(delivery_nodes[idx].lower_bound + arcs[idx][adx] > delivery_nodes[adx].upper_bound){
+            if(delivery_nodes[idx].lower_bound + arcs[idx][adx] + service_time[idx] > delivery_nodes[adx].upper_bound){
                 arcs[idx][adx] = numeric_limits<double>::max();
             }
         }

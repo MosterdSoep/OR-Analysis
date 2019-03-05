@@ -37,7 +37,6 @@ void ALNS(Instance &i) {
 	i.print_routes();
 	cout << "Objective value: " << i.calculate_obj_val() << "\n";
 	
-	
 	random_device rd;
 	mt19937 gen(rd());
 	
@@ -137,6 +136,7 @@ void ALNS(Instance &i) {
 	}
 	i.print_routes();
 	cout << "Objective value: " << i.calculate_obj_val() << "\n";
+	cout << "\n";
 }
 
 

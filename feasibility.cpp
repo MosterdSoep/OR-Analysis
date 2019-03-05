@@ -2,16 +2,6 @@
 #include <algorithm>
 
 bool Instance::is_feasible() {
-	// Things to check:
-	// 1. Request related:
-	//  - Request bank empty
-	// 	- Maximum ride time not exceeded
-	//  - Pickup and delivery time windows met
-
-	// 2. Vehicle/route related:
-	//	- Capacity constraint
-	//  - Beginning and ending at a depot
-
 	if (is_request_bank_empty() &&
 		maximum_ride_time_not_exceeded() &&
 		time_windows_met() &&

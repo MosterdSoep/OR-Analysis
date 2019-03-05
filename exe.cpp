@@ -8,8 +8,8 @@ using namespace std;
 
 // General variables
 //string location = "D://Documenten//Studie//OR analysis//OR Analysis//instances.csv";
-//string location = "C://Users//Hp//Documents//GitHub//OR-Analysis//instances.csv";
-string location = "C://Users//Luuk//Documents//Codeblocks projecten//OR_analysis//instances.csv";
+string location = "C://Users//Hp//Documents//GitHub//OR-Analysis//instances.csv";
+//string location = "C://Users//Luuk//Documents//Codeblocks projecten//OR_analysis//instances.csv";
 vector<vector<int>> input_data;
 
 bool acceptation_criterion_met(double s, double current_solution) {
@@ -18,22 +18,34 @@ bool acceptation_criterion_met(double s, double current_solution) {
 }
 
 bool stopping_criterion_met(size_t loop_count) {
-	if (loop_count < 1000) return false;
+	if (loop_count < 100000) return false;
 	else return true;
 }
 
-void ALNS(Instance i) {
-	double best_solution = i.calculate_obj_val;
+void ALNS(Instance &i) {
+	double best_solution = i.calculate_obj_val();
 	double current_solution = best_solution;
 	size_t loop_count = 0;
 	
-	vector<size_t> deletion_scores = {0,0};
-	vector<size_t> deletion_rewards = {0,0};
-	vector<size_t> insertion_scores = {0};
-	vector<size_t> insertion_rewards = {0};
+	i.print_routes();
+	cout << "Objective value: " << i.calculate_obj_val() << "\n";
+	
+	
+	random_device rd;
+	mt19937 gen(rd());
+	
+	vector<double> deletion_scores = {1,1};
+	vector<double> deletion_rewards = {0,0};
+	
+	vector<double> insertion_scores = {1};
+	vector<double> insertion_rewards = {0};
 	while(!stopping_criterion_met(loop_count)) {
+		i.old_routes = i.routes;
+		i.old_pickup_vehicle = pickup_vehicle;
+		i.old_delivery_vehicle = delivery_vehicle;
+		
 		loop_count++;
-		if (loop_count % 100) {
+		if (loop_count % 100 == 0) {
 			for (size_t i = 0; i < deletion_scores.size(); i++) {
 				deletion_scores[i] += deletion_rewards[i];
 			}
@@ -41,65 +53,85 @@ void ALNS(Instance i) {
 				insertion_scores[i] += insertion_rewards[i];
 			}
 		}
+		vector<size_t> request_bank;
 		size_t request = 0;
 		
 		// Roulette wheel to determine deletion operator
-		size_t delete_total = std::accumulate(deletion_scores.begin(), deletion_scores.end(), 0);
-		size_t delete_rand = rand() % delete_total;
-		size_t delete_operator = 0;
-		for (size_t i = 0; i < deletion_scores.size(); i++) {
-			if (delete_rand < delete_scores[i]) {
-				delete_operator = i;
-			}
-		}
+		discrete_distribution<> delete_op({deletion_scores[0],deletion_scores[1]});
+		size_t delete_operator = delete_op(gen);
 		switch (delete_operator) {
 			case 0 : 
-				request = greedy_request_deletion();
+				request = i.greedy_request_deletion();
 				break;
 			case 1 :
-				request = random_request_deletion();
+				request = i.random_request_deletion();
 				break;
 		}
 		
 		// Roulette wheel to determine insertion operator
-		size_t insert_total = std::accumulate(insertion_scores.begin(), insertion_scores.end(), 0);
-		size_t insert_rand = rand() % insert_total;
-		size_t insert_operator = 0;
-		for (size_t i = 0; i < insertion_scores.size(); i++) {
-			if (insert_rand < insertion_scores[i]) {
-				insert_operator = i;
-			}
-		}
+		discrete_distribution<> insert_op({insertion_scores[0]});
+		size_t insert_operator = insert_op(gen);
 		switch (insert_operator) {
 			case 0 :
-				greedy_request_insertion(request);
+				i.greedy_request_insertion(request);
 				break;
 		}
 		
-		s = i.calculate_obj_val;
+		bool accepted1 = false;
+		bool accepted2 = false;
+		bool accepted3 = false;
+		double s = i.calculate_obj_val();
 		if (s < best_solution) {
+			accepted1 = true;
 			best_solution = s;
 			current_solution = s;
-			
-			// New solution is the best solution, reward sigma_1 = 33 to both the destory and repair operator
-			deletion_rewards[delete_operator] += 33;
-			insertion_rewards[insert_operator] += 33;
+			i.obj_val = s;
 		} else if (s < current_solution) {
+			accepted2 = true;
 			current_solution = s;
-			
-			// New solution is better than the current_solution, reward sigma_2 = 20 to both the destory and repair operator
-			deletion_rewards[delete_operator] += 20;
-			insertion_rewards[insert_operator] += 20;
 		} else if (acceptation_criterion_met(s, current_solution)) {
-				current_solution = s;
-				
-				// New solution accepted, reward sigma_3 = 15 to both the destroy and repair operator
+			accepted3 = true;
+			current_solution = s;
+		}
+		
+		if (accepted1) {
+			if(i.is_feasible()) {
+				deletion_rewards[delete_operator] += 33;
+				insertion_rewards[insert_operator] += 33;
+			} else {
+				i.routes = i.old_routes;
+				pickup_vehicle = i.old_pickup_vehicle;
+				delivery_vehicle = i.old_delivery_vehicle;
+			}
+		} else if (accepted2) {
+			if(i.is_feasible()) {
+				deletion_rewards[delete_operator] += 20;
+				insertion_rewards[insert_operator] += 20;
+			} else {
+				i.routes = i.old_routes;
+				pickup_vehicle = i.old_pickup_vehicle;
+				delivery_vehicle = i.old_delivery_vehicle;
+			}
+		} else if (accepted3) {
+			if(i.is_feasible()) {
 				deletion_rewards[delete_operator] += 15;
 				insertion_rewards[insert_operator] += 15;
+			} else {
+				i.routes = i.old_routes;
+				pickup_vehicle = i.old_pickup_vehicle;
+				delivery_vehicle = i.old_delivery_vehicle;
 			}
+		} else {
+			// Did not accept the solution, hence no need to check feasibility and return to previous solution
+			i.routes = i.old_routes;
+			pickup_vehicle = i.old_pickup_vehicle;
+			delivery_vehicle = i.old_delivery_vehicle;
 		}
 	}
+	i.print_routes();
+	cout << "Objective value: " << i.calculate_obj_val() << "\n";
 }
+
 
 void read_csv() {
 	ifstream ip(location);
@@ -140,35 +172,11 @@ void solve_instance(vector<vector<int>> &input_data, int ins){
     i.calculate_arcs();
     i.preprocess();
     i.initial_solution();
-    if(i.is_feasible()){cout << "correct\n";}
-    size_t request = 0;
-    i.old_routes = i.routes;
-    for(size_t idx = 0; idx < 10; idx++){
-        i.print_routes();
-        request = i.random_request_deletion();
-        cout << "Removed request " << request << '\n';
-        i.print_routes();
-        i.greedy_request_insertion(request);
-        cout << "Inserted\n";
-        i.print_routes();
-        if(i.is_feasible()){
-            cout << "accepted\n";
-            i.old_routes = i.routes;
-        } else{
-            i.routes.clear();
-            i.routes = i.old_routes;
-        }
-    }
-    //if(i.capacity_feasible()){cout << "correct\n";}
-    //i.routes[1].add_node( 3, pickup_nodes[1]);
 	
-	//ALNS(i);
-    if(i.is_feasible()){cout << "correct\n";}
+	ALNS(i);
+	
     i.write_output_file(ins);
-        //for(size_t idx = 0; idx < i.request_amount; idx++){cout << i.ride_times[idx] << '\n';}
-
     clear_global();
-
 }
 
 int main() {

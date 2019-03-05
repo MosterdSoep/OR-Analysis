@@ -10,7 +10,7 @@ size_t Instance::greedy_request_deletion() {
 			best_request = i;
 		}
 	}
-	cout << "done with looping?\n";
+	
 	// Found the request to be removed, now remove it
 	if (pickup_vehicle[best_request] != delivery_vehicle[best_request]) {
 		// Transferred request

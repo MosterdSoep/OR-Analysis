@@ -137,7 +137,7 @@ void Instance::calculate_arcs() {
 	}
 }
 
-void Instance::calculate_obj_val() {
+double Instance::calculate_obj_val() {
 	double total_distance = 0;
 	for (Vehicle v : routes) {
 		total_distance += accumulate(v.arc_durations.begin(),v.arc_durations.end(),0);
@@ -148,5 +148,5 @@ void Instance::calculate_obj_val() {
 			facility_costs += node.costs;
 		}
 	}
-	obj_val = travel_cost*total_distance + facility_costs;
+	return travel_cost*total_distance + facility_costs;
 }

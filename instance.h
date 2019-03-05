@@ -20,6 +20,8 @@ class Instance{
 	// Solution variables
 	vector<Vehicle> routes = {};
 	vector<Vehicle> old_routes = {};
+	vector<size_t> old_pickup_vehicle = {};
+	vector<size_t> old_delivery_vehicle = {};
 	double obj_val = 0;
 
 	public:
@@ -27,7 +29,7 @@ class Instance{
 		void create_instance(vector<vector<int>> &input_data, int ins);
 		void preprocess();
 		void calculate_arcs();
-		void calculate_obj_val();
+		double calculate_obj_val();
 		void initial_solution();
 		void write_output_file(size_t instance_number);
 

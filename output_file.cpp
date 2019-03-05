@@ -14,7 +14,7 @@ void Instance::write_output_file(size_t instance_number) {
 	if (output_file.fail()) { cout << "failed\n"; }
 	output_file << "2\n";
 	output_file << instance_number << "\n";
-	output_file << (roundf(obj_val * 100) / 100) << "\n";
+	output_file << (roundf(this->calculate_obj_val() * 100) / 100) << "\n";
 	output_file << routes.size() << "\n";
 	for (Vehicle v : routes) {
 		output_file << "\n";

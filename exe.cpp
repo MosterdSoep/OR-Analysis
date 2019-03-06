@@ -70,7 +70,9 @@ void ALNS(Instance &i) {
 				request = i.greedy_request_deletion();
 				break;
 			case 1 :
-				request = i.random_request_deletion();
+				for (size_t j = 0; j < 2; j++) {
+					request_bank.push_back(i.random_request_deletion());
+				}
 				break;
 		}
 		
@@ -79,7 +81,12 @@ void ALNS(Instance &i) {
 		size_t insert_operator = insert_op(gen);
 		switch (insert_operator) {
 			case 0 :
-				i.greedy_request_insertion(request);
+				size_t index = 0;
+				while(request_bank.size() != 0) {
+					i.greedy_request_insertion(request_bank[index]);
+					request_bank.erase(request_bank.begin() + index);
+					index++;
+				}
 				break;
 		}
 		

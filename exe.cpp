@@ -25,7 +25,7 @@ bool acceptation_criterion_met(double s, double current_solution, size_t loop_co
 }
 
 bool stopping_criterion_met(size_t loop_count) {
-	if (loop_count < 100000) return false;
+	if (loop_count < 10000) return false;
 	else return true;
 }
 
@@ -60,17 +60,18 @@ void ALNS(Instance &i) {
 			}
 		}
 		vector<size_t> request_bank;
-		size_t request = 0;
-		
+		size_t amount = 3;
 		// Roulette wheel to determine deletion operator
 		discrete_distribution<> delete_op({deletion_scores[0],deletion_scores[1]});
 		size_t delete_operator = delete_op(gen);
 		switch (delete_operator) {
 			case 0 : 
-				request = i.greedy_request_deletion();
+				for (size_t j = 0; j < amount; j++) {
+					request_bank.push_back(i.greedy_request_deletion());
+				}
 				break;
 			case 1 :
-				for (size_t j = 0; j < 2; j++) {
+				for (size_t j = 0; j < amount; j++) {
 					request_bank.push_back(i.random_request_deletion());
 				}
 				break;
@@ -81,12 +82,10 @@ void ALNS(Instance &i) {
 		size_t insert_operator = insert_op(gen);
 		switch (insert_operator) {
 			case 0 :
-				size_t index = 0;
-				while(request_bank.size() != 0) {
-					i.greedy_request_insertion(request_bank[index]);
-					request_bank.erase(request_bank.begin() + index);
-					index++;
+				for (size_t r : request_bank) {
+					i.greedy_request_insertion(r);
 				}
+				request_bank.clear();
 				break;
 		}
 		
@@ -109,6 +108,7 @@ void ALNS(Instance &i) {
 		
 		if (accepted1) {
 			if(i.is_feasible()) {
+				cout << "Feasible new best solution?\n";
 				deletion_rewards[delete_operator] += 33;
 				insertion_rewards[insert_operator] += 33;
 			} else {

@@ -25,7 +25,7 @@ bool acceptation_criterion_met(double s, double current_solution, size_t loop_co
 }
 
 bool stopping_criterion_met(size_t loop_count) {
-	if (loop_count < 10000) return false;
+	if (loop_count < 100) return false;
 	else return true;
 }
 
@@ -60,7 +60,7 @@ void ALNS(Instance &i) {
 			}
 		}
 		vector<size_t> request_bank;
-		size_t amount = 3;
+		size_t amount = (rand() % 4) + 1;
 		// Roulette wheel to determine deletion operator
 		discrete_distribution<> delete_op({deletion_scores[0],deletion_scores[1]});
 		size_t delete_operator = delete_op(gen);
@@ -84,6 +84,7 @@ void ALNS(Instance &i) {
 			case 0 :
 				for (size_t r : request_bank) {
 					i.greedy_request_insertion(r);
+					i.print_routes();
 				}
 				request_bank.clear();
 				break;

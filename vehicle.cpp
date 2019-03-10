@@ -1,5 +1,6 @@
 #include "vehicle.h"
 #include "instance.h"
+#include <algorithm>
 
 #include <limits>
 
@@ -14,10 +15,57 @@ vector<Depot_Node> depot_nodes = {};
 vector<Node> all_nodes = {};
 vector<size_t> pickup_vehicle = {};
 vector<size_t> delivery_vehicle = {};
+vector<double> ride_times = {};
+size_t vehicle_capacity = 0;
 
 Vehicle::Vehicle(){ //vehicles get initialized with a random depot node
     route.push_back(depot_nodes[0]);
     route.push_back(depot_nodes[0]);
+}
+
+bool Vehicle::maximum_ride_time_correct() {
+	vector<pair <size_t, double>> pickup_times = {};
+	vector<pair <size_t, double>> delivery_times = {};
+	
+	for (size_t i = 1; i < route.size() - 1; i++) {
+		if (route[i].type == 'p' || (route[i].type == 't' && route[i].pickup)) {
+			pair<size_t,double> p (route[i].request_idx, time_at_node[i]);
+			pickup_times.push_back(p);
+		} else if (route[i].type == 'd' || (route[i].type == 't' && route[i].delivery)) {
+			pair<size_t,double> d (route[i].request_idx, time_at_node[i]);
+			delivery_times.push_back(d);
+		}
+	}
+	
+	for (pair <size_t, double> p : pickup_times) {
+		for (pair <size_t, double> d : delivery_times) {
+			if (p.first == d.first) {
+				if (d.second - p.second > ride_times[p.first]) {
+					// Infeasible
+					return false;
+				}
+			}
+		}
+	}
+	return true;
+}
+
+bool Vehicle::time_windows_correct() {
+	for (size_t idx = 1; idx < route.size() - 1; idx++){
+		if (time_at_node[idx] + waiting_times[idx] > route[idx].upper_bound){
+			return false;
+		} else if (time_at_node[idx] + waiting_times[idx] < route[idx].lower_bound - 0.00001){
+			return false;
+		}
+    }
+	return true;
+}
+
+bool Vehicle::current_capacity_correct() {
+	if (*max_element(current_capacity.begin(), current_capacity.end()) > vehicle_capacity) {
+		return false;
+    }
+	return true;
 }
 
 void Vehicle::change_first_depot(){ //automatically change first depot to optimal one

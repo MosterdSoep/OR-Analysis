@@ -11,17 +11,33 @@ void Instance::greedy_request_insertion(size_t request) {
 			for (size_t d = p; d < routes[v].route.size(); d++) {
 				double candidate_costs = costs_of_inserting_request(this->routes[v], p, d, request);
 				if (candidate_costs < best_costs) {
-					best_costs = candidate_costs;
-					best_vehicle = v;
-					best_pickup_location = p;
-					best_delivery_location = d;
+					vector<Vehicle> old_routes = routes;
+					vector<size_t> old_pickup_vehicle = pickup_vehicle;
+					vector<size_t> old_delivery_vehicle = delivery_vehicle;
+					
+					cout << "Before node addition\n";
+					routes[best_vehicle].add_node(p, pickup_nodes[request]);
+					routes[best_vehicle].add_node(d + 1, delivery_nodes[request]);
+					cout << "After node addition\n";
+					if (routes[v].maximum_ride_time_correct() && routes[v].time_windows_correct() && routes[v].current_capacity_correct()) {
+						best_costs = candidate_costs;
+						best_vehicle = v;
+						best_pickup_location = p;
+						best_delivery_location = d;
+					} else {
+						
+					}
+					routes = old_routes;
+					pickup_vehicle = old_pickup_vehicle;
+					delivery_vehicle = old_delivery_vehicle;
 				}
 			}
 		}
 	}
-	// Now insert the request
+	cout << "Before node addition\n";
 	routes[best_vehicle].add_node(best_pickup_location, pickup_nodes[request]);
 	routes[best_vehicle].add_node(best_delivery_location + 1, delivery_nodes[request]);
+	cout << "After node addition\n";
 }
 
 void Instance::random_request_insertion() {

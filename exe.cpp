@@ -60,7 +60,7 @@ void ALNS(Instance &i) {
 			}
 		}
 		vector<size_t> request_bank;
-		size_t amount = (rand() % i.request_amount) + 1;
+		size_t amount = (rand() % 1) + 1;
 		// Roulette wheel to determine deletion operator
 		discrete_distribution<> delete_op({deletion_scores[0],deletion_scores[1]});
 		size_t delete_operator = delete_op(gen);

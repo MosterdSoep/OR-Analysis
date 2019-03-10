@@ -18,6 +18,7 @@ void Instance::write_output_file(size_t instance_number) {
 	output_file << routes.size() << "\n";
 	for (Vehicle v : routes) {
 		output_file << "\n";
+		size_t element = 1;
 		for (Node node : v.route) {
 			if (node.type == 't') {
 				// node is a transfer node
@@ -46,12 +47,13 @@ void Instance::write_output_file(size_t instance_number) {
 				}
 			} else {
 				// node is not a transfer node
-				if (node.gen_idx == v.route.back().gen_idx) {
+				if (element == v.route.size()) {
 					output_file << node.index << '\n';
 				} else {
 					output_file << node.index << ',';
 				}
 			}
+			element++;
 		}
 		for (double service_time : v.time_at_node) {
 			if (service_time == v.time_at_node.back()) {

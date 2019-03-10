@@ -60,34 +60,42 @@ void ALNS(Instance &i) {
 			}
 		}
 		vector<size_t> request_bank;
-		size_t amount = (rand() % 4) + 1;
+		size_t amount = (rand() % i.request_amount) + 1;
 		// Roulette wheel to determine deletion operator
 		discrete_distribution<> delete_op({deletion_scores[0],deletion_scores[1]});
 		size_t delete_operator = delete_op(gen);
+		//size_t delete_operator = 1;
+		
 		switch (delete_operator) {
 			case 0 : 
 				for (size_t j = 0; j < amount; j++) {
-					request_bank.push_back(i.greedy_request_deletion());
+					request_bank.push_back(i.greedy_request_deletion(request_bank));
 				}
 				break;
 			case 1 :
 				for (size_t j = 0; j < amount; j++) {
-					request_bank.push_back(i.random_request_deletion());
+					request_bank.push_back(i.random_request_deletion(request_bank));
 				}
 				break;
 		}
 		
+		cout << "Requests to be deleted: " << request_bank.size() << "\n";
+		cout << "\n";
+		i.print_routes();
 		// Roulette wheel to determine insertion operator
 		discrete_distribution<> insert_op({insertion_scores[0]});
 		size_t insert_operator = insert_op(gen);
+		
 		switch (insert_operator) {
 			case 0 :
 				for (size_t r : request_bank) {
+					cout << "Inserting request: " << r <<"\n";
 					i.greedy_request_insertion(r);
 					i.print_routes();
 				}
 				request_bank.clear();
 				break;
+			default : cout << "No insert error\n";
 		}
 		
 		bool accepted1 = false;
@@ -189,7 +197,6 @@ void solve_instance(vector<vector<int>> &input_data, int ins){
     i.initial_solution();
 	
 	ALNS(i);
-	
     i.write_output_file(ins);
     clear_global();
 }

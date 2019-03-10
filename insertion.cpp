@@ -9,7 +9,7 @@ void Instance::greedy_request_insertion(size_t request) {
 	for (size_t v = 0; v < routes.size(); v++) {
 		for (size_t p = 1; p < routes[v].route.size() - 1; p++) {
 			for (size_t d = p; d < routes[v].route.size(); d++) {
-				double candidate_costs = costs_of_inserting_request(routes[v], p, d, request);
+				double candidate_costs = costs_of_inserting_request(this->routes[v], p, d, request);
 				if (candidate_costs < best_costs) {
 					best_costs = candidate_costs;
 					best_vehicle = v;

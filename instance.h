@@ -34,8 +34,8 @@ class Instance{
 		void write_output_file(size_t instance_number);
 
 		// Deletion
-		size_t greedy_request_deletion();
-		size_t random_request_deletion();
+		size_t greedy_request_deletion(vector<size_t> request_bank);
+		size_t random_request_deletion(vector<size_t> request_bank);
 		void greedy_route_deletion();
 		void random_route_deletion() ;
 		double costs_of_removing_request(size_t request);

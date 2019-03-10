@@ -1,6 +1,7 @@
 #include "instance.h"
+#include <algorithm>
 
-size_t Instance::greedy_request_deletion() {
+size_t Instance::greedy_request_deletion(vector<size_t> request_bank) {
 	double best_costs_saving = 0;
 	size_t best_request = 0;
 	for (size_t i = 0; i < request_amount; i++) {
@@ -10,7 +11,19 @@ size_t Instance::greedy_request_deletion() {
 			best_request = i;
 		}
 	}
-	
+	if(!request_bank.empty()){
+	while (find(request_bank.begin(), request_bank.end(), best_request) != request_bank.end()) {
+		best_costs_saving = 0;
+		best_request = 0;
+		for (size_t i = 0; i < request_amount; i++) {
+			double candidate = costs_of_removing_request(i);
+			if (candidate < best_costs_saving) {
+				best_costs_saving = candidate;
+				best_request = i;
+			}
+		}
+	}
+	}
 	// Found the request to be removed, now remove it
 	if (pickup_vehicle[best_request] != delivery_vehicle[best_request]) {
 		// Transferred request
@@ -36,9 +49,13 @@ size_t Instance::greedy_request_deletion() {
 	return best_request;
 }
 
-size_t Instance::random_request_deletion() {
-    size_t request = rand() % (request_amount);
-
+size_t Instance::random_request_deletion(vector<size_t> request_bank) {
+	size_t request = rand() % (request_amount);
+	if(!request_bank.empty()){
+	while (find(request_bank.begin(), request_bank.end(), request) != request_bank.end()) {
+		request = rand() % (request_amount);
+	}
+	}
 	if (pickup_vehicle[request] != delivery_vehicle[request]) {
 		// Transferred request
 		for (size_t i = 1; i < routes[pickup_vehicle[request]].route.size() - 1; i++) {

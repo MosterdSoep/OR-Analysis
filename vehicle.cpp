@@ -17,6 +17,8 @@ vector<size_t> pickup_vehicle = {};
 vector<size_t> delivery_vehicle = {};
 vector<double> ride_times = {};
 size_t vehicle_capacity = 0;
+vector<size_t> nearest_depot_gen_idx_p = {};
+vector<size_t> nearest_depot_gen_idx_d = {};
 
 Vehicle::Vehicle(){ //vehicles get initialized with a random depot node
     route.push_back(depot_nodes[0]);
@@ -26,7 +28,7 @@ Vehicle::Vehicle(){ //vehicles get initialized with a random depot node
 bool Vehicle::maximum_ride_time_correct() {
 	vector<pair <size_t, double>> pickup_times = {};
 	vector<pair <size_t, double>> delivery_times = {};
-	
+
 	for (size_t i = 1; i < route.size() - 1; i++) {
 		if (route[i].type == 'p' || (route[i].type == 't' && route[i].pickup)) {
 			pair<size_t,double> p (route[i].request_idx, time_at_node[i]);
@@ -36,7 +38,7 @@ bool Vehicle::maximum_ride_time_correct() {
 			delivery_times.push_back(d);
 		}
 	}
-	
+
 	for (pair <size_t, double> p : pickup_times) {
 		for (pair <size_t, double> d : delivery_times) {
 			if (p.first == d.first) {
@@ -130,7 +132,7 @@ void Vehicle::add_node(size_t location, Delivery_Node &node){
     }
     arc_durations.insert(arc_durations.begin() + location - 1, arcs[route[location - 1].gen_idx][node.gen_idx]);
     arc_durations[location] = arcs[node.gen_idx][route[location + 1].gen_idx];
-	
+
     //update capacity and times
     current_capacity.insert(current_capacity.begin() + location, current_capacity[location - 1]);
     waiting_times.insert(waiting_times.begin() + location, 0);
@@ -203,6 +205,7 @@ void Vehicle::add_pickup_transfer(size_t location, Transfer_Node &node, double m
             waiting_times[idx] = route[idx].lower_bound - time_at_node[idx];
         }
     }
+    route[location].lower_bound = 0;
 }
 
 void Vehicle::remove_node(size_t location){

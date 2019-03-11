@@ -39,6 +39,7 @@ class Instance{
 		void greedy_route_deletion(vector<size_t> request_bank);
 		void random_route_deletion(vector<size_t> request_bank);
 		double costs_of_removing_request(size_t request);
+		void remove_empty_vehicle();
 
 		// Insertion
 		void greedy_request_insertion(size_t request);

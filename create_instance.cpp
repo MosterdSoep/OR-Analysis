@@ -1,6 +1,7 @@
 #include "instance.h"
 
 #include <limits>
+#include <algorithm>
 
 void Instance::create_instance(vector<vector<int>> &input_data, int ins){
     index = input_data[ins][0];
@@ -73,6 +74,8 @@ void Instance::create_instance(vector<vector<int>> &input_data, int ins){
         ride_times.push_back(input_data[ins][ride_times_idx + idx]);
     }
 
+
+
     all_nodes.insert(all_nodes.end(), pickup_nodes.begin(), pickup_nodes.end());
     all_nodes.insert(all_nodes.end(), delivery_nodes.begin(), delivery_nodes.end());
     all_nodes.insert(all_nodes.end(), transfer_nodes.begin(), transfer_nodes.end());
@@ -135,6 +138,14 @@ void Instance::calculate_arcs() {
 			arcs[j][i] = arcs[i][j];
 		}
 	}
+
+    for(int idx = 0; idx < request_amount; idx++){
+        nearest_depot_gen_idx_p.push_back(min_element(arcs[pickup_nodes[idx].gen_idx].begin() + depot_nodes[0].gen_idx, arcs[pickup_nodes[idx].gen_idx].begin() +
+                                depot_nodes[0].gen_idx + depot_nodes.size()) - arcs[pickup_nodes[idx].gen_idx].begin());
+        nearest_depot_gen_idx_d.push_back(min_element(arcs[delivery_nodes[idx].gen_idx].begin() + depot_nodes[0].gen_idx, arcs[delivery_nodes[idx].gen_idx].begin() +
+                                depot_nodes[0].gen_idx + depot_nodes.size()) - arcs[delivery_nodes[idx].gen_idx].begin());
+        cout << nearest_depot_gen_idx_p[idx] << '\n';
+    }
 }
 
 double Instance::calculate_obj_val() {

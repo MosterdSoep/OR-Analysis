@@ -7,8 +7,8 @@
 using namespace std;
 
 // General variables
-//string location = "D://Documenten//Studie//OR analysis//OR Analysis//instances.csv";
-string location = "C://Users//Hp//Documents//GitHub//OR-Analysis//instances.csv";
+string location = "D://Documenten//Studie//OR analysis//OR Analysis//instances.csv";
+//string location = "C://Users//Hp//Documents//GitHub//OR-Analysis//instances.csv";
 //string location = "C://Users//Luuk//Documents//Codeblocks projecten//OR_analysis//instances.csv";
 vector<vector<int>> input_data;
 
@@ -25,7 +25,7 @@ bool acceptation_criterion_met(double s, double current_solution, size_t loop_co
 }
 
 bool stopping_criterion_met(size_t loop_count) {
-	if (loop_count < 100) return false;
+	if (loop_count < 50) return false;
 	else return true;
 }
 
@@ -33,23 +33,23 @@ void ALNS(Instance &i) {
 	double best_solution = i.calculate_obj_val();
 	double current_solution = best_solution;
 	size_t loop_count = 0;
-	
+
 	i.print_routes();
 	cout << "Objective value: " << i.calculate_obj_val() << "\n";
-	
+
 	random_device rd;
 	mt19937 gen(rd());
-	
+
 	vector<double> deletion_scores = {1,1};
 	vector<double> deletion_rewards = {0,0};
-	
+
 	vector<double> insertion_scores = {1};
 	vector<double> insertion_rewards = {0};
 	while(!stopping_criterion_met(loop_count)) {
 		i.old_routes = i.routes;
 		i.old_pickup_vehicle = pickup_vehicle;
 		i.old_delivery_vehicle = delivery_vehicle;
-		
+
 		loop_count++;
 		if (loop_count % 100 == 0) {
 			for (size_t i = 0; i < deletion_scores.size(); i++) {
@@ -65,9 +65,10 @@ void ALNS(Instance &i) {
 		discrete_distribution<> delete_op({deletion_scores[0],deletion_scores[1]});
 		size_t delete_operator = delete_op(gen);
 		//size_t delete_operator = 1;
-		
+
+
 		switch (delete_operator) {
-			case 0 : 
+			case 0 :
 				for (size_t j = 0; j < amount; j++) {
 					request_bank.push_back(i.greedy_request_deletion(request_bank));
 				}
@@ -78,14 +79,15 @@ void ALNS(Instance &i) {
 				}
 				break;
 		}
-		
+        i.remove_empty_vehicle();
+
 		cout << "Requests to be deleted: " << request_bank.size() << "\n";
 		cout << "\n";
 		i.print_routes();
 		// Roulette wheel to determine insertion operator
 		discrete_distribution<> insert_op({insertion_scores[0]});
 		size_t insert_operator = insert_op(gen);
-		
+
 		switch (insert_operator) {
 			case 0 :
 				for (size_t r : request_bank) {
@@ -97,7 +99,7 @@ void ALNS(Instance &i) {
 				break;
 			default : cout << "No insert error\n";
 		}
-		
+
 		bool accepted1 = false;
 		bool accepted2 = false;
 		bool accepted3 = false;
@@ -114,7 +116,7 @@ void ALNS(Instance &i) {
 			accepted3 = true;
 			current_solution = s;
 		}
-		
+
 		if (accepted1) {
 			if(i.is_feasible()) {
 				cout << "Feasible new best solution?\n";
@@ -195,7 +197,7 @@ void solve_instance(vector<vector<int>> &input_data, int ins){
     i.calculate_arcs();
     i.preprocess();
     i.initial_solution();
-	
+
 	ALNS(i);
     i.write_output_file(ins);
     clear_global();

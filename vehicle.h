@@ -17,6 +17,8 @@ extern vector<size_t> pickup_vehicle;
 extern vector<size_t> delivery_vehicle;
 extern vector<double> ride_times;
 extern size_t vehicle_capacity;
+extern vector<size_t> nearest_depot_gen_idx_p;
+extern vector<size_t> nearest_depot_gen_idx_d;
 
 class Vehicle {
   public:
@@ -26,8 +28,8 @@ class Vehicle {
 	vector<double> waiting_times = {0,0};		// The amount of time the vehicle waits at every node
 	vector<size_t> current_capacity = {0,0};	// The amount of requests in the vehicle at every node
 	vector<double> time_at_node = {0,0};		// The arrival time and consequently the begin of service time at every node
-	vector<double> slack_at_node = {0,0};	
-	
+    vector<double> slack_at_node = {0,0};
+
 	void remove_node(size_t location);
 	void add_node(size_t location, Pickup_Node &node);
 	void add_node(size_t location, Delivery_Node &node);

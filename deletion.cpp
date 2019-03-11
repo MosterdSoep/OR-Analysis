@@ -136,3 +136,12 @@ double Instance::costs_of_removing_request(size_t request) {
 	}
 	return travel_cost*arc_lengths;
 }
+
+void Instance::remove_empty_vehicle(){
+    for(size_t idx = 0; idx < routes.size(); idx++){
+        if(routes[idx].route.size() == 2){
+            routes.erase(routes.begin() + idx);
+            idx--;
+        }
+    }
+}

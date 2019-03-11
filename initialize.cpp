@@ -1,5 +1,4 @@
 #include "instance.h"
-
 #include <limits>
 
 void Instance::initial_solution(){

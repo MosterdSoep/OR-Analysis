@@ -36,16 +36,17 @@ class Instance{
 		// Deletion
 		size_t greedy_request_deletion(vector<size_t> request_bank);
 		size_t random_request_deletion(vector<size_t> request_bank);
-		void greedy_route_deletion();
-		void random_route_deletion() ;
+		void greedy_route_deletion(vector<size_t> request_bank);
+		void random_route_deletion(vector<size_t> request_bank);
 		double costs_of_removing_request(size_t request);
 
 		// Insertion
 		void greedy_request_insertion(size_t request);
-		void random_request_insertion();
-		void greedy_route_insertion();
-		void random_route_insertion();
+		void random_request_insertion(size_t request);
+		void greedy_route_insertion(size_t request);
+		void random_route_insertion(size_t request);
 		double costs_of_inserting_request(Vehicle v, size_t p, size_t d, size_t request);
+		double costs_of_inserting_request_with_transfer(Vehicle v, size_t p, size_t d, size_t request, bool pickup, Transfer_Node tn);
 
 		// Feasibility
 		bool is_feasible();

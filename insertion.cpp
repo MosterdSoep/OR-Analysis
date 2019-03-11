@@ -39,13 +39,13 @@ void Instance::greedy_request_insertion(size_t request) {
 	cout << "After node addition\n";
 }
 
-void Instance::random_request_insertion() {
+void Instance::random_request_insertion(size_t request) {
 
 }
 
 void Instance::greedy_route_insertion(size_t request) {
 	size_t k1 = 0, k2 = 0, best_p = 0, best_d = 0, best_td = 0, best_tp = 0;
-	double current_costs = 0, best_costs = numeric_limits<double>::max();
+	double best_costs = numeric_limits<double>::max();
 	Transfer_Node transfer_node;
 	vector<Transfer_Node> open_facilities;
 	
@@ -60,16 +60,16 @@ void Instance::greedy_route_insertion(size_t request) {
 			
 				// v1 as pickup, v2 as delivery
 				for (size_t p = 0; p < routes[v1].route.size() - 1; p++) {
-					for (size_t td = pu + 1; td < routes[v1].route.size(); td++) {
-						pickup_costs = costs_of_inserting_request_with_transfer(routes[v1], p, td, request, true, tn);
+					for (size_t td = p + 1; td < routes[v1].route.size(); td++) {
+						double pickup_costs = costs_of_inserting_request_with_transfer(routes[v1], p, td, request, true, tn);
 						routes[v1].add_node(p, pickup_nodes[request]);
-						routes[v1].add_node(td, tn);
-						for (size_t tp = 0; tp < routes[v2].route.size() - 1) {
-							routes[v2].add_node(tp, tn);
-							if (routes[v1].time_at_node[td] + td.service_time < routes[v2].time_at_node[tp]) {
+						routes[v1].add_delivery_transfer(td, tn, request);
+						for (size_t tp = 0; tp < routes[v2].route.size() - 1; tp++) {
+							routes[v2].add_pickup_transfer(tp, tn, 0, request);
+							if (routes[v1].time_at_node[td] + tn.service_time < routes[v2].time_at_node[tp]) {
 								// Only look for possible transfers, e.g. when time windows are correct for the transfer
 								
-								for (size_t d = tp + 1; d < routes[v2].route.size()) {
+								for (size_t d = tp + 1; d < routes[v2].route.size(); d++) {
 									// Check for every possible delivery
 									double delivery_costs = costs_of_inserting_request_with_transfer(routes[v1], tp, d, request, false, tn);
 									if (pickup_costs + delivery_costs < best_costs) {
@@ -98,7 +98,7 @@ void Instance::greedy_route_insertion(size_t request) {
 	}
 }
 
-void Instance::random_route_insertion() {
+void Instance::random_route_insertion(size_t request) {
 	
 }
 

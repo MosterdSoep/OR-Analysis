@@ -80,11 +80,11 @@ size_t Instance::random_request_deletion(vector<size_t> request_bank) {
 	return request;
 }
 
-void Instance::greedy_route_deletion() {
+void Instance::greedy_route_deletion(vector<size_t> request_bank) {
 
 }
 
-void Instance::random_route_deletion() {
+void Instance::random_route_deletion(vector<size_t> request_bank) {
 
 }
 

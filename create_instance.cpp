@@ -83,6 +83,8 @@ void Instance::create_instance(vector<vector<int>> &input_data, int ins){
 }
 
 void Instance::preprocess(){
+    double big_M = numeric_limits<double>::max()/1000;
+
     for(int idx = 0; idx < request_amount; idx++){
         // e_i+n < e_i + s_i + t_i,i+n
         if(delivery_nodes[idx].lower_bound < pickup_nodes[idx].lower_bound + pickup_nodes[idx].service_time + arcs[idx][request_amount + idx])
@@ -97,27 +99,27 @@ void Instance::preprocess(){
         if(pickup_nodes[idx].upper_bound + pickup_nodes[idx].service_time < delivery_nodes[idx].upper_bound - ride_times[idx])
             delivery_nodes[idx].upper_bound = pickup_nodes[idx].upper_bound + ride_times[idx] + pickup_nodes[idx].service_time;
         // no delivery before its pickup
-        arcs[idx + request_amount][idx] = numeric_limits<double>::max();
+        arcs[idx + request_amount][idx] = big_M;
 
         // no routes directly from depot to delivery, or pickup to depot
         for(int adx = depot_nodes[0].gen_idx; adx < depot_nodes[0].gen_idx + depot_amount; adx++){
-            arcs[adx][idx + request_amount] = numeric_limits<double>::max();
-            arcs[idx][adx] = numeric_limits<double>::max();
+            arcs[adx][idx + request_amount] = big_M;
+            arcs[idx][adx] = big_M;
         }
     }
     for(int idx = 0; idx < request_amount; idx++){
         for(int adx = 0; adx < request_amount; adx++){
             if(pickup_nodes[idx].lower_bound + arcs[idx][adx] + pickup_nodes[idx].service_time > pickup_nodes[adx].upper_bound){
-                arcs[idx][adx] = numeric_limits<double>::max();
+                arcs[idx][adx] = big_M;
             }
             if(pickup_nodes[idx].lower_bound + arcs[idx][adx] + pickup_nodes[idx].service_time > delivery_nodes[adx].upper_bound){
-                arcs[idx][adx] = numeric_limits<double>::max();
+                arcs[idx][adx] = big_M;
             }
             if(delivery_nodes[idx].lower_bound + arcs[idx][adx] + pickup_nodes[idx].service_time > pickup_nodes[adx].upper_bound){
-                arcs[idx][adx] = numeric_limits<double>::max();
+                arcs[idx][adx] = big_M;
             }
             if(delivery_nodes[idx].lower_bound + arcs[idx][adx] + pickup_nodes[idx].service_time > delivery_nodes[adx].upper_bound){
-                arcs[idx][adx] = numeric_limits<double>::max();
+                arcs[idx][adx] = big_M;
             }
         }
     }

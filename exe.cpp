@@ -7,9 +7,9 @@
 using namespace std;
 
 // General variables
-string location = "D://Documenten//Studie//OR analysis//OR Analysis//instances.csv";
+//string location = "D://Documenten//Studie//OR analysis//OR Analysis//instances.csv";
 //string location = "C://Users//Hp//Documents//GitHub//OR-Analysis//instances.csv";
-//string location = "C://Users//Luuk//Documents//Codeblocks projecten//OR_analysis//instances.csv";
+string location = "C://Users//Luuk//Documents//Codeblocks projecten//OR_analysis//instances.csv";
 vector<vector<int>> input_data;
 
 bool acceptation_criterion_met(double s, double current_solution, size_t loop_count) {
@@ -61,6 +61,7 @@ void ALNS(Instance &i) {
 		}
 		vector<size_t> request_bank;
 		size_t amount = (rand() % 1) + 1;
+		amount = 3;
 		// Roulette wheel to determine deletion operator
 		discrete_distribution<> delete_op({deletion_scores[0],deletion_scores[1]});
 		size_t delete_operator = delete_op(gen);
@@ -79,8 +80,7 @@ void ALNS(Instance &i) {
 				}
 				break;
 		}
-        i.remove_empty_vehicle();
-
+        //i.remove_empty_vehicle();
 		cout << "Requests to be deleted: " << request_bank.size() << "\n";
 		cout << "\n";
 		i.print_routes();

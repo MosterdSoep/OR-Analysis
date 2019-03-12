@@ -8,14 +8,14 @@ using namespace std;
 
 // General variables
 //string location = "D://Documenten//Studie//OR analysis//OR Analysis//instances.csv";
-//string location = "C://Users//Hp//Documents//GitHub//OR-Analysis//instances.csv";
-string location = "C://Users//Luuk//Documents//Codeblocks projecten//OR_analysis//instances.csv";
+string location = "C://Users//Hp//Documents//GitHub//OR-Analysis//instances.csv";
+//string location = "C://Users//Luuk//Documents//Codeblocks projecten//OR_analysis//instances.csv";
 vector<vector<int>> input_data;
 
 size_t maximum_loops = 10000;
 
 bool acceptation_criterion_met(double s, double current_solution, size_t loop_count) {
-	double temperature = (double)maximum_loops - (double)loop_count;
+	double temperature = (double)maximum_loops - (double)loop_count + 1;
 	double minimum = min(current_solution - s,0.0);
 	double probability = (double)exp(minimum/temperature);
 	double percentage = probability*100;
@@ -67,13 +67,11 @@ void ALNS(Instance &i) {
 			}
 		}
 		vector<size_t> request_bank;
+		
 		size_t amount = (rand() % (int(log(i.request_amount)/log(1.5))+1) ) + 1;
-		// Roulette wheel to determine deletion operator
 		discrete_distribution<> delete_op({deletion_scores[0],deletion_scores[1]});
 		size_t delete_operator = delete_op(gen);
-		//size_t delete_operator = 1;
-
-        //i.print_routes();
+		
 		switch (delete_operator) {
 			case 0 :
 				for (size_t j = 0; j < amount; j++) {
@@ -87,25 +85,21 @@ void ALNS(Instance &i) {
 				break;
 		}
 		i.remove_empty_vehicle();
-/*		cout << "Requests deleted: " << request_bank.size() << "\n";
-		cout << "\n";*/
-		//i.print_routes();
-		// Roulette wheel to determine insertion operator
+		
 		discrete_distribution<> insert_op({insertion_scores[0]});
 		size_t insert_operator = insert_op(gen);
 
 		switch (insert_operator) {
 			case 0 :
 				for (size_t r : request_bank) {
-					//cout << "Inserting request: " << r <<"\n";
 					size_t req_loc = i.greedy_request_insertion(request_bank);
 					request_bank.erase(request_bank.begin() + req_loc);
-					//i.print_routes();
 				}
 				request_bank.clear();
 				break;
 			default : cout << "No insert error\n";
 		}
+		
 		bool accepted1 = false;
 		bool accepted2 = false;
 		bool accepted3 = false;

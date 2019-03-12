@@ -149,8 +149,8 @@ double Instance::costs_of_inserting_request(Vehicle v, size_t p, size_t d, size_
 	}
 	//short feasibility check
     double min_slack = *min_element(v.slack_at_node.begin() + p, v.slack_at_node.end());
-	if((arc_lengths + pickup_nodes[request].service_time > min_slack )||
-       ( v.time_at_node[p-1] +  new_arc_durations[p-1] + v.route[p-1].service_time + v.waiting_times[p-1] > pickup_nodes[request].upper_bound)){
+	if((arc_lengths + pickup_nodes[request].service_time > min_slack)||
+       (v.time_at_node[p-1] +  new_arc_durations[p-1] + v.route[p-1].service_time + v.waiting_times[p-1] > pickup_nodes[request].upper_bound)){
         arc_lengths = numeric_limits<double>::max()/2;
 	}
 

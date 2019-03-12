@@ -42,7 +42,7 @@ class Instance{
 		void remove_empty_vehicle();
 
 		// Insertion
-		void greedy_request_insertion(size_t request);
+		size_t greedy_request_insertion(vector<size_t> request_bank);
 		void random_request_insertion(size_t request);
 		void greedy_route_insertion(size_t request);
 		void random_route_insertion(size_t request);

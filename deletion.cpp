@@ -5,7 +5,9 @@ size_t Instance::greedy_request_deletion(vector<size_t> request_bank) {
 	double best_costs_saving = numeric_limits<double>::max();
 	size_t best_request = 0;
 	for (size_t i = 0; i < request_amount; i++) {
-	    if((find(request_bank.begin(), request_bank.end(), i) != request_bank.end())){}else{
+	    if(find(request_bank.begin(), request_bank.end(), i) != request_bank.end()){
+
+	    }else{
             double candidate = costs_of_removing_request(i);
             if (candidate < best_costs_saving) {
                 best_costs_saving = candidate;
@@ -122,7 +124,7 @@ double Instance::costs_of_removing_request(size_t request) {
             new_route.erase(new_route.end() - 2);
 		}
 		// -3, as we do not need to check the depot at size-1, or the last node, which is done before
-		for (size_t i = routes[pu_vehicle].route.size()-3; i > 1; i--) {
+		for (size_t i = new_route.size()-3; i > 1; i--) {
 			// Looping through the vehicle that pickups request #request
 			if (new_route[i].index == request) {
 				new_route.erase(new_route.begin() + i);
@@ -149,7 +151,15 @@ void Instance::remove_empty_vehicle(){
     for(size_t idx = 0; idx < routes.size(); idx++){
         if(routes[idx].route.size() == 2){
             routes.erase(routes.begin() + idx);
+            for(size_t adx = 0; adx < request_amount; adx++){
+                if(pickup_vehicle[adx] > idx){pickup_vehicle[adx] -= 1;}
+                if(delivery_vehicle[adx] > idx){delivery_vehicle[adx] -= 1;}
+            }
             idx--;
         }
     }
+    for(size_t idx = 0; idx < routes.size(); idx++){
+        routes[idx].v_index = idx;
+    }
+
 }

@@ -64,5 +64,4 @@ void Instance::initial_solution(){
 		}
 		v_idx++;
 	}
-
 }

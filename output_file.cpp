@@ -5,15 +5,14 @@
 #include <string>
 #include <windows.h>
 
-
 void Instance::write_output_file(size_t instance_number) {
 	ostringstream file_name_stream;
-	file_name_stream << "oracs_" << instance_number << ".csv";
+	file_name_stream << "oracs_" << (instance_number + 1) << ".csv";
 	string file_name = file_name_stream.str();
 	ofstream output_file(file_name.c_str());
 	if (output_file.fail()) { cout << "failed\n"; }
 	output_file << "2\n";
-	output_file << instance_number << "\n";
+	output_file << (instance_number + 1) << "\n";
 	output_file << (roundf(this->calculate_obj_val() * 100) / 100) << "\n";
 	output_file << routes.size() << "\n";
 	for (Vehicle v : routes) {
@@ -66,4 +65,3 @@ void Instance::write_output_file(size_t instance_number) {
 	output_file << "\n";
 	output_file.close();
 }
-

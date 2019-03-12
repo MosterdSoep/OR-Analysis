@@ -42,4 +42,5 @@ class Depot_Node: public Node{
   public:
     using Node::Node;
 };
+
 #endif

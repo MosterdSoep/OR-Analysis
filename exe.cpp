@@ -33,6 +33,8 @@ bool stopping_criterion_met(size_t loop_count) {
 }
 
 void ALNS(Instance &i) {
+	transfer_nodes[0].open = true;
+	
 	double best_solution = i.calculate_obj_val();
 	double current_solution = best_solution;
 	vector<Vehicle> best_routes{};
@@ -50,8 +52,8 @@ void ALNS(Instance &i) {
 	vector<double> deletion_scores = {1,1};
 	vector<double> deletion_rewards = {0,0};
 
-	vector<double> insertion_scores = {1};
-	vector<double> insertion_rewards = {0};
+	vector<double> insertion_scores = {1,1};
+	vector<double> insertion_rewards = {0,0};
 	while(!stopping_criterion_met(loop_count)) {
 		i.old_routes = i.routes;
 		i.old_pickup_vehicle = pickup_vehicle;
@@ -86,7 +88,7 @@ void ALNS(Instance &i) {
 		}
 		i.remove_empty_vehicle();
 		
-		discrete_distribution<> insert_op({insertion_scores[0]});
+		discrete_distribution<> insert_op({insertion_scores[0],insertion_scores[1]});
 		size_t insert_operator = insert_op(gen);
 
 		switch (insert_operator) {
@@ -95,6 +97,14 @@ void ALNS(Instance &i) {
 					size_t req_loc = i.greedy_request_insertion(request_bank);
 					request_bank.erase(request_bank.begin() + req_loc);
 				}
+				request_bank.clear();
+				break;
+			case 1 :
+				cout << "Transfer insertion now\n";
+				for (size_t index = 0; index < request_bank.size(); index++) {
+					i.greedy_route_insertion(request_bank[index]);
+				}
+				cout << "After transfer insertion\n";
 				request_bank.clear();
 				break;
 			default : cout << "No insert error\n";
@@ -158,6 +168,7 @@ void ALNS(Instance &i) {
 
 		}
 	}
+	i.routes = best_routes;
 	i.print_routes();
 	cout << "Total number of rejections: " << (costs_rejection + feasibility_rejection) << "\n";
 	cout << "Amount of costs rejection: " << costs_rejection << "\n";

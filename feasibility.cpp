@@ -77,4 +77,3 @@ bool Instance::capacity_feasible() {
 	}
 	return true;
 }
-

@@ -19,9 +19,6 @@ bool acceptation_criterion_met(double s, double current_solution, size_t loop_co
 	double probability = (double)exp(minimum/temperature);
 	double percentage = probability*100;
 	double outcome = rand() % 101;
-	if (loop_count < 1000) {
-	cout << "Temperature: " << temperature << ", minimum: " << minimum << ", ratio: " << (minimum/temperature) << ", probability: " << probability << ", percentage: " << percentage << "\n";
-	}
 	if (outcome < percentage) {
 		return true;
 	} else {
@@ -74,7 +71,6 @@ void ALNS(Instance &i) {
 		//size_t delete_operator = 1;
 
         //i.print_routes();
-		cout << "here?\n";
 		switch (delete_operator) {
 			case 0 :
 				for (size_t j = 0; j < amount; j++) {
@@ -87,7 +83,6 @@ void ALNS(Instance &i) {
 				}
 				break;
 		}
-		cout << "Goes wrong after deletion?\n";
 		
         i.remove_empty_vehicle();
 		//cout << "Requests deleted: " << request_bank.size() << "\n";
@@ -108,8 +103,6 @@ void ALNS(Instance &i) {
 				break;
 			default : cout << "No insert error\n";
 		}
-		
-		cout << "Goes wrong after insertion?\n";
 		
 		bool accepted1 = false;
 		bool accepted2 = false;

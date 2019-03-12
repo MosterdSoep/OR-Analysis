@@ -5,8 +5,7 @@ size_t Instance::greedy_request_deletion(vector<size_t> request_bank) {
 	double best_costs_saving = numeric_limits<double>::max();
 	size_t best_request = 0;
 	for (size_t i = 0; i < request_amount; i++) {
-	    if((find(request_bank.begin(), request_bank.end(), i) != request_bank.end())){
-	    }else {
+	    if((find(request_bank.begin(), request_bank.end(), i) != request_bank.end())){}else{
             double candidate = costs_of_removing_request(i);
             if (candidate < best_costs_saving) {
                 best_costs_saving = candidate;
@@ -14,7 +13,6 @@ size_t Instance::greedy_request_deletion(vector<size_t> request_bank) {
             }
 	    }
 	}
-
 	// Found the request to be removed, now remove it
 	if (pickup_vehicle[best_request] != delivery_vehicle[best_request]) {
 		// Transferred request
@@ -101,7 +99,7 @@ double Instance::costs_of_removing_request(size_t request) {
 			}
 		}
 		// Remove delivery node and pickup transfer node from delivery vehicle
-		for (size_t i = routes[pu_vehicle].route.size()-2; i > 0; i--) {
+		for (size_t i = routes[de_vehicle].route.size()-2; i > 0; i--) {
 			if (routes[de_vehicle].route[i].index == request) {
 				// Place in the vehicle/route that corresponds to the request
 				arc_lengths = arc_lengths + arcs[routes[de_vehicle].route[i-1].gen_idx][routes[de_vehicle].route[i+1].gen_idx] - new_arc_durations_de[i-1] - new_arc_durations_de[i];
@@ -113,17 +111,35 @@ double Instance::costs_of_removing_request(size_t request) {
 	} else {
 		// Pickup and delivery is done by the same vehicle
 		// Gain in costs of removing pickup
-		for (size_t i = routes[pu_vehicle].route.size()-2; i > 0; i--) {
+		if (new_route[new_route.size() - 2].index = request){
+				// Either pickup or delivery node of the request
+				// Remove arcs (i-1, i), (i, i+1) then create arc (i-1, i+1)
+            arc_lengths += arcs[new_route[new_route.size() - 3].gen_idx][nearest_depot_gen_idx_d[new_route[new_route.size()-3].index]] -
+                        new_arc_durations[new_route.size()-3] - new_arc_durations[new_route.size()-2];
+			new_arc_durations.erase(new_arc_durations.end()-1);
+			new_arc_durations.erase(new_arc_durations.end()-2);
+			new_arc_durations.push_back(arcs[new_route[new_route.size()-3].gen_idx][nearest_depot_gen_idx_d[new_route[new_route.size()-3].index]]);
+            new_route.erase(new_route.end() - 2);
+		}
+		// -3, as we do not need to check the depot at size-1, or the last node, which is done before
+		for (size_t i = routes[pu_vehicle].route.size()-3; i > 1; i--) {
 			// Looping through the vehicle that pickups request #request
 			if (new_route[i].index == request) {
 				new_route.erase(new_route.begin() + i);
 				// Either pickup or delivery node of the request
 				// Remove arcs (i-1, i), (i, i+1) then create arc (i-1, i+1)
-				arc_lengths = arc_lengths + arcs[routes[pu_vehicle].route[i-1].gen_idx][routes[pu_vehicle].route[i+1].gen_idx] - new_arc_durations[i-1] - new_arc_durations[i];
+				arc_lengths += arcs[new_route[i-1].gen_idx][new_route[i].gen_idx] - new_arc_durations[i-1] - new_arc_durations[i];
 				new_arc_durations.erase(new_arc_durations.begin() + i);
 				new_arc_durations.erase(new_arc_durations.begin() + i - 1);
-				new_arc_durations.insert(new_arc_durations.begin() + i - 1, arcs[routes[pu_vehicle].route[i-1].gen_idx][routes[pu_vehicle].route[i+1].gen_idx]);
+				new_arc_durations.insert(new_arc_durations.begin() + i - 1, arcs[new_route[i-1].gen_idx][new_route[i].gen_idx]);
 			}
+		}
+		if (new_route[1].index = request){
+            new_route.erase(new_route.begin() + 1);
+            arc_lengths += arcs[nearest_depot_gen_idx_p[new_route[1].index]][new_route[1].gen_idx] - new_arc_durations[0] - new_arc_durations[1];
+            new_arc_durations.erase(new_arc_durations.begin());
+            new_arc_durations.erase(new_arc_durations.begin());
+            new_arc_durations.insert(new_arc_durations.begin(), arcs[nearest_depot_gen_idx_p[new_route[1].index]][new_route[1].gen_idx]);
 		}
 	}
 	return travel_cost*arc_lengths;

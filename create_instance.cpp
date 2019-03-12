@@ -83,7 +83,7 @@ void Instance::create_instance(vector<vector<int>> &input_data, int ins){
 }
 
 void Instance::preprocess(){
-    double big_M = numeric_limits<double>::max()/1000;
+    double big_M = 50000000000;
 
     for(int idx = 0; idx < request_amount; idx++){
         // e_i+n < e_i + s_i + t_i,i+n
@@ -146,7 +146,8 @@ void Instance::calculate_arcs() {
                                 depot_nodes[0].gen_idx + depot_nodes.size()) - arcs[pickup_nodes[idx].gen_idx].begin());
         nearest_depot_gen_idx_d.push_back(min_element(arcs[delivery_nodes[idx].gen_idx].begin() + depot_nodes[0].gen_idx, arcs[delivery_nodes[idx].gen_idx].begin() +
                                 depot_nodes[0].gen_idx + depot_nodes.size()) - arcs[delivery_nodes[idx].gen_idx].begin());
-        cout << nearest_depot_gen_idx_p[idx] << '\n';
+        nearest_depot_insertion_cost.push_back( (arcs[pickup_nodes[idx].gen_idx][delivery_nodes[idx].gen_idx] + arcs[nearest_depot_gen_idx_p[idx]][pickup_nodes[idx].gen_idx] +
+                                               arcs[delivery_nodes[idx].gen_idx][nearest_depot_gen_idx_d[idx]] ) * travel_cost );
     }
 }
 

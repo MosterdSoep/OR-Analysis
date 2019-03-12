@@ -25,7 +25,7 @@ bool acceptation_criterion_met(double s, double current_solution, size_t loop_co
 }
 
 bool stopping_criterion_met(size_t loop_count) {
-	if (loop_count < 50) return false;
+	if (loop_count < 200) return false;
 	else return true;
 }
 
@@ -36,7 +36,7 @@ void ALNS(Instance &i) {
 
 	i.print_routes();
 	cout << "Objective value: " << i.calculate_obj_val() << "\n";
-
+    double initialval = i.calculate_obj_val();
 	random_device rd;
 	mt19937 gen(rd());
 
@@ -60,14 +60,13 @@ void ALNS(Instance &i) {
 			}
 		}
 		vector<size_t> request_bank;
-		size_t amount = (rand() % 1) + 1;
-		amount = 3;
+		size_t amount = (rand() % 2) + 1;
 		// Roulette wheel to determine deletion operator
 		discrete_distribution<> delete_op({deletion_scores[0],deletion_scores[1]});
 		size_t delete_operator = delete_op(gen);
 		//size_t delete_operator = 1;
 
-
+        i.print_routes();
 		switch (delete_operator) {
 			case 0 :
 				for (size_t j = 0; j < amount; j++) {
@@ -80,8 +79,8 @@ void ALNS(Instance &i) {
 				}
 				break;
 		}
-        //i.remove_empty_vehicle();
-		cout << "Requests to be deleted: " << request_bank.size() << "\n";
+        i.remove_empty_vehicle();
+		cout << "Requests deleted: " << request_bank.size() << "\n";
 		cout << "\n";
 		i.print_routes();
 		// Roulette wheel to determine insertion operator
@@ -153,6 +152,7 @@ void ALNS(Instance &i) {
 		}
 	}
 	i.print_routes();
+	cout << "Initial solution value: "<< initialval << "\n";
 	cout << "Objective value: " << i.calculate_obj_val() << "\n";
 	cout << "\n";
 }

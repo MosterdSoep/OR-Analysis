@@ -2,15 +2,15 @@
 #include <limits>
 #include <algorithm>
 
+
+//Random vehicle greedy insertion
 void Instance::greedy_request_insertion(size_t request) {
     //calculate costs for a new vehicle as a base case
 	size_t best_vehicle = routes.size();
 	size_t best_pickup_location = 1;
 	size_t best_delivery_location = 2;
 
-	double best_costs = arcs[nearest_depot_gen_idx_p[request]][pickup_nodes[request].gen_idx] + arcs[pickup_nodes[request].gen_idx][delivery_nodes[request].gen_idx] +
-                arcs[delivery_nodes[request].gen_idx][nearest_depot_gen_idx_d[request]];
-	best_costs = best_costs*travel_cost;
+	double best_costs = nearest_depot_insertion_cost[request];
 
 
     //see if other insertions are better
@@ -132,24 +132,33 @@ double Instance::costs_of_inserting_request(Vehicle v, size_t p, size_t d, size_
         new_arc_durations.insert(new_arc_durations.begin() + p-1, arcs[pickup_nodes[request].gen_idx][v.route[p].gen_idx]);
         new_arc_durations.insert(new_arc_durations.begin() + p-1, arcs[v.route[p-1].gen_idx][pickup_nodes[request].gen_idx]);
 	}
+	//short feasibility check
+    double min_slack = *min_element(v.slack_at_node.begin() + p, v.slack_at_node.end());
+	if((arc_lengths + pickup_nodes[request].service_time > min_slack )||
+       ( v.time_at_node[p-1] +  new_arc_durations[p-1] > pickup_nodes[request].upper_bound)){
+        arc_lengths = numeric_limits<double>::max()/2;
+	}
+
 	// Delivery insertion
 	if(d == p){
         if(d == v.route.size()-1){
             arc_lengths += arcs[pickup_nodes[request].gen_idx][delivery_nodes[request].gen_idx] + arcs[delivery_nodes[request].gen_idx][nearest_depot_gen_idx_d[request]] - new_arc_durations[d];
         }else{
-            arc_lengths += arcs[pickup_nodes[request].gen_idx][delivery_nodes[request].gen_idx] + arcs[delivery_nodes[request].gen_idx][v.route[d+1].gen_idx] - new_arc_durations[d];
+            arc_lengths += arcs[pickup_nodes[request].gen_idx][delivery_nodes[request].gen_idx] + arcs[delivery_nodes[request].gen_idx][v.route[d].gen_idx] - new_arc_durations[d];
         }
 	}else{
         if(d == v.route.size()-1){
-            arc_lengths += arcs[v.route[d].gen_idx][delivery_nodes[request].gen_idx] + arcs[delivery_nodes[request].gen_idx][nearest_depot_gen_idx_d[request]] - new_arc_durations[d];
+            arc_lengths += arcs[v.route[d-1].gen_idx][delivery_nodes[request].gen_idx] + arcs[delivery_nodes[request].gen_idx][nearest_depot_gen_idx_d[request]] - new_arc_durations[d];
         }else{
-            arc_lengths += arcs[v.route[d].gen_idx][delivery_nodes[request].gen_idx] + arcs[delivery_nodes[request].gen_idx][v.route[d+1].gen_idx] - new_arc_durations[d];
+            arc_lengths += arcs[v.route[d-1].gen_idx][delivery_nodes[request].gen_idx] + arcs[delivery_nodes[request].gen_idx][v.route[d].gen_idx] - new_arc_durations[d];
         }
     }
-/*	new_arc_durations.erase(new_arc_durations.begin() + d);
-	new_arc_durations.insert(new_arc_durations.begin() + d, arcs[delivery_nodes[request].gen_idx][v.route[d-1].gen_idx]);
-	new_arc_durations.insert(new_arc_durations.begin() + d, arcs[v.route[d-1].gen_idx][delivery_nodes[request].gen_idx]);*/
-
+    //short feasibility check
+    min_slack = *min_element(v.slack_at_node.begin() + d, v.slack_at_node.end());
+    if( (arc_lengths + pickup_nodes[request].service_time + delivery_nodes[request].service_time> min_slack) ||
+       ( v.time_at_node[d-1] +  arc_lengths -  arcs[delivery_nodes[request].gen_idx][v.route[d].gen_idx] > delivery_nodes[request].upper_bound)  ){
+        arc_lengths = numeric_limits<double>::max()/2;
+	}
 	return travel_cost*arc_lengths;
 }
 

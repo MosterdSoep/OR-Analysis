@@ -8,15 +8,20 @@ using namespace std;
 
 // General variables
 //string location = "D://Documenten//Studie//OR analysis//OR Analysis//instances.csv";
-//string location = "C://Users//Hp//Documents//GitHub//OR-Analysis//instances.csv";
-string location = "C://Users//Luuk//Documents//Codeblocks projecten//OR_analysis//instances.csv";
+string location = "C://Users//Hp//Documents//GitHub//OR-Analysis//instances.csv";
+//string location = "C://Users//Luuk//Documents//Codeblocks projecten//OR_analysis//instances.csv";
 vector<vector<int>> input_data;
+size_t maximum_loops = 10000;
 
 bool acceptation_criterion_met(double s, double current_solution, size_t loop_count) {
-	double temperature = 1/loop_count;
-	double probability = exp(min(current_solution - s,0.0)/temperature);
+	double temperature = (double)maximum_loops - (double)loop_count;
+	double minimum = min(current_solution - s,0.0);
+	double probability = (double)exp(minimum/temperature);
 	double percentage = probability*100;
-	double outcome = rand() % 100;
+	double outcome = rand() % 101;
+	if (loop_count < 1000) {
+	cout << "Temperature: " << temperature << ", minimum: " << minimum << ", ratio: " << (minimum/temperature) << ", probability: " << probability << ", percentage: " << percentage << "\n";
+	}
 	if (outcome < percentage) {
 		return true;
 	} else {
@@ -25,7 +30,7 @@ bool acceptation_criterion_met(double s, double current_solution, size_t loop_co
 }
 
 bool stopping_criterion_met(size_t loop_count) {
-	if (loop_count < 200) return false;
+	if (loop_count < maximum_loops) return false;
 	else return true;
 }
 
@@ -35,7 +40,6 @@ void ALNS(Instance &i) {
 	size_t loop_count = 0;
 
 	i.print_routes();
-	cout << "Objective value: " << i.calculate_obj_val() << "\n";
     double initialval = i.calculate_obj_val();
 	random_device rd;
 	mt19937 gen(rd());
@@ -45,6 +49,9 @@ void ALNS(Instance &i) {
 
 	vector<double> insertion_scores = {1};
 	vector<double> insertion_rewards = {0};
+	
+	double costs_rejection = 0;
+	double feasibility_rejection = 0;
 	while(!stopping_criterion_met(loop_count)) {
 		i.old_routes = i.routes;
 		i.old_pickup_vehicle = pickup_vehicle;
@@ -60,13 +67,14 @@ void ALNS(Instance &i) {
 			}
 		}
 		vector<size_t> request_bank;
-		size_t amount = (rand() % 2) + 1;
+		size_t amount = (rand() % i.request_amount) + 1;
 		// Roulette wheel to determine deletion operator
 		discrete_distribution<> delete_op({deletion_scores[0],deletion_scores[1]});
 		size_t delete_operator = delete_op(gen);
 		//size_t delete_operator = 1;
 
-        i.print_routes();
+        //i.print_routes();
+		cout << "here?\n";
 		switch (delete_operator) {
 			case 0 :
 				for (size_t j = 0; j < amount; j++) {
@@ -79,10 +87,12 @@ void ALNS(Instance &i) {
 				}
 				break;
 		}
+		cout << "Goes wrong after deletion?\n";
+		
         i.remove_empty_vehicle();
-		cout << "Requests deleted: " << request_bank.size() << "\n";
-		cout << "\n";
-		i.print_routes();
+		//cout << "Requests deleted: " << request_bank.size() << "\n";
+		//cout << "\n";
+		//i.print_routes();
 		// Roulette wheel to determine insertion operator
 		discrete_distribution<> insert_op({insertion_scores[0]});
 		size_t insert_operator = insert_op(gen);
@@ -90,70 +100,79 @@ void ALNS(Instance &i) {
 		switch (insert_operator) {
 			case 0 :
 				for (size_t r : request_bank) {
-					cout << "Inserting request: " << r <<"\n";
+					//cout << "Inserting request: " << r <<"\n";
 					i.greedy_request_insertion(r);
-					i.print_routes();
+					//i.print_routes();
 				}
 				request_bank.clear();
 				break;
 			default : cout << "No insert error\n";
 		}
-
+		
+		cout << "Goes wrong after insertion?\n";
+		
 		bool accepted1 = false;
 		bool accepted2 = false;
 		bool accepted3 = false;
 		double s = i.calculate_obj_val();
 		if (s < best_solution) {
 			accepted1 = true;
-			best_solution = s;
-			current_solution = s;
-			i.obj_val = s;
 		} else if (s < current_solution) {
 			accepted2 = true;
-			current_solution = s;
 		} else if (acceptation_criterion_met(s, current_solution, loop_count)) {
+			//cout << "Acceptation criterion accepts a new solution\n";
 			accepted3 = true;
-			current_solution = s;
 		}
-
+		
 		if (accepted1) {
 			if(i.is_feasible()) {
-				cout << "Feasible new best solution?\n";
 				deletion_rewards[delete_operator] += 33;
 				insertion_rewards[insert_operator] += 33;
+				best_solution = s;
+				current_solution = s;
 			} else {
 				i.routes = i.old_routes;
 				pickup_vehicle = i.old_pickup_vehicle;
 				delivery_vehicle = i.old_delivery_vehicle;
+				feasibility_rejection++;
 			}
 		} else if (accepted2) {
 			if(i.is_feasible()) {
 				deletion_rewards[delete_operator] += 20;
 				insertion_rewards[insert_operator] += 20;
+				current_solution = s;
 			} else {
 				i.routes = i.old_routes;
 				pickup_vehicle = i.old_pickup_vehicle;
 				delivery_vehicle = i.old_delivery_vehicle;
+				feasibility_rejection++;
 			}
 		} else if (accepted3) {
 			if(i.is_feasible()) {
 				deletion_rewards[delete_operator] += 15;
 				insertion_rewards[insert_operator] += 15;
+				current_solution = s;
 			} else {
 				i.routes = i.old_routes;
 				pickup_vehicle = i.old_pickup_vehicle;
 				delivery_vehicle = i.old_delivery_vehicle;
+				feasibility_rejection++;
 			}
 		} else {
 			// Did not accept the solution, hence no need to check feasibility and return to previous solution
 			i.routes = i.old_routes;
 			pickup_vehicle = i.old_pickup_vehicle;
 			delivery_vehicle = i.old_delivery_vehicle;
+			costs_rejection++;
 		}
 	}
 	i.print_routes();
+	cout << "Total number of rejections: " << (costs_rejection + feasibility_rejection) << "\n";
+	cout << "Amount of costs rejection: " << costs_rejection << "\n";
+	cout << "Amount of feasibility rejection: " << feasibility_rejection << "\n";
+	cout << "\n";
 	cout << "Initial solution value: "<< initialval << "\n";
-	cout << "Objective value: " << i.calculate_obj_val() << "\n";
+	cout << "Objective value: " << best_solution << "\n";
 	cout << "\n";
 }
 

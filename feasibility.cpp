@@ -8,10 +8,10 @@ bool Instance::is_feasible() {
 		capacity_feasible()){
 		return true;
 	} else {
-		if (!maximum_ride_time_not_exceeded()) { cout << "Maximum ride time exceeded\n";  }
-		if (!time_windows_met()) { cout << "Time windows not met\n";  }
-		if (!capacity_feasible()) { cout << "Capacity not feasible\n";  }
-		cout << "\n";
+		if (!maximum_ride_time_not_exceeded()) { }//cout << "Maximum ride time exceeded\n";  }
+		if (!time_windows_met()) { }//cout << "Time windows not met\n";  }
+		if (!capacity_feasible()) { }//cout << "Capacity not feasible\n";  }
+		//cout << "\n";
 		return false;
 	}
 }

@@ -41,14 +41,14 @@ void Instance::greedy_request_insertion(size_t request) {
 	if(best_vehicle < routes.size()){
         routes[best_vehicle].add_node(best_pickup_location, pickup_nodes[request]);
         routes[best_vehicle].add_node(best_delivery_location + 1, delivery_nodes[request]);
-        cout << "existing vehicle\n";
+        //cout << "existing vehicle\n";
 	}else if(best_vehicle == routes.size()){
 	    size_t insert_loc = routes.size();
         routes.push_back(Vehicle());
         routes[routes.size()-1].v_index = routes.size()-1;
         routes[insert_loc].add_node(1, pickup_nodes[request]);
         routes[insert_loc].add_node(2, delivery_nodes[request]);
-        cout << "new vehicle created\n";
+        //cout << "new vehicle created\n";
 	}else{cout << "insertion failed\n";}
 
 }
@@ -99,7 +99,6 @@ void Instance::greedy_route_insertion(size_t request) {
 								}
 							}
 						}
-
 					}
 				}
 

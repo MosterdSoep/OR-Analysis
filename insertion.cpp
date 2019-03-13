@@ -77,57 +77,31 @@ void Instance::greedy_route_insertion(size_t request) {
 	for (Transfer_Node tn : transfer_nodes) {
 		if (tn.open) { open_facilities.push_back(tn); }
 	}
-	//cout << "here\n";
-	//for(size_t request : request_bank) {
-	//vector<Vehicle> old_routes = routes;
+	
+	// Case 1: if there are 0 vehicles -> find best 2 vehicles and insert a request with transfer
+	// Case 2: if there is 1 vehicle -> find one other vehicle and insert a request with transfer in those vehicles
+	
 	for (Transfer_Node tn : open_facilities) {
-		//cout << "Here now\n";
-		//cout << "Index: " << tn.index << ", general index: " << tn.gen_idx << "\n";
-		//cout << routes.size() << "\n";
+		routes.push_back(Vehicle());
+		routes.push_back(Vehicle());
 		for (size_t v1 = 0; v1 < routes.size(); v1++) {
-			//cout << "here now1\n";
 			for (size_t v2 = 0; v2 < routes.size(); v2++) {
-				//cout << "here now12\n";
-				
 				if (v1 == v2) {
-					//cout << "v1: " << v1 << ", v2: " << v2 << "\n";
 					continue;
 				}
-				// All possible pairs of vehicles
-				
-				//cout << "Here1\n";
-				
-				// v1 as pickup, v2 as delivery
-				//Vehicle old_vehicle_1 = routes[v1];
 				for (size_t p = 1; p < routes[v1].route.size() - 1; p++) {
-					//routes[v1] = old_vehicle_1;
-					//routes[v1].add_node(p, pickup_nodes[request]);
-					//Vehicle old_vehicle_2 = routes[v1];
 					for (size_t td = p + 1; td < routes[v1].route.size(); td++) {
-						//routes[v1] = old_vehicle_2;
-						//routes[v1].add_delivery_transfer(td, tn, request);
 						
 						double pickup_costs = costs_of_inserting_request_with_transfer(routes[v1], p, td, request, true, tn);
-						//cout << "Here2\n";
-						//Vehicle old_vehicle_3 = routes[v2];
 						for (size_t tp = 1; tp < routes[v2].route.size() - 1; tp++) {
-							//routes[v2] = old_vehicle_3;
-							//routes[v2].add_pickup_transfer(tp, tn, 0, request);
-							//Vehicle old_vehicle_4 = routes[v2];
 							
 							double minimum_slack = *min_element(routes[v2].slack_at_node.begin(), routes[v2].slack_at_node.end());
-							//cout << "Here3\n";
-							if (true) {
+							if (routes[v1].time_at_node[td] + tn.service_time < routes[v2].time_at_node[tp] + minimum_slack) {
 								// Only look for possible transfers, e.g. when time windows are correct for the transfer
-								// routes[v1].time_at_node[td] + tn.service_time < routes[v2].time_at_node[tp] + minimum_slack
 
 								for (size_t d = tp + 1; d < routes[v2].route.size(); d++) {
-									//routes[v2] = old_vehicle_4;
-									//routes[v2].add_pickup_transfer(tp, tn, 0, request);
 									double delivery_costs = costs_of_inserting_request_with_transfer(routes[v2], tp, d, request, false, tn);
-									//cout << "Here4\n";
 									if (pickup_costs + delivery_costs < best_costs) {
-										//cout << "new best costs\n";
 										best_costs = pickup_costs + delivery_costs;
 										k1 = v1;
 										k2 = v2;
@@ -143,67 +117,13 @@ void Instance::greedy_route_insertion(size_t request) {
 						
 					}
 				}
-				/*
-				// v1 as delivery, v2 as pickup
-				//old_vehicle_1 = routes[v2];
-				for (size_t p = 1; p < routes[v2].route.size() - 2; p++) {
-					//routes[v2] = old_vehicle_1;
-					//routes[v2].add_node(p, pickup_nodes[request]);
-					//Vehicle old_vehicle_2 = routes[v2];
-					for (size_t td = p + 1; td < routes[v2].route.size() - 1; td++) {
-						//routes[v2] = old_vehicle_2;
-						//routes[v2].add_delivery_transfer(td, tn, request);
-						
-						double pickup_costs = costs_of_inserting_request_with_transfer(routes[v2], p, td, request, true, tn);
-						
-						//Vehicle old_vehicle_3 = routes[v1];
-						for (size_t tp = 0; tp < routes[v1].route.size() - 2; tp++) {
-							//routes[v1] = old_vehicle_3;
-							//routes[v1].add_pickup_transfer(tp, tn, 0, request);
-							//Vehicle old_vehicle_4 = routes[v1];
-							
-							double minimum_slack = *min_element(routes[v1].slack_at_node.begin(), routes[v1].slack_at_node.end());
-							if (routes[v2].time_at_node[td] + tn.service_time < routes[v1].time_at_node[tp] + minimum_slack) {
-								// Only look for possible transfers, e.g. when time windows are correct for the transfer
-
-								for (size_t d = tp + 1; d < routes[v1].route.size() - 1; d++) {
-									//routes[v1] = old_vehicle_4;
-									//routes[v1].add_pickup_transfer(tp, tn, 0, request);
-									double delivery_costs = costs_of_inserting_request_with_transfer(routes[v1], tp, d, request, false, tn);
-									if (pickup_costs + delivery_costs < best_costs) {
-										best_costs = pickup_costs + delivery_costs;
-										k1 = v2;
-										k2 = v1;
-										best_p = p;
-										best_d = d;
-										best_td = td;
-										best_tp = tp;
-										transfer_node = tn;
-									}
-								}
-							}
-						}
-					}
-				}*/
 			}
-			//cout << "After 2,2 ?\n";
 		}
-		//cout << "Also ends first for loop ?\n";
 	}
-	//cout << "also here then?\n";
-	
-	//}
-	// Add pickup node at best_p and transfer dilvery at best_td in k1
-	// Add transfer pickup at best_tp and delivery node at best_d in k2
-	//routes = old_routes;
 	routes[k1].add_node(best_p, pickup_nodes[request]);
-	//cout << "1\n";
 	routes[k1].add_delivery_transfer(best_td, transfer_node, request);
-	//cout << "2\n";
 	routes[k2].add_pickup_transfer(best_tp, transfer_node, 0, request);
-	//cout << "3\n";
 	routes[k2].add_node(best_d, delivery_nodes[request]);
-	//cout << "End of transfer\n";
 }
 
 
@@ -263,19 +183,29 @@ double Instance::costs_of_inserting_request_with_transfer(Vehicle v, size_t p, s
 	double arc_lengths = 0.0;
 	if (pickup) {
 		if (d == p + 1) {
+			if (p == 1) {
+				
+			}
 			// adding 3 arcs and deleting 1
 			arc_lengths += arcs[v.route[p-1].gen_idx][pickup_nodes[request].gen_idx] 
 						+ arcs[pickup_nodes[request].gen_idx][tn.gen_idx] 
 						+ arcs[tn.gen_idx][v.route[p].gen_idx] 
-						- v.arc_durations[p-1]; 
+						- arcs[v.route[p-1].gen_idx][v.route[p].gen_idx] // v.arc_durations[p-1]
 		} else {
+			if (p == 1 && d < v.route.size() - 1) {
+				
+			} else if (d == v.route.size() - 1 && p > 1) {
+				
+			} else {
+			
+			}
 			// adding 4 arcs and deleting 2
 			arc_lengths += arcs[v.route[p-1].gen_idx][pickup_nodes[request].gen_idx] 
 						+ arcs[pickup_nodes[request].gen_idx][v.route[p].gen_idx]
 						+ arcs[v.route[d-1].gen_idx][tn.gen_idx]
 						+ arcs[tn.gen_idx][v.route[d-1].gen_idx]
-						- v.arc_durations[p-1]
-						- v.arc_durations[d-2];
+						- arcs[v.route[p-1].gen_idx][v.route[p].gen_idx] // v.arc_durations[p-1]
+						- arcs[v.route[d-2].gen_idx][v.route[d-1].gen_idx]; // v.arc_durations[d-2]
 		}
 	} else {
 		if (d == p + 1) {
@@ -283,15 +213,15 @@ double Instance::costs_of_inserting_request_with_transfer(Vehicle v, size_t p, s
 			arc_lengths += arcs[v.route[p-1].gen_idx][tn.gen_idx] 
 						+ arcs[tn.gen_idx][delivery_nodes[request].gen_idx] 
 						+ arcs[delivery_nodes[request].gen_idx][v.route[p].gen_idx] 
-						- v.arc_durations[p-1]; 
+						- arcs[v.route[p-1].gen_idx][v.route[p].gen_idx];  // v.arc_durations[p-1]
 		} else {
 			// adding 4 arcs and deleting 2
 			arc_lengths += arcs[v.route[p-1].gen_idx][tn.gen_idx] 
 						+ arcs[tn.gen_idx][v.route[p].gen_idx]
 						+ arcs[v.route[d-1].gen_idx][delivery_nodes[request].gen_idx]
 						+ arcs[delivery_nodes[request].gen_idx][v.route[d-1].gen_idx]
-						- v.arc_durations[p-1]
-						- v.arc_durations[d-2];
+						- arcs[v.route[p-1].gen_idx][v.route[p].gen_idx] // v.arc_durations[p-1]
+						- arcs[v.route[d-2].gen_idx][v.route[d-1].gen_idx]; // v.arc_durations[d-2]
 		}
 	}
 	return travel_cost*arc_lengths;

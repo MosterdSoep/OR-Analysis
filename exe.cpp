@@ -4,6 +4,8 @@
 #include <random>
 #include <numeric>
 #include "instance.h"
+#include <chrono>
+
 using namespace std;
 
 // General variables
@@ -35,6 +37,8 @@ bool stopping_criterion_met(size_t loop_count) {
 void ALNS(Instance &i) {
 	transfer_nodes[0].open = true;
 	
+	auto start = chrono::high_resolution_clock::now();
+	
 	double best_solution = i.calculate_obj_val();
 	double current_solution = best_solution;
 	vector<Vehicle> best_routes{};
@@ -52,6 +56,8 @@ void ALNS(Instance &i) {
 	vector<double> deletion_scores = {1,1};
 	vector<double> deletion_rewards = {0,0};
 
+	//vector<double> insertion_scores = {1};
+	//vector<double> insertion_rewards = {0};
 	vector<double> insertion_scores = {1,1};
 	vector<double> insertion_rewards = {0,0};
 	while(!stopping_criterion_met(loop_count)) {
@@ -70,8 +76,8 @@ void ALNS(Instance &i) {
 		}
 		vector<size_t> request_bank;
 		
-		//size_t amount = (rand() % (int(log(i.request_amount)/log(1.5))+1) ) + 1;
-		size_t amount = (rand() % 1) + 1;
+		size_t amount = (rand() % (int(log(i.request_amount)/log(1.5))+1) ) + 1;
+		//size_t amount = (rand() % 1) + 1;
 		discrete_distribution<> delete_op({deletion_scores[0],deletion_scores[1]});
 		size_t delete_operator = delete_op(gen);
 		
@@ -87,13 +93,15 @@ void ALNS(Instance &i) {
 				}
 				break;
 		}
-		//i.remove_empty_vehicle();
+		i.remove_empty_vehicle();
 		
 		discrete_distribution<> insert_op({insertion_scores[0],insertion_scores[1]});
+		//discrete_distribution<> insert_op({insertion_scores[0]});
 		size_t insert_operator = insert_op(gen);
 
 		switch (insert_operator) {
 			case 0 :
+				//cout << "Greedy insertion with score: " << insertion_scores[insert_operator] << ", at loop: " << loop_count << "\n";
 				for (size_t r : request_bank) {
 					size_t req_loc = i.greedy_request_insertion(request_bank);
 					request_bank.erase(request_bank.begin() + req_loc);
@@ -101,11 +109,11 @@ void ALNS(Instance &i) {
 				request_bank.clear();
 				break;
 			case 1 :
-				cout << "Transfer insertion now\n";
+				//cout << "Transfer insertion with score: " << insertion_scores[insert_operator] << ", at loop: " << loop_count << "\n";
 				for (size_t index = 0; index < request_bank.size(); index++) {
 					i.greedy_route_insertion(request_bank[index]);
 				}
-				cout << "After transfer insertion\n";
+				//cout << "After transfer insertion\n";
 				request_bank.clear();
 				break;
 			default : cout << "No insert error\n";
@@ -116,16 +124,19 @@ void ALNS(Instance &i) {
 		bool accepted3 = false;
 		double s = i.calculate_obj_val();
 		if (s < best_solution) {
+			//cout << "New solution\n";
 			accepted1 = true;
 		} else if (s < current_solution) {
+			//cout << "New solution\n";
 			accepted2 = true;
 		} else if (acceptation_criterion_met(s, current_solution, loop_count)) {
+			//cout << "New solution\n";
 			accepted3 = true;
 		}
 
 		if (accepted1) {
 			if(i.is_feasible()) {
-				cout << "Feasible new best solution?\n";
+				//cout << "Feasible new best solution?\n";
 				deletion_rewards[delete_operator] += 33;
 				insertion_rewards[insert_operator] += 33;
 				best_solution = s;
@@ -167,10 +178,12 @@ void ALNS(Instance &i) {
 			delivery_vehicle = i.old_delivery_vehicle;
 			costs_rejection++;
 		}
-		cout << "end of ALNS loop: " << loop_count << "\n";
 	}
+	auto finish = chrono::high_resolution_clock::now();
+	chrono::duration<double> elapsed = finish - start;
 	i.routes = best_routes;
 	i.print_routes();
+	cout << "Elapsed time: " << elapsed.count() << " s\n";
 	cout << "Total number of rejections: " << (costs_rejection + feasibility_rejection) << "\n";
 	cout << "Amount of costs rejection: " << costs_rejection << "\n";
 	cout << "Amount of feasibility rejection: " << feasibility_rejection << "\n";

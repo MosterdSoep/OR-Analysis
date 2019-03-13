@@ -77,51 +77,57 @@ void Instance::greedy_route_insertion(size_t request) {
 	for (Transfer_Node tn : transfer_nodes) {
 		if (tn.open) { open_facilities.push_back(tn); }
 	}
-	cout << "here\n";
+	//cout << "here\n";
 	//for(size_t request : request_bank) {
 	//vector<Vehicle> old_routes = routes;
 	for (Transfer_Node tn : open_facilities) {
-		cout << "Here now\n";
+		//cout << "Here now\n";
+		//cout << "Index: " << tn.index << ", general index: " << tn.gen_idx << "\n";
+		//cout << routes.size() << "\n";
 		for (size_t v1 = 0; v1 < routes.size(); v1++) {
-			cout << "here now1\n";
+			//cout << "here now1\n";
 			for (size_t v2 = 0; v2 < routes.size(); v2++) {
+				//cout << "here now12\n";
+				
 				if (v1 == v2) {
+					//cout << "v1: " << v1 << ", v2: " << v2 << "\n";
 					continue;
 				}
 				// All possible pairs of vehicles
 				
-				cout << "Here1\n";
+				//cout << "Here1\n";
 				
 				// v1 as pickup, v2 as delivery
 				//Vehicle old_vehicle_1 = routes[v1];
-				for (size_t p = 1; p < routes[v1].route.size() - 2; p++) {
+				for (size_t p = 1; p < routes[v1].route.size() - 1; p++) {
 					//routes[v1] = old_vehicle_1;
 					//routes[v1].add_node(p, pickup_nodes[request]);
 					//Vehicle old_vehicle_2 = routes[v1];
-					for (size_t td = p + 1; td < routes[v1].route.size() - 1; td++) {
+					for (size_t td = p + 1; td < routes[v1].route.size(); td++) {
 						//routes[v1] = old_vehicle_2;
 						//routes[v1].add_delivery_transfer(td, tn, request);
 						
 						double pickup_costs = costs_of_inserting_request_with_transfer(routes[v1], p, td, request, true, tn);
-						cout << "Here2\n";
+						//cout << "Here2\n";
 						//Vehicle old_vehicle_3 = routes[v2];
-						for (size_t tp = 0; tp < routes[v2].route.size() - 2; tp++) {
+						for (size_t tp = 1; tp < routes[v2].route.size() - 1; tp++) {
 							//routes[v2] = old_vehicle_3;
 							//routes[v2].add_pickup_transfer(tp, tn, 0, request);
 							//Vehicle old_vehicle_4 = routes[v2];
 							
 							double minimum_slack = *min_element(routes[v2].slack_at_node.begin(), routes[v2].slack_at_node.end());
-							cout << "Here3\n";
+							//cout << "Here3\n";
 							if (true) {
 								// Only look for possible transfers, e.g. when time windows are correct for the transfer
 								// routes[v1].time_at_node[td] + tn.service_time < routes[v2].time_at_node[tp] + minimum_slack
 
-								for (size_t d = tp + 1; d < routes[v2].route.size() - 1; d++) {
+								for (size_t d = tp + 1; d < routes[v2].route.size(); d++) {
 									//routes[v2] = old_vehicle_4;
 									//routes[v2].add_pickup_transfer(tp, tn, 0, request);
 									double delivery_costs = costs_of_inserting_request_with_transfer(routes[v2], tp, d, request, false, tn);
-									cout << "Here4\n";
+									//cout << "Here4\n";
 									if (pickup_costs + delivery_costs < best_costs) {
+										//cout << "new best costs\n";
 										best_costs = pickup_costs + delivery_costs;
 										k1 = v1;
 										k2 = v2;
@@ -180,16 +186,24 @@ void Instance::greedy_route_insertion(size_t request) {
 					}
 				}*/
 			}
+			//cout << "After 2,2 ?\n";
 		}
+		//cout << "Also ends first for loop ?\n";
 	}
+	//cout << "also here then?\n";
+	
 	//}
 	// Add pickup node at best_p and transfer dilvery at best_td in k1
 	// Add transfer pickup at best_tp and delivery node at best_d in k2
 	//routes = old_routes;
 	routes[k1].add_node(best_p, pickup_nodes[request]);
+	//cout << "1\n";
 	routes[k1].add_delivery_transfer(best_td, transfer_node, request);
+	//cout << "2\n";
 	routes[k2].add_pickup_transfer(best_tp, transfer_node, 0, request);
+	//cout << "3\n";
 	routes[k2].add_node(best_d, delivery_nodes[request]);
+	//cout << "End of transfer\n";
 }
 
 

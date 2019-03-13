@@ -157,6 +157,7 @@ double Vehicle::add_delivery_transfer(size_t location, Transfer_Node &node, size
     Transfer_Node fictional_node = node;
     fictional_node.pickup = 0;
     fictional_node.request_idx = r;
+	fictional_node.gen_idx = node.gen_idx;
 
     route.insert(route.begin() + location, fictional_node);
     if (location == 1){
@@ -190,14 +191,22 @@ void Vehicle::add_pickup_transfer(size_t location, Transfer_Node &node, double m
     fictional_node.pickup = 1;
     fictional_node.request_idx = r;
     fictional_node.lower_bound = min_time; //update the lower bound for pickup to the time at which the transfer is ready
+	fictional_node.gen_idx = node.gen_idx;
 
     route.insert(route.begin() + location, fictional_node);
+
     if (location == 1){
         change_first_depot();
     }
     if (location == route.size() - 2){
         change_last_depot();
-    }
+    }/*
+	cout << "gen idx of node in route: " << route[location - 1].gen_idx << "\n";
+	cout << "fictional node gen idx: " << fictional_node.gen_idx << "\n";
+	cout << "location: " << location << "\n";
+	cout << "route size: " << route.size() << "\n";
+	cout << "arc between the nodes: " << arcs[route[location - 1].gen_idx][fictional_node.gen_idx] << "\n";*/
+	
     arc_durations.insert(arc_durations.begin() + location - 1, arcs[route[location - 1].gen_idx][fictional_node.gen_idx]);
     arc_durations[location] = arcs[fictional_node.gen_idx][route[location + 1].gen_idx];
 

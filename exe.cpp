@@ -70,7 +70,8 @@ void ALNS(Instance &i) {
 		}
 		vector<size_t> request_bank;
 		
-		size_t amount = (rand() % (int(log(i.request_amount)/log(1.5))+1) ) + 1;
+		//size_t amount = (rand() % (int(log(i.request_amount)/log(1.5))+1) ) + 1;
+		size_t amount = (rand() % 1) + 1;
 		discrete_distribution<> delete_op({deletion_scores[0],deletion_scores[1]});
 		size_t delete_operator = delete_op(gen);
 		
@@ -86,7 +87,7 @@ void ALNS(Instance &i) {
 				}
 				break;
 		}
-		i.remove_empty_vehicle();
+		//i.remove_empty_vehicle();
 		
 		discrete_distribution<> insert_op({insertion_scores[0],insertion_scores[1]});
 		size_t insert_operator = insert_op(gen);
@@ -165,8 +166,8 @@ void ALNS(Instance &i) {
 			pickup_vehicle = i.old_pickup_vehicle;
 			delivery_vehicle = i.old_delivery_vehicle;
 			costs_rejection++;
-
 		}
+		cout << "end of ALNS loop: " << loop_count << "\n";
 	}
 	i.routes = best_routes;
 	i.print_routes();

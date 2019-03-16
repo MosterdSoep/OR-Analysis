@@ -106,18 +106,17 @@ void Vehicle::add_node(size_t location, Pickup_Node &node){
         change_last_depot();
     }
 
-    arc_durations.insert(arc_durations.begin() + location - 1, arcs[route[location - 1].gen_idx][node.gen_idx]);
-    arc_durations[location] = arcs[node.gen_idx][route[location + 1].gen_idx];
-
-    //update capacity and times
     current_capacity.insert(current_capacity.begin() + location, current_capacity[location - 1]);
     waiting_times.insert(waiting_times.begin() + location, 0);
     time_at_node.insert(time_at_node.begin() + location, 0);
     slack_at_node.insert(slack_at_node.begin() + location, 0);
     for(size_t idx = location; idx < route.size(); idx++){
         current_capacity[idx]++;
-        time_at_node[idx] = time_at_node[idx - 1] + arc_durations[idx - 1] + route[idx - 1].service_time + waiting_times[idx - 1];
-        if(time_at_node[idx] < route[idx].lower_bound){
+        time_at_node[idx] = time_at_node[idx - 1] 
+							+ arcs[route[idx-1].gen_idx][route[idx].gen_idx] 
+							+ route[idx - 1].service_time 
+							+ waiting_times[idx - 1];
+		if (time_at_node[idx] < route[idx].lower_bound) {
             waiting_times[idx] = route[idx].lower_bound - time_at_node[idx];
         }
         slack_at_node[idx] = route[idx].upper_bound - time_at_node[idx];
@@ -133,18 +132,18 @@ void Vehicle::add_node(size_t location, Delivery_Node &node){
     if (location == route.size() - 2){
         change_last_depot();
     }
-    arc_durations.insert(arc_durations.begin() + location - 1, arcs[route[location - 1].gen_idx][node.gen_idx]);
-    arc_durations[location] = arcs[node.gen_idx][route[location + 1].gen_idx];
 
-    //update capacity and times
     current_capacity.insert(current_capacity.begin() + location, current_capacity[location - 1]);
     waiting_times.insert(waiting_times.begin() + location, 0);
     time_at_node.insert(time_at_node.begin() + location, 0);
     slack_at_node.insert(slack_at_node.begin() + location, 0);
     for(size_t idx = location; idx < route.size(); idx++){
         current_capacity[idx]--;
-        time_at_node[idx] = time_at_node[idx - 1] + arc_durations[idx - 1] + route[idx - 1].service_time + waiting_times[idx - 1];
-        if(time_at_node[idx] < route[idx].lower_bound){
+        time_at_node[idx] = time_at_node[idx - 1] 
+							+ arcs[route[idx-1].gen_idx][route[idx].gen_idx] 
+							+ route[idx - 1].service_time 
+							+ waiting_times[idx - 1];
+        if (time_at_node[idx] < route[idx].lower_bound) {
             waiting_times[idx] = route[idx].lower_bound - time_at_node[idx];
         }
         slack_at_node[idx] = route[idx].upper_bound - time_at_node[idx];
@@ -160,29 +159,32 @@ double Vehicle::add_delivery_transfer(size_t location, Transfer_Node &node, size
 	fictional_node.gen_idx = node.gen_idx;
 
     route.insert(route.begin() + location, fictional_node);
+	
     if (location == 1){
         change_first_depot();
     }
     if (location == route.size() - 2){
         change_last_depot();
     }
-    arc_durations.insert(arc_durations.begin() + location - 1, arcs[route[location - 1].gen_idx][fictional_node.gen_idx]);
-    arc_durations[location] = arcs[fictional_node.gen_idx][route[location + 1].gen_idx];
 
-    //update capacity and times
     current_capacity.insert(current_capacity.begin() + location, current_capacity[location - 1]);
     waiting_times.insert(waiting_times.begin() + location, 0);
     time_at_node.insert(time_at_node.begin() + location, 0);
     slack_at_node.insert(slack_at_node.begin() + location, 0);
     for(size_t idx = location; idx < route.size(); idx++){
         current_capacity[idx]--;
-        time_at_node[idx] = time_at_node[idx - 1] + arc_durations[idx - 1] + route[idx - 1].service_time + waiting_times[idx - 1];
+        time_at_node[idx] = time_at_node[idx - 1] 
+							+ arcs[route[idx-1].gen_idx][route[idx].gen_idx] 
+							+ route[idx - 1].service_time 
+							+ waiting_times[idx - 1];
         if(time_at_node[idx] < route[idx].lower_bound){
             waiting_times[idx] = route[idx].lower_bound - time_at_node[idx];
         }
         slack_at_node[idx] = route[idx].upper_bound - time_at_node[idx];
     }
-    return time_at_node[location] + node.service_time; //returns the time at which pickup can start
+	
+	// Returns the time at which pickup can start
+    return time_at_node[location] + node.service_time;
 }
 
 void Vehicle::add_pickup_transfer(size_t location, Transfer_Node &node, double min_time, size_t r){
@@ -200,24 +202,18 @@ void Vehicle::add_pickup_transfer(size_t location, Transfer_Node &node, double m
     }
     if (location == route.size() - 2){
         change_last_depot();
-    }/*
-	cout << "gen idx of node in route: " << route[location - 1].gen_idx << "\n";
-	cout << "fictional node gen idx: " << fictional_node.gen_idx << "\n";
-	cout << "location: " << location << "\n";
-	cout << "route size: " << route.size() << "\n";
-	cout << "arc between the nodes: " << arcs[route[location - 1].gen_idx][fictional_node.gen_idx] << "\n";*/
+    }
 	
-    arc_durations.insert(arc_durations.begin() + location - 1, arcs[route[location - 1].gen_idx][fictional_node.gen_idx]);
-    arc_durations[location] = arcs[fictional_node.gen_idx][route[location + 1].gen_idx];
-
-    //update capacity and times
     current_capacity.insert(current_capacity.begin() + location, current_capacity[location - 1]);
     waiting_times.insert(waiting_times.begin() + location, 0);
     time_at_node.insert(time_at_node.begin() + location, 0);
     slack_at_node.insert(slack_at_node.begin() + location, 0);
     for(size_t idx = location; idx < route.size(); idx++){
         current_capacity[idx]++;
-        time_at_node[idx] = time_at_node[idx - 1] + arc_durations[idx - 1] + route[idx - 1].service_time + waiting_times[idx - 1];
+        time_at_node[idx] = time_at_node[idx - 1] 
+							+ arcs[route[idx-1].gen_idx][route[idx].gen_idx] 
+							+ route[idx - 1].service_time 
+							+ waiting_times[idx - 1];
         if(time_at_node[idx] < route[idx].lower_bound){
             waiting_times[idx] = route[idx].lower_bound - time_at_node[idx];
         }
@@ -227,8 +223,6 @@ void Vehicle::add_pickup_transfer(size_t location, Transfer_Node &node, double m
 }
 
 void Vehicle::remove_node(size_t location){
-	arc_durations[location] = arcs[route[location - 1].gen_idx][route[location + 1].gen_idx];
-	arc_durations.erase(arc_durations.begin() + location - 1);
 	waiting_times.erase(waiting_times.begin() + location); // Waiting times not optimal, could possibly wait less in other nodes but that may change feasibility
 
 	// Changing the capacity of the vehicle depends on the node that is being removed
@@ -257,7 +251,10 @@ void Vehicle::remove_node(size_t location){
     }
 
     for(size_t idx = location; idx < route.size(); idx++){
-        time_at_node[idx] = time_at_node[idx - 1] + arc_durations[idx - 1] + route[idx - 1].service_time + waiting_times[idx - 1];
+        time_at_node[idx] = time_at_node[idx - 1] 
+							+ arcs[route[idx-1].gen_idx][route[idx].gen_idx] 
+							+ route[idx - 1].service_time 
+							+ waiting_times[idx - 1];
         if(time_at_node[idx] < route[idx].lower_bound){
             waiting_times[idx] = route[idx].lower_bound - time_at_node[idx];
         }

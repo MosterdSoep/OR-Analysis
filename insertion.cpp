@@ -181,48 +181,44 @@ double Instance::costs_of_inserting_request(Vehicle v, size_t p, size_t d, size_
 
 double Instance::costs_of_inserting_request_with_transfer(Vehicle v, size_t p, size_t d, size_t request, bool pickup, Transfer_Node tn) {
 	double arc_lengths = 0.0;
+	
+	// Pickup means that the vehicle gets the request from the pickup node
 	if (pickup) {
 		if (d == p + 1) {
-			if (p == 1) {
-				
-			}
-			// adding 3 arcs and deleting 1
-			arc_lengths += arcs[v.route[p-1].gen_idx][pickup_nodes[request].gen_idx] 
-						+ arcs[pickup_nodes[request].gen_idx][tn.gen_idx] 
-						+ arcs[tn.gen_idx][v.route[p].gen_idx] 
-						- arcs[v.route[p-1].gen_idx][v.route[p].gen_idx] // v.arc_durations[p-1]
+			arc_lengths += arcs[pickup_nodes[request].gen_idx][tn.gen_idx]
+							- arcs[v.route[p-1].gen_idx][v.route[p].gen_idx];
 		} else {
-			if (p == 1 && d < v.route.size() - 1) {
-				
-			} else if (d == v.route.size() - 1 && p > 1) {
-				
-			} else {
-			
-			}
-			// adding 4 arcs and deleting 2
-			arc_lengths += arcs[v.route[p-1].gen_idx][pickup_nodes[request].gen_idx] 
-						+ arcs[pickup_nodes[request].gen_idx][v.route[p].gen_idx]
-						+ arcs[v.route[d-1].gen_idx][tn.gen_idx]
-						+ arcs[tn.gen_idx][v.route[d-1].gen_idx]
-						- arcs[v.route[p-1].gen_idx][v.route[p].gen_idx] // v.arc_durations[p-1]
-						- arcs[v.route[d-2].gen_idx][v.route[d-1].gen_idx]; // v.arc_durations[d-2]
+			arc_lengths += arcs[pickup_nodes[request]][v.route[p].gen_idx]
+							+ arcs[v.route[d-2].gen_idx][tn.gen_idx]
+							- arcs[v.route[p-1].gen_idx][v.route[p].gen_idx]
+							- arcs[v.route[d-2].gen_idx][v.route[d-1].gen_idx];
 		}
 	} else {
 		if (d == p + 1) {
-			// adding 3 arcs and deleting 1
-			arc_lengths += arcs[v.route[p-1].gen_idx][tn.gen_idx] 
-						+ arcs[tn.gen_idx][delivery_nodes[request].gen_idx] 
-						+ arcs[delivery_nodes[request].gen_idx][v.route[p].gen_idx] 
-						- arcs[v.route[p-1].gen_idx][v.route[p].gen_idx];  // v.arc_durations[p-1]
+			arc_lengths += arcs[tn.gen_idx][delivery_nodes[request].gen_idx]
+							- arcs[v.route[p-1].gen_idx][v.route[p].gen_idx];
 		} else {
-			// adding 4 arcs and deleting 2
-			arc_lengths += arcs[v.route[p-1].gen_idx][tn.gen_idx] 
-						+ arcs[tn.gen_idx][v.route[p].gen_idx]
-						+ arcs[v.route[d-1].gen_idx][delivery_nodes[request].gen_idx]
-						+ arcs[delivery_nodes[request].gen_idx][v.route[d-1].gen_idx]
-						- arcs[v.route[p-1].gen_idx][v.route[p].gen_idx] // v.arc_durations[p-1]
-						- arcs[v.route[d-2].gen_idx][v.route[d-1].gen_idx]; // v.arc_durations[d-2]
+			arc_lengths += arcs[tn.gen_idx][v.route[p].gen_idx]
+							+ arcs[v.route[d-2].gen_idx][delivery_nodes[request].gen_idx]
+							- arcs[v.route[p-1].gen_idx][v.route[p].gen_idx]
+							- arcs[v.route[d-2].gen_idx][v.route[d-1].gen_idx];
 		}
 	}
+	
+	// Now need to add 2 arcs, to the 'pickup' node and from the 'delivery' node
+	// May need to change depot
+	if (p > 0 && d < v.route.size()-1) {
+		if (pickup) arc_lengths += arcs[v.route[p-1].gen_idx][pickup_nodes[request].gen_idx] + arcs[tn.gen_idx][v.route[d-1].gen_idx];
+		else arc_lengths += arcs[v.route[p-1].gen_idx][tn.gen_idx] + arcs[delivery_nodes[request].gen_idx][v.route[d-1].gen_idx];
+	} else if (p > 0 && d == v.route.size() - 1) {
+		// Change ending depot
+	} else if (p == 0 && d < v.route.size() - 1) {
+		// Change beginning depot
+	} else if (p == 0 && d == v.route.size() - 1) {
+		// Change both depots
+	} else {
+		cout << "Error calculating costs for transfer insertion!\n";
+	}
+	
 	return travel_cost*arc_lengths;
 }

@@ -25,7 +25,6 @@ class Vehicle {
   public:
 	size_t v_index = 0;
 	vector<Node> route = {};
-	vector<double> arc_durations = {0};			// Length of every arc that the vehicle traverses
 	vector<double> waiting_times = {0,0};		// The amount of time the vehicle waits at every node
 	vector<size_t> current_capacity = {0,0};	// The amount of requests in the vehicle at every node
 	vector<double> time_at_node = {0,0};		// The arrival time and consequently the begin of service time at every node

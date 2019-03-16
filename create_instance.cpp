@@ -154,7 +154,9 @@ void Instance::calculate_arcs() {
 double Instance::calculate_obj_val() {
 	double total_distance = 0;
 	for (Vehicle v : routes) {
-		total_distance += accumulate(v.arc_durations.begin(),v.arc_durations.end(),0);
+		for (size_t i = 0; i < v.route.size() - 1; i++) {
+			total_distance += arcs[v.route[i].gen_idx][v.route[i + 1].gen_idx];
+		}
 	}
 	double facility_costs = 0;
 	for (Transfer_Node node : transfer_nodes) {

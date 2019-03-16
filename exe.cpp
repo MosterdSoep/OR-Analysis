@@ -58,8 +58,8 @@ void ALNS(Instance &i) {
 
 	//vector<double> insertion_scores = {1};
 	//vector<double> insertion_rewards = {0};
-	vector<double> insertion_scores = {1,1};
-	vector<double> insertion_rewards = {0,0};
+	vector<double> insertion_scores = {1};
+	vector<double> insertion_rewards = {0};
 	while(!stopping_criterion_met(loop_count)) {
 		i.old_routes = i.routes;
 		i.old_pickup_vehicle = pickup_vehicle;
@@ -78,7 +78,7 @@ void ALNS(Instance &i) {
 		
 		size_t amount = (rand() % (int(log(i.request_amount)/log(1.5))+1) ) + 1;
 		//size_t amount = (rand() % 1) + 1;
-		discrete_distribution<> delete_op({deletion_scores[0],deletion_scores[1]});
+		discrete_distribution<> delete_op({deletion_scores[0]});
 		size_t delete_operator = delete_op(gen);
 		
 		switch (delete_operator) {

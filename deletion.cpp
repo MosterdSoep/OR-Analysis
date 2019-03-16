@@ -84,15 +84,15 @@ double Instance::costs_of_removing_request(size_t request) {
 	size_t de_vehicle = delivery_vehicle[request];
 	double arc_lengths = 0.0;
 	
-	size_t p = -1, d = -1, td -1, tp = -1;
-	for (size_t i = 0; i < pu_vehicle.route.size(); i++) {
-		if (pu_vehicle.route[i].request_idx == request) {
+	size_t p = -1, d = -1, td = -1, tp = -1;
+	for (size_t i = 0; i < routes[pu_vehicle].route.size(); i++) {
+		if (routes[pu_vehicle].route[i].request_idx == request) {
 			if (p == -1) p = i;
 			else td = i;
 		}
 	}
-	for (size_t i = 0; i < de_vehicle.route.size(); i++) {
-		if (de_vehicle.route[i].request_idx == request) {
+	for (size_t i = 0; i < routes[de_vehicle].route.size(); i++) {
+		if (routes[de_vehicle].route[i].request_idx == request) {
 			if (tp == -1) tp = i;
 			else d = i;
 		}
@@ -102,51 +102,51 @@ double Instance::costs_of_removing_request(size_t request) {
 		
 	} else {
 		if (d == p + 1) {
-			arc_lengths -= (arcs[pu_vehicle.route[p].gen_idx][pu_vehicle.route[d].gen_idx]
-							+ arcs[v.route[p-1].gen_idx][v.route[p].gen_idx]
-							+ arcs[v.route[d-1].gen_idx][v.route[d].gen_idx]);
+			arc_lengths -= (arcs[routes[de_vehicle].route[p].gen_idx][routes[de_vehicle].route[d].gen_idx]
+							+ arcs[routes[de_vehicle].route[p-1].gen_idx][routes[de_vehicle].route[p].gen_idx]
+							+ arcs[routes[de_vehicle].route[d-1].gen_idx][routes[de_vehicle].route[d].gen_idx]);
 		} else {
-			arc_lengths -= (arcs[pu_vehicle.route[p].gen_idx][pu_vehicle.route[p+1].gen_idx]
-							+ arcs[pu_vehicle.route[d-1].gen_idx][pu_vehicle.route[d].gen_idx]
-							+ arcs[v.route[p-1].gen_idx][v.route[p].gen_idx]
-							+ arcs[v.route[d-1].gen_idx][v.route[d].gen_idx]);
+			arc_lengths -= (arcs[routes[de_vehicle].route[p].gen_idx][routes[de_vehicle].route[p+1].gen_idx]
+							+ arcs[routes[de_vehicle].route[d-1].gen_idx][routes[de_vehicle].route[d].gen_idx]
+							+ arcs[routes[de_vehicle].route[p-1].gen_idx][routes[de_vehicle].route[p].gen_idx]
+							+ arcs[routes[de_vehicle].route[d-1].gen_idx][routes[de_vehicle].route[d].gen_idx]);
 		}
 		
-		if (p > 1 && d < v.route.size() - 2) {
-			arc_lengths += arcs[v.route[p-1].gen_idx][v.route[p+1].gen_idx] 
-							+ arcs[v.route[d-1].gen_idx][v.route[d+1].gen_idx];
-		} else if (p > 1 && d == v.route.size() - 2) {
+		if (p > 1 && d < routes[de_vehicle].route.size() - 2) {
+			arc_lengths += arcs[routes[de_vehicle].route[p-1].gen_idx][routes[de_vehicle].route[p+1].gen_idx] 
+							+ arcs[routes[de_vehicle].route[d-1].gen_idx][routes[de_vehicle].route[d+1].gen_idx];
+		} else if (p > 1 && d == routes[de_vehicle].route.size() - 2) {
 			// Change ending depot then add
-			arc_lengths += arcs[v.route[p-1].gen_idx][v.route[p+1].gen_idx];
+			arc_lengths += arcs[routes[de_vehicle].route[p-1].gen_idx][routes[de_vehicle].route[p+1].gen_idx];
 			
 			double min_val = numeric_limits<double>::max();
 			for(size_t idx = 0; idx < depot_nodes.size(); idx++){
-				if(min_val > arcs[v.route[v.route.size() - 2].gen_idx][depot_nodes[idx].gen_idx]){
-					min_val = arcs[v.route[v.route.size() - 2].gen_idx][depot_nodes[idx].gen_idx];
+				if(min_val > arcs[routes[de_vehicle].route[routes[de_vehicle].route.size() - 2].gen_idx][depot_nodes[idx].gen_idx]){
+					min_val = arcs[routes[de_vehicle].route[routes[de_vehicle].route.size() - 2].gen_idx][depot_nodes[idx].gen_idx];
 				}
 			}
 			arc_lengths += min_val;
-		} else if (p == 1 && d < v.route.size() - 1) {
+		} else if (p == 1 && d < routes[de_vehicle].route.size() - 1) {
 			// Change beginning depot then add arcs
-			arc_lengths += arcs[v.route[d-1].gen_idx][v.route[d+1].gen_idx];
+			arc_lengths += arcs[routes[de_vehicle].route[d-1].gen_idx][routes[de_vehicle].route[d+1].gen_idx];
 			
 			double min_val = numeric_limits<double>::max();
 			for(size_t idx = 0; idx < depot_nodes.size(); idx++){
-				if(min_val > arcs[depot_nodes[idx].gen_idx][v.route[p+1].gen_idx]){
-					min_val = arcs[depot_nodes[idx].gen_idx][v.route[p+1].gen_idx];
+				if(min_val > arcs[depot_nodes[idx].gen_idx][routes[de_vehicle].route[p+1].gen_idx]){
+					min_val = arcs[depot_nodes[idx].gen_idx][routes[de_vehicle].route[p+1].gen_idx];
 				}
 			}
-		} else if (p == 1 && d == v.route.size() - 1) {
+		} else if (p == 1 && d == routes[de_vehicle].route.size() - 1) {
 			// Change both depots then add arcs
 			
 			double min_val_start = numeric_limits<double>::max();
 			double min_val_end = numeric_limits<double>::max();
 			for(size_t idx = 0; idx < depot_nodes.size(); idx++){
-				if(min_val_end > arcs[v.route[v.route.size() - 2].gen_idx][depot_nodes[idx].gen_idx]){
-					min_val_end = arcs[v.route[v.route.size() - 2].gen_idx][depot_nodes[idx].gen_idx];
+				if(min_val_end > arcs[routes[de_vehicle].route[routes[de_vehicle].route.size() - 2].gen_idx][depot_nodes[idx].gen_idx]){
+					min_val_end = arcs[routes[de_vehicle].route[routes[de_vehicle].route.size() - 2].gen_idx][depot_nodes[idx].gen_idx];
 				}
-				if(min_val_start > arcs[depot_nodes[idx].gen_idx][v.route[p+1].gen_idx]){
-					min_val_start = arcs[depot_nodes[idx].gen_idx][v.route[p+1].gen_idx];
+				if(min_val_start > arcs[depot_nodes[idx].gen_idx][routes[de_vehicle].route[p+1].gen_idx]){
+					min_val_start = arcs[depot_nodes[idx].gen_idx][routes[de_vehicle].route[p+1].gen_idx];
 				}
 			}
 			arc_lengths += min_val_start + min_val_end;

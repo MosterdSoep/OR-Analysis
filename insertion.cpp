@@ -138,7 +138,7 @@ double Instance::costs_of_inserting_request(Vehicle v, size_t p, size_t d, size_
 		arc_lengths += arcs[pickup_nodes[request].gen_idx][delivery_nodes[request].gen_idx]
 						- arcs[v.route[p-1].gen_idx][v.route[p].gen_idx];
 	} else {
-		arc_lengths += arcs[pickup_nodes[request]][v.route[p].gen_idx]
+		arc_lengths += arcs[pickup_nodes[request].gen_idx][v.route[p].gen_idx]
 						+ arcs[v.route[d-2].gen_idx][delivery_nodes[request].gen_idx]
 						- arcs[v.route[p-1].gen_idx][v.route[p].gen_idx]
 						- arcs[v.route[d-2].gen_idx][v.route[d-1].gen_idx];
@@ -210,7 +210,7 @@ double Instance::costs_of_inserting_request_with_transfer_pickup(Vehicle v, size
 		arc_lengths += arcs[pickup_nodes[request].gen_idx][tn.gen_idx]
 						- arcs[v.route[p-1].gen_idx][v.route[p].gen_idx];
 	} else {
-		arc_lengths += arcs[pickup_nodes[request]][v.route[p].gen_idx]
+		arc_lengths += arcs[pickup_nodes[request].gen_idx][v.route[p].gen_idx]
 						+ arcs[v.route[d-2].gen_idx][tn.gen_idx]
 						- arcs[v.route[p-1].gen_idx][v.route[p].gen_idx]
 						- arcs[v.route[d-2].gen_idx][v.route[d-1].gen_idx];

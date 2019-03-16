@@ -152,7 +152,7 @@ void Instance::calculate_arcs() {
 }
 
 double Instance::calculate_obj_val() {
-	double total_distance = 0;
+	double total_distance = 0.0;
 	for (Vehicle v : routes) {
 		for (size_t i = 0; i < v.route.size() - 1; i++) {
 			total_distance += arcs[v.route[i].gen_idx][v.route[i + 1].gen_idx];

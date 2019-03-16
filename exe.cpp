@@ -35,7 +35,7 @@ bool stopping_criterion_met(size_t loop_count) {
 }
 
 void ALNS(Instance &i) {
-	transfer_nodes[0].open = true;
+	//transfer_nodes[0].open = true;
 	
 	auto start = chrono::high_resolution_clock::now();
 	

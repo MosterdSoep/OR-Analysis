@@ -47,7 +47,8 @@ class Instance{
 		void greedy_route_insertion(size_t request);
 		void random_route_insertion(size_t request);
 		double costs_of_inserting_request(Vehicle v, size_t p, size_t d, size_t request);
-		double costs_of_inserting_request_with_transfer(Vehicle v, size_t p, size_t d, size_t request, bool pickup, Transfer_Node tn);
+		double costs_of_inserting_request_with_transfer_pickup(Vehicle v, size_t p, size_t d, size_t request, Transfer_Node tn);
+		double costs_of_inserting_request_with_transfer_delivery(Vehicle v, size_t p, size_t d, size_t request, Transfer_Node tn);
 
 		// Feasibility
 		bool is_feasible();

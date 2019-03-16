@@ -182,7 +182,6 @@ double Instance::costs_of_inserting_request(Vehicle v, size_t p, size_t d, size_
 double Instance::costs_of_inserting_request_with_transfer(Vehicle v, size_t p, size_t d, size_t request, bool pickup, Transfer_Node tn) {
 	double arc_lengths = 0.0;
 	
-	// Pickup means that the vehicle gets the request from the pickup node
 	if (pickup) {
 		if (d == p + 1) {
 			arc_lengths += arcs[pickup_nodes[request].gen_idx][tn.gen_idx]
@@ -205,20 +204,48 @@ double Instance::costs_of_inserting_request_with_transfer(Vehicle v, size_t p, s
 		}
 	}
 	
-	// Now need to add 2 arcs, to the 'pickup' node and from the 'delivery' node
-	// May need to change depot
 	if (p > 0 && d < v.route.size()-1) {
 		if (pickup) arc_lengths += arcs[v.route[p-1].gen_idx][pickup_nodes[request].gen_idx] + arcs[tn.gen_idx][v.route[d-1].gen_idx];
 		else arc_lengths += arcs[v.route[p-1].gen_idx][tn.gen_idx] + arcs[delivery_nodes[request].gen_idx][v.route[d-1].gen_idx];
 	} else if (p > 0 && d == v.route.size() - 1) {
-		// Change ending depot
+		// Change ending depot then add 
+		if (pickup) arc_lengths += arcs[v.route[p].gen_idx][pickup_nodes[request].gen_idx];
+		else arc_lengths += arcs[v.route[p].gen_idx][tn.gen_idx];
+		
+		double min_val = numeric_limits<double>::max();
+		for(size_t idx = 0; idx < depot_nodes.size(); idx++){
+			if(min_val > arcs[v.route[v.route.size() - 1].gen_idx][depot_nodes[idx].gen_idx]){
+				min_val = arcs[v.route[v.route.size() - 1].gen_idx][depot_nodes[idx].gen_idx];
+			}
+		}
+		arc_lengths += min_val;
 	} else if (p == 0 && d < v.route.size() - 1) {
-		// Change beginning depot
+		// Change beginning depot then add arcs
+		if (pickup) arc_lengths += arcs[tn.gen_idx][v.route[d-1].gen_idx];
+		else arc_lengths += arcs[delivery_nodes[request].gen_idx][v.route[d-1].gen_idx];
+		
+		double min_val = numeric_limits<double>::max();
+		for(size_t idx = 0; idx < depot_nodes.size(); idx++){
+			if(min_val > arcs[depot_nodes[idx].gen_idx][v.route[0].gen_idx]){
+				min_val = arcs[depot_nodes[idx].gen_idx][v.route[0].gen_idx];
+			}
+		}
 	} else if (p == 0 && d == v.route.size() - 1) {
-		// Change both depots
+		// Change both depots then add arcs
+		
+		double min_val_start = numeric_limits<double>::max();
+		double min_val_end = numeric_limits<double>::max();
+		for(size_t idx = 0; idx < depot_nodes.size(); idx++){
+			if(min_val_end > arcs[v.route[v.route.size() - 1].gen_idx][depot_nodes[idx].gen_idx]){
+				min_val_end = arcs[v.route[v.route.size() - 1].gen_idx][depot_nodes[idx].gen_idx];
+			}
+			if(min_val_start > arcs[depot_nodes[idx].gen_idx][v.route[0].gen_idx]){
+				min_val_start = arcs[depot_nodes[idx].gen_idx][v.route[0].gen_idx];
+			}
+		}
+		arc_length += min_val_start + min_val_end;
 	} else {
 		cout << "Error calculating costs for transfer insertion!\n";
 	}
-	
 	return travel_cost*arc_lengths;
 }

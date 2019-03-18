@@ -149,6 +149,10 @@ void Instance::calculate_arcs() {
         nearest_depot_insertion_cost.push_back( (arcs[pickup_nodes[idx].gen_idx][delivery_nodes[idx].gen_idx] + arcs[nearest_depot_gen_idx_p[idx]][pickup_nodes[idx].gen_idx] +
                                                arcs[delivery_nodes[idx].gen_idx][nearest_depot_gen_idx_d[idx]] ) * travel_cost );
     }
+    for(int idx = 0; idx < transfer_location_amount; idx++){
+        nearest_depot_gen_idx_t.push_back(min_element(arcs[transfer_nodes[idx].index].begin() + depot_nodes[0].gen_idx, arcs[transfer_nodes[idx].index].begin() +
+                                depot_nodes[0].gen_idx + depot_nodes.size()) - arcs[transfer_nodes[idx].index].begin());
+    }
 }
 
 double Instance::calculate_obj_val() {

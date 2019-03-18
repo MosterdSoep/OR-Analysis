@@ -15,6 +15,7 @@ size_t Instance::greedy_request_deletion(vector<size_t> request_bank) {
             }
 	    }
 	}
+	cout << "Best cost savings deletion:  " << best_costs_saving << "\n";
 	// Found the request to be removed, now remove it
 	if (pickup_vehicle[best_request] != delivery_vehicle[best_request]) {
 		// Transferred request

@@ -8,8 +8,7 @@ using namespace std;
 
 class Node {
   public:
-	int index = 0, x = 0, y = 0, gen_idx = 0;
-	double service_time = 0.0;
+	int index = 0, x = 0, y = 0, service_time = 0, gen_idx = 0;
 	char type;
 	bool pickup;
 	bool delivery;

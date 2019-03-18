@@ -10,8 +10,8 @@ using namespace std;
 
 // General variables
 //string location = "D://Documenten//Studie//OR analysis//OR Analysis//instances.csv";
-string location = "C://Users//Hp//Documents//GitHub//OR-Analysis//instances.csv";
-//string location = "C://Users//Luuk//Documents//Codeblocks projecten//OR_analysis//instances.csv";
+//string location = "C://Users//Hp//Documents//GitHub//OR-Analysis//instances.csv";
+string location = "C://Users//Luuk//Documents//Codeblocks projecten//OR_analysis//instances.csv";
 vector<vector<int>> input_data;
 
 size_t maximum_loops = 100;
@@ -75,10 +75,15 @@ void ALNS(Instance &i) {
 			}
 		}
 		vector<size_t> request_bank;
+<<<<<<< HEAD
 		
 		//size_t amount = (rand() % (int(log(i.request_amount)/log(1.5))+1) ) + 1;
 		size_t amount = (rand() % 1) + 1;
-		
+=======
+
+		size_t amount = (rand() % (int(log(i.request_amount)/log(1.5))+1) ) + 1;
+		//size_t amount = (rand() % 1) + 1;
+>>>>>>> 44514bb264d15047d31f429dcbbb3b7f002ec7b3
 		discrete_distribution<> delete_op({deletion_scores[0]});
 		size_t delete_operator = delete_op(gen);
 
@@ -97,11 +102,18 @@ void ALNS(Instance &i) {
 				break;
 		}
 		i.remove_empty_vehicle();
+<<<<<<< HEAD
 		
+		//discrete_distribution<> insert_op({insertion_scores[0],insertion_scores[1]});
+		discrete_distribution<> insert_op({insertion_scores[0]});
+		size_t insert_operator = insert_op(gen);
+		
+=======
+
 		discrete_distribution<> insert_op({insertion_scores[0],insertion_scores[1]});
 		//discrete_distribution<> insert_op({insertion_scores[0]});
 		size_t insert_operator = insert_op(gen);
-		
+>>>>>>> 44514bb264d15047d31f429dcbbb3b7f002ec7b3
 		switch (insert_operator) {
 			case 0 :
 				//cout << "Greedy insertion with score: " << insertion_scores[insert_operator] << ", at loop: " << loop_count << "\n";

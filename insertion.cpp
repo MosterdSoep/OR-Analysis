@@ -21,6 +21,7 @@ size_t Instance::greedy_request_insertion(vector<size_t> request_bank) {
 		for (size_t p = 1; p < routes[v].route.size() - 1; p++) {
 			for (size_t d = p + 1; d < routes[v].route.size(); d++) {
 				double candidate_costs = costs_of_inserting_request(routes[v], p, d, request);
+<<<<<<< HEAD
 				if (candidate_costs < best_costs) {
 					/*vector<Vehicle> old_routes = routes;
 					vector<size_t> old_pickup_vehicle = pickup_vehicle;
@@ -38,6 +39,18 @@ size_t Instance::greedy_request_insertion(vector<size_t> request_bank) {
 					routes = old_routes;
 					pickup_vehicle = old_pickup_vehicle;
 					delivery_vehicle = old_delivery_vehicle;*/
+=======
+				// Check if maximum capacity is met
+				// Check if maximum ride time is met
+				// Check if time windows are met
+				
+				if (candidate_costs < best_costs) {
+					best_costs = candidate_costs;
+					best_vehicle = v;
+					best_pickup_location = p;
+					best_delivery_location = d;
+					best_request = request;
+>>>>>>> parent of a6c1018... asdf
 				}
 			}
 		}

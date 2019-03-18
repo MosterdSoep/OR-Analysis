@@ -43,6 +43,8 @@ class Instance{
 
 		// Insertion
 		size_t greedy_request_insertion(vector<size_t> request_bank);
+		size_t regret_2_insertion(vector<size_t> request_bank);
+		size_t random_request_greedy_insertion(vector<size_t> request_bank);
 		void random_request_insertion(size_t request);
 		void greedy_route_insertion(size_t request);
 		void random_route_insertion(size_t request);

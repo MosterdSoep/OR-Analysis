@@ -142,12 +142,14 @@ void Instance::calculate_arcs() {
 	}
 
     for(int idx = 0; idx < request_amount; idx++){
+            cout << "before\n";
         nearest_depot_gen_idx_p.push_back(min_element(arcs[pickup_nodes[idx].gen_idx].begin() + depot_nodes[0].gen_idx, arcs[pickup_nodes[idx].gen_idx].begin() +
                                 depot_nodes[0].gen_idx + depot_nodes.size()) - arcs[pickup_nodes[idx].gen_idx].begin());
         nearest_depot_gen_idx_d.push_back(min_element(arcs[delivery_nodes[idx].gen_idx].begin() + depot_nodes[0].gen_idx, arcs[delivery_nodes[idx].gen_idx].begin() +
                                 depot_nodes[0].gen_idx + depot_nodes.size()) - arcs[delivery_nodes[idx].gen_idx].begin());
         nearest_depot_insertion_cost.push_back( (arcs[pickup_nodes[idx].gen_idx][delivery_nodes[idx].gen_idx] + arcs[nearest_depot_gen_idx_p[idx]][pickup_nodes[idx].gen_idx] +
                                                arcs[delivery_nodes[idx].gen_idx][nearest_depot_gen_idx_d[idx]] ) * travel_cost );
+    cout << "after\n";
     }
     for(int idx = 0; idx < transfer_location_amount; idx++){
         nearest_depot_gen_idx_t.push_back(min_element(arcs[transfer_nodes[idx].index].begin() + depot_nodes[0].gen_idx, arcs[transfer_nodes[idx].index].begin() +

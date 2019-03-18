@@ -119,6 +119,8 @@ void Vehicle::add_node(size_t location, Pickup_Node &node){
 							+ waiting_times[idx - 1];
 		if (time_at_node[idx] < route[idx].lower_bound) {
             waiting_times[idx] = route[idx].lower_bound - time_at_node[idx];
+        }else{
+        waiting_times[idx]  = 0;
         }
         slack_at_node[idx] = route[idx].upper_bound - time_at_node[idx];
     }
@@ -146,6 +148,8 @@ void Vehicle::add_node(size_t location, Delivery_Node &node){
 							+ waiting_times[idx - 1];
         if (time_at_node[idx] < route[idx].lower_bound) {
             waiting_times[idx] = route[idx].lower_bound - time_at_node[idx];
+        }else{
+        waiting_times[idx]  = 0;
         }
         slack_at_node[idx] = route[idx].upper_bound - time_at_node[idx];
     }
@@ -180,6 +184,8 @@ double Vehicle::add_delivery_transfer(size_t location, Transfer_Node &node, size
 							+ waiting_times[idx - 1];
         if(time_at_node[idx] < route[idx].lower_bound){
             waiting_times[idx] = route[idx].lower_bound - time_at_node[idx];
+        }else{
+        waiting_times[idx]  = 0;
         }
         slack_at_node[idx] = route[idx].upper_bound - time_at_node[idx];
     }
@@ -217,6 +223,8 @@ void Vehicle::add_pickup_transfer(size_t location, Transfer_Node &node, double m
 							+ waiting_times[idx - 1];
         if(time_at_node[idx] < route[idx].lower_bound){
             waiting_times[idx] = route[idx].lower_bound - time_at_node[idx];
+        }else{
+        waiting_times[idx]  = 0;
         }
         slack_at_node[idx] = route[idx].upper_bound - time_at_node[idx];
     }
@@ -258,6 +266,8 @@ void Vehicle::remove_node(size_t location){
 							+ waiting_times[idx - 1];
         if(time_at_node[idx] < route[idx].lower_bound){
             waiting_times[idx] = route[idx].lower_bound - time_at_node[idx];
+        }else{
+            waiting_times[idx] = 0;
         }
         slack_at_node[idx] = route[idx].upper_bound - time_at_node[idx];
     }

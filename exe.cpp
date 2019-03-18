@@ -14,7 +14,7 @@ using namespace std;
 string location = "C://Users//Luuk//Documents//Codeblocks projecten//OR_analysis//instances.csv";
 vector<vector<int>> input_data;
 
-size_t maximum_loops = 10000;
+size_t maximum_loops = 1000;
 
 bool acceptation_criterion_met(double s, double current_solution, size_t loop_count) {
 	double temperature = (double)maximum_loops - (double)loop_count + 1;
@@ -60,6 +60,7 @@ void ALNS(Instance &i) {
 	//vector<double> insertion_rewards = {0};
 	vector<double> insertion_scores = {1,1,1};
 	vector<double> insertion_rewards = {0,0,0};
+
 	while(!stopping_criterion_met(loop_count)) {
 		i.old_routes = i.routes;
 		i.old_pickup_vehicle = pickup_vehicle;
@@ -239,11 +240,18 @@ void clear_global(){
     all_nodes.clear();
     pickup_vehicle.clear();
     delivery_vehicle.clear();
+    ride_times.clear();
+    nearest_depot_gen_idx_d.clear();
+    nearest_depot_gen_idx_p.clear();
+    nearest_depot_gen_idx_t.clear();
+    nearest_depot_insertion_cost.clear();
 }
 
 void solve_instance(vector<vector<int>> &input_data, int ins){
 	Instance i;
+	        cout << "before before\n";
 	i.create_instance(input_data, ins);
+	        cout << "before before\n";
     i.calculate_arcs();
     i.preprocess();
     i.initial_solution();

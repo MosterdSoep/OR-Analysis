@@ -60,7 +60,8 @@ class Instance{
 		bool capacity_feasible();
 
 		double pickup_feasible(Vehicle v, size_t p, size_t request);
-		bool delivery_feasible();
+		double delivery_feasible(Vehicle v, size_t p, size_t d, size_t request, double p_delay);
+
 
 		void print_routes();
 };

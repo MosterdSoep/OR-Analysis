@@ -23,12 +23,16 @@ size_t Instance::greedy_request_insertion(vector<size_t> request_bank) {
 			for (size_t d = p + 1; d < routes[v].route.size()+1; d++) {
 				double candidate_costs = costs_of_inserting_request(routes[v], p, d, request, added_times);
 				if (candidate_costs < best_costs) {
-                    //short capacity check
+
+                //Calculate waiting times for insertions
                 double p_waiting = pickup_feasible(routes[v], p, request);
-                if(p_waiting != -1){
+                if(p_waiting != -1234567){
+                double d_waiting = delivery_feasible(routes[v], p, d, request, p_waiting);
+                if(d_waiting != -1234567){
+                //end waiting calculations
                     if(p==d-1){
-                        if(*max_element(routes[v].current_capacity.begin() + p-1, routes[v].current_capacity.begin() + p-1) < vehicle_capacity){
-                            if(*min_element(routes[v].slack_at_node.begin() + d-1, routes[v].slack_at_node.end()) > added_times[1] + p_waiting){
+                        if(*max_element(routes[v].current_capacity.begin() + p-1, routes[v].current_capacity.begin() + p) < vehicle_capacity){
+                            if(*min_element(routes[v].slack_at_node.begin() + d-1, routes[v].slack_at_node.end()) > added_times[0] + p_waiting + d_waiting){
                                 best_costs = candidate_costs;
                                 best_vehicle = v;
                                 best_pickup_location = p;
@@ -37,8 +41,8 @@ size_t Instance::greedy_request_insertion(vector<size_t> request_bank) {
                             }
                         }
                     }else{
-                    if(*max_element(routes[v].current_capacity.begin() + p-1, routes[v].current_capacity.begin() + d-2) < vehicle_capacity){
-                        if(*min_element(routes[v].slack_at_node.begin() + d-1, routes[v].slack_at_node.end()) > added_times[1] + added_times[0] + p_waiting){
+                    if(*max_element(routes[v].current_capacity.begin() + p-1, routes[v].current_capacity.begin() + d-1) < vehicle_capacity){
+                        if(*min_element(routes[v].slack_at_node.begin() + d-1, routes[v].slack_at_node.end()) > added_times[1] + added_times[0] + p_waiting + d_waiting){
                             if(*min_element(routes[v].slack_at_node.begin() + p, routes[v].slack_at_node.begin() + d-1) > added_times[0] + p_waiting){
                                 best_costs = candidate_costs;
                                 best_vehicle = v;
@@ -49,6 +53,7 @@ size_t Instance::greedy_request_insertion(vector<size_t> request_bank) {
                         }
                     }
                     }
+                }
                 }
 				}
 			}
@@ -92,9 +97,17 @@ size_t Instance::regret_2_insertion(vector<size_t> request_bank){
                 for (size_t d = p + 1; d < routes[v].route.size()+1; d++) {
                     double candidate_costs = costs_of_inserting_request(routes[v], p, d, request_bank[idx], added_times);
                     if (candidate_costs < second_cost[idx]) {
+
+                    //Calculate waiting times for insertions
+                    double p_waiting = pickup_feasible(routes[v], p, request_bank[idx]);
+                    if(p_waiting != -1234567){
+                    double d_waiting = delivery_feasible(routes[v], p, d, request_bank[idx], p_waiting);
+                    if(d_waiting != -1234567){
+                    //end waiting calculations
+
                         if(p == d-1){
                             if(*max_element(routes[v].current_capacity.begin() + p-1, routes[v].current_capacity.begin() + p-1) < vehicle_capacity){
-                                if(*min_element(routes[v].slack_at_node.begin() + d-1, routes[v].slack_at_node.end()) > added_times[1]){
+                                if(*min_element(routes[v].slack_at_node.begin() + d-1, routes[v].slack_at_node.end()) > added_times[1] + p_waiting + d_waiting){
                                     if(candidate_costs < first_cost[idx]){
                                         second_cost[idx] = first_cost[idx];
                                         first_cost[idx] = candidate_costs;
@@ -105,8 +118,8 @@ size_t Instance::regret_2_insertion(vector<size_t> request_bank){
                             }
                         }else{
                         if(*max_element(routes[v].current_capacity.begin() + p-1, routes[v].current_capacity.begin() + d-2) < vehicle_capacity){
-                            if(*min_element(routes[v].slack_at_node.begin() + d-1, routes[v].slack_at_node.end()) > added_times[1] + added_times[0]){
-                                if(*min_element(routes[v].slack_at_node.begin() + p, routes[v].slack_at_node.begin() + d-1) > added_times[0]){
+                            if(*min_element(routes[v].slack_at_node.begin() + d-1, routes[v].slack_at_node.end()) > added_times[1] + added_times[0] + p_waiting + d_waiting){
+                                if(*min_element(routes[v].slack_at_node.begin() + p, routes[v].slack_at_node.begin() + d-1) > added_times[0] + p_waiting){
                                     if(candidate_costs < first_cost[idx]){
                                         second_cost[idx] = first_cost[idx];
                                         first_cost[idx] = candidate_costs;
@@ -115,6 +128,8 @@ size_t Instance::regret_2_insertion(vector<size_t> request_bank){
                                     }
                                 }
                             }
+                        }
+                        }
                         }
                         }
                     }
@@ -152,10 +167,17 @@ size_t Instance::random_request_greedy_insertion(vector<size_t> request_bank){
 			for (size_t d = p + 1; d < routes[v].route.size()+1; d++) {
 				double candidate_costs = costs_of_inserting_request(routes[v], p, d, request, added_times);
 				if (candidate_costs < best_costs) {
-                    //short capacity check
+
+                //Calculate waiting times for insertions
+                double p_waiting = pickup_feasible(routes[v], p, request);
+                if(p_waiting != -1234567){
+                double d_waiting = delivery_feasible(routes[v], p, d, request, p_waiting);
+                if(d_waiting != -1234567){
+                //end waiting calculations
+
                     if(p==d-1){
                         if(*max_element(routes[v].current_capacity.begin() + p-1, routes[v].current_capacity.begin() + p-1) < vehicle_capacity){
-                            if(*min_element(routes[v].slack_at_node.begin() + d-1, routes[v].slack_at_node.end()) > added_times[1]){
+                            if(*min_element(routes[v].slack_at_node.begin() + d-1, routes[v].slack_at_node.end()) > added_times[1] + p_waiting + d_waiting){
                                 best_costs = candidate_costs;
                                 best_vehicle = v;
                                 best_pickup_location = p;
@@ -163,9 +185,9 @@ size_t Instance::random_request_greedy_insertion(vector<size_t> request_bank){
                             }
                         }
                     }else{
-                    if(*max_element(routes[v].current_capacity.begin() + p-1, routes[v].current_capacity.begin() + d-2) < vehicle_capacity){
-                        if(*min_element(routes[v].slack_at_node.begin() + d-1, routes[v].slack_at_node.end()) > added_times[1] + added_times[0]){
-                            if(*min_element(routes[v].slack_at_node.begin() + p, routes[v].slack_at_node.begin() + d-1) > added_times[0]){
+                    if(*max_element(routes[v].current_capacity.begin() + p-1, routes[v].current_capacity.begin() + d-1) < vehicle_capacity){
+                        if(*min_element(routes[v].slack_at_node.begin() + d-1, routes[v].slack_at_node.end()) > added_times[1] + added_times[0] + p_waiting + d_waiting){
+                            if(*min_element(routes[v].slack_at_node.begin() + p, routes[v].slack_at_node.begin() + d-1) > added_times[0] + p_waiting){
                                 best_costs = candidate_costs;
                                 best_vehicle = v;
                                 best_pickup_location = p;
@@ -174,6 +196,8 @@ size_t Instance::random_request_greedy_insertion(vector<size_t> request_bank){
                         }
                     }
                     }
+                }
+                }
                 }
 			}
 		}

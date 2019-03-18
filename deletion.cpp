@@ -84,11 +84,7 @@ double Instance::costs_of_removing_request(size_t request) {
 	size_t pu_vehicle = pickup_vehicle[request];
 	size_t de_vehicle = delivery_vehicle[request];
 	double arc_lengths = 0.0;
-<<<<<<< HEAD
 	
-=======
-
->>>>>>> 44514bb264d15047d31f429dcbbb3b7f002ec7b3
 	int p = -1, d = -1, td = -1, tp = -1;
 	if (pu_vehicle == de_vehicle) {
 		for (size_t i = 1; i < routes[pu_vehicle].route.size() - 1; i++) {
@@ -113,7 +109,7 @@ double Instance::costs_of_removing_request(size_t request) {
 	}
 	
 	if (pu_vehicle != de_vehicle) {
-
+		
 	} else {
 		if (d == p + 1) {
 			arc_lengths = arc_lengths - arcs[routes[de_vehicle].route[p].gen_idx][routes[de_vehicle].route[d].gen_idx]
@@ -130,11 +126,7 @@ double Instance::costs_of_removing_request(size_t request) {
 			if (d == p + 1) {
 				arc_lengths += arcs[routes[de_vehicle].route[p-1].gen_idx][routes[de_vehicle].route[d+1].gen_idx];
 			} else {
-<<<<<<< HEAD
-				arc_lengths += arcs[routes[de_vehicle].route[p-1].gen_idx][routes[de_vehicle].route[p+1].gen_idx] 
-=======
 				arc_lengths += arcs[routes[de_vehicle].route[p-1].gen_idx][routes[de_vehicle].route[p+1].gen_idx]
->>>>>>> 44514bb264d15047d31f429dcbbb3b7f002ec7b3
 								+ arcs[routes[de_vehicle].route[d-1].gen_idx][routes[de_vehicle].route[d+1].gen_idx];
 			}
 		} else if (p > 1 && d == routes[de_vehicle].route.size() - 2) {
@@ -155,11 +147,7 @@ double Instance::costs_of_removing_request(size_t request) {
 			if (d == p + 1) {
 				arc_lengths += 0;
 			} else {
-<<<<<<< HEAD
-				arc_lengths += arcs[routes[de_vehicle].route[p].gen_idx][nearest_depot_gen_idx_p[request]] 
-=======
 				arc_lengths += arcs[routes[de_vehicle].route[p].gen_idx][nearest_depot_gen_idx_p[request]]
->>>>>>> 44514bb264d15047d31f429dcbbb3b7f002ec7b3
 								+ arcs[routes[de_vehicle].route[d].gen_idx][nearest_depot_gen_idx_d[request]];
 			}
 		} else {

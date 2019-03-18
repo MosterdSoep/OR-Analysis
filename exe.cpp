@@ -14,7 +14,7 @@ using namespace std;
 string location = "C://Users//Luuk//Documents//Codeblocks projecten//OR_analysis//instances.csv";
 vector<vector<int>> input_data;
 
-size_t maximum_loops = 100;
+size_t maximum_loops = 10000;
 
 bool acceptation_criterion_met(double s, double current_solution, size_t loop_count) {
 	double temperature = (double)maximum_loops - (double)loop_count + 1;
@@ -58,8 +58,8 @@ void ALNS(Instance &i) {
 
 	//vector<double> insertion_scores = {1};
 	//vector<double> insertion_rewards = {0};
-	vector<double> insertion_scores = {1,1};
-	vector<double> insertion_rewards = {0,0};
+	vector<double> insertion_scores = {1,1,1};
+	vector<double> insertion_rewards = {0,0,0};
 	while(!stopping_criterion_met(loop_count)) {
 		i.old_routes = i.routes;
 		i.old_pickup_vehicle = pickup_vehicle;
@@ -75,45 +75,29 @@ void ALNS(Instance &i) {
 			}
 		}
 		vector<size_t> request_bank;
-<<<<<<< HEAD
-		
-		//size_t amount = (rand() % (int(log(i.request_amount)/log(1.5))+1) ) + 1;
-		size_t amount = (rand() % 1) + 1;
-=======
 
 		size_t amount = (rand() % (int(log(i.request_amount)/log(1.5))+1) ) + 1;
 		//size_t amount = (rand() % 1) + 1;
->>>>>>> 44514bb264d15047d31f429dcbbb3b7f002ec7b3
 		discrete_distribution<> delete_op({deletion_scores[0]});
 		size_t delete_operator = delete_op(gen);
 
 		switch (delete_operator) {
 			case 0 :
-				//cout << "Greedy deletion\n";
 				for (size_t j = 0; j < amount; j++) {
 					request_bank.push_back(i.greedy_request_deletion(request_bank));
 				}
 				break;
 			case 1 :
-				//cout << "Random deletion\n";
 				for (size_t j = 0; j < amount; j++) {
 					request_bank.push_back(i.random_request_deletion(request_bank));
 				}
 				break;
 		}
 		i.remove_empty_vehicle();
-<<<<<<< HEAD
-		
-		//discrete_distribution<> insert_op({insertion_scores[0],insertion_scores[1]});
-		discrete_distribution<> insert_op({insertion_scores[0]});
-		size_t insert_operator = insert_op(gen);
-		
-=======
 
 		discrete_distribution<> insert_op({insertion_scores[0],insertion_scores[1]});
 		//discrete_distribution<> insert_op({insertion_scores[0]});
 		size_t insert_operator = insert_op(gen);
->>>>>>> 44514bb264d15047d31f429dcbbb3b7f002ec7b3
 		switch (insert_operator) {
 			case 0 :
 				//cout << "Greedy insertion with score: " << insertion_scores[insert_operator] << ", at loop: " << loop_count << "\n";
@@ -124,15 +108,11 @@ void ALNS(Instance &i) {
 				request_bank.clear();
 				break;
             case 1:
-                cout << "test\n";
                 for (size_t r : request_bank) {
 					size_t req_loc = i.regret_2_insertion(request_bank);
-					cout << "after 2\n";
 					request_bank.erase(request_bank.begin() + req_loc);
-					cout << "after 3\n";
 				}
 				request_bank.clear();
-				cout << "regret succesfull \n";
 				break;
             case 2:
 				for (size_t r : request_bank) {
@@ -157,7 +137,6 @@ void ALNS(Instance &i) {
 		bool accepted3 = false;
 		double s = i.calculate_obj_val();
 		if (s < best_solution) {
-			//cout << "New solution\n";
 			accepted1 = true;
 		} else if (s < current_solution) {
 			//cout << "New solution\n";

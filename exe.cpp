@@ -41,7 +41,7 @@ void ALNS(Instance &i) {
 	
 	double best_solution = i.calculate_obj_val();
 	double current_solution = best_solution;
-	vector<Vehicle> best_routes{};
+	vector<Vehicle> best_routes = i.routes;
 	size_t loop_count = 0;
 
 	i.print_routes();
@@ -83,13 +83,13 @@ void ALNS(Instance &i) {
 		
 		switch (delete_operator) {
 			case 0 :
-				cout << "Greedy deletion\n";
+				//cout << "Greedy deletion\n";
 				for (size_t j = 0; j < amount; j++) {
 					request_bank.push_back(i.greedy_request_deletion(request_bank));
 				}
 				break;
 			case 1 :
-				cout << "Random deletion\n";
+				//cout << "Random deletion\n";
 				for (size_t j = 0; j < amount; j++) {
 					request_bank.push_back(i.random_request_deletion(request_bank));
 				}

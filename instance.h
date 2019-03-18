@@ -61,6 +61,7 @@ class Instance{
 };
 
 inline void Instance::print_routes(){
+	cout << "Size of routes: " << routes.size() << "\n";
     for(size_t idx = 0; idx < routes.size(); idx++)
     {
         for(size_t adx = 0; adx < routes[idx].route.size(); adx++)

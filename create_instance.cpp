@@ -68,6 +68,7 @@ void Instance::create_instance(vector<vector<int>> &input_data, int ins){
         depot_nodes[idx].service_time = 0;
         depot_nodes[idx].gen_idx = 2 * request_amount + transfer_location_amount + idx;
         depot_nodes[idx].type = 'o';
+		depot_nodes[idx].request_idx = 2*request_amount;
     }
 
     for(int idx = 0; idx < request_amount; idx++){

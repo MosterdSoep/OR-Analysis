@@ -76,18 +76,20 @@ void ALNS(Instance &i) {
 		}
 		vector<size_t> request_bank;
 		
-		size_t amount = (rand() % (int(log(i.request_amount)/log(1.5))+1) ) + 1;
-		//size_t amount = (rand() % 1) + 1;
+		//size_t amount = (rand() % (int(log(i.request_amount)/log(1.5))+1) ) + 1;
+		size_t amount = (rand() % 1) + 1;
 		discrete_distribution<> delete_op({deletion_scores[0]});
 		size_t delete_operator = delete_op(gen);
 		
 		switch (delete_operator) {
 			case 0 :
+				cout << "Greedy deletion\n";
 				for (size_t j = 0; j < amount; j++) {
 					request_bank.push_back(i.greedy_request_deletion(request_bank));
 				}
 				break;
 			case 1 :
+				cout << "Random deletion\n";
 				for (size_t j = 0; j < amount; j++) {
 					request_bank.push_back(i.random_request_deletion(request_bank));
 				}
@@ -95,10 +97,10 @@ void ALNS(Instance &i) {
 		}
 		i.remove_empty_vehicle();
 		
-		discrete_distribution<> insert_op({insertion_scores[0],insertion_scores[1]});
-		//discrete_distribution<> insert_op({insertion_scores[0]});
+		//discrete_distribution<> insert_op({insertion_scores[0],insertion_scores[1]});
+		discrete_distribution<> insert_op({insertion_scores[0]});
 		size_t insert_operator = insert_op(gen);
-
+		
 		switch (insert_operator) {
 			case 0 :
 				//cout << "Greedy insertion with score: " << insertion_scores[insert_operator] << ", at loop: " << loop_count << "\n";

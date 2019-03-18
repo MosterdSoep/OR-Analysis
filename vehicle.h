@@ -19,7 +19,6 @@ extern vector<double> ride_times;
 extern size_t vehicle_capacity;
 extern vector<size_t> nearest_depot_gen_idx_p;
 extern vector<size_t> nearest_depot_gen_idx_d;
-extern vector<size_t> nearest_depot_gen_idx_t;
 extern vector<double> nearest_depot_insertion_cost;
 
 class Vehicle {

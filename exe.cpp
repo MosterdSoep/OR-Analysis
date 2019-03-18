@@ -14,7 +14,7 @@ string location = "C://Users//Hp//Documents//GitHub//OR-Analysis//instances.csv"
 //string location = "C://Users//Luuk//Documents//Codeblocks projecten//OR_analysis//instances.csv";
 vector<vector<int>> input_data;
 
-size_t maximum_loops = 10000;
+size_t maximum_loops = 100;
 
 bool acceptation_criterion_met(double s, double current_solution, size_t loop_count) {
 	double temperature = (double)maximum_loops - (double)loop_count + 1;
@@ -58,8 +58,8 @@ void ALNS(Instance &i) {
 
 	//vector<double> insertion_scores = {1};
 	//vector<double> insertion_rewards = {0};
-	vector<double> insertion_scores = {1,1,1};
-	vector<double> insertion_rewards = {0,0,0};
+	vector<double> insertion_scores = {1,1};
+	vector<double> insertion_rewards = {0,0};
 	while(!stopping_criterion_met(loop_count)) {
 		i.old_routes = i.routes;
 		i.old_pickup_vehicle = pickup_vehicle;
@@ -112,11 +112,15 @@ void ALNS(Instance &i) {
 				request_bank.clear();
 				break;
             case 1:
+                cout << "test\n";
                 for (size_t r : request_bank) {
 					size_t req_loc = i.regret_2_insertion(request_bank);
+					cout << "after 2\n";
 					request_bank.erase(request_bank.begin() + req_loc);
+					cout << "after 3\n";
 				}
 				request_bank.clear();
+				cout << "regret succesfull \n";
 				break;
             case 2:
 				for (size_t r : request_bank) {
@@ -141,6 +145,7 @@ void ALNS(Instance &i) {
 		bool accepted3 = false;
 		double s = i.calculate_obj_val();
 		if (s < best_solution) {
+			//cout << "New solution\n";
 			accepted1 = true;
 		} else if (s < current_solution) {
 			//cout << "New solution\n";

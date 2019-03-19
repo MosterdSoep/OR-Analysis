@@ -108,7 +108,92 @@ double Instance::costs_of_removing_request(size_t request) {
 	}
 
 	if (pu_vehicle != de_vehicle) {
+		// Pickup change in arcs
+		if (td == p + 1) {
+			arc_lengths = arc_lengths - arcs[routes[pu_vehicle].route[p].gen_idx][routes[pu_vehicle].route[td].gen_idx]
+							- arcs[routes[pu_vehicle].route[p-1].gen_idx][routes[pu_vehicle].route[p].gen_idx]
+							- arcs[routes[pu_vehicle].route[td].gen_idx][routes[pu_vehicle].route[td-1].gen_idx];
+		} else {
+			arc_lengths = arc_lengths - arcs[routes[pu_vehicle].route[p].gen_idx][routes[pu_vehicle].route[p+1].gen_idx]
+							- arcs[routes[pu_vehicle].route[td-1].gen_idx][routes[pu_vehicle].route[td].gen_idx]
+							- arcs[routes[pu_vehicle].route[p-1].gen_idx][routes[pu_vehicle].route[p].gen_idx]
+							- arcs[routes[pu_vehicle].route[td].gen_idx][routes[pu_vehicle].route[td+1].gen_idx];
+		}
+		if (p > 1 && td < routes[pu_vehicle].route.size() - 2) {
+			if (td == p + 1) {
+				arc_lengths += arcs[routes[pu_vehicle].route[p-1].gen_idx][routes[pu_vehicle].route[td+1].gen_idx];
+			} else {
+				arc_lengths += arcs[routes[pu_vehicle].route[p-1].gen_idx][routes[pu_vehicle].route[p+1].gen_idx]
+								+ arcs[routes[pu_vehicle].route[td-1].gen_idx][routes[pu_vehicle].route[td+1].gen_idx];
+			}
+		} else if (p > 1 && td == routes[pu_vehicle].route.size() - 2) {
+			if (td == p + 1) {
+				arc_lengths += arcs[nearest_depot_gen_idx_d[routes[pu_vehicle].route[p-1].index]][routes[pu_vehicle].route[p-1].gen_idx];
+			} else {
+				arc_lengths += arcs[routes[pu_vehicle].route[p-1].gen_idx][routes[pu_vehicle].route[p+1].gen_idx]
+								+ arcs[nearest_depot_gen_idx_d[routes[pu_vehicle].route[td-1].index]][routes[pu_vehicle].route[td-1].gen_idx];
+			}
+		} else if (p == 1 && td < routes[pu_vehicle].route.size() - 2) {
+			if (td == p + 1) {
+				arc_lengths += arcs[routes[pu_vehicle].route[td+1].gen_idx][nearest_depot_gen_idx_p[routes[pu_vehicle].route[td+1].index]];
+			} else {
+				arc_lengths += arcs[nearest_depot_gen_idx_p[routes[pu_vehicle].route[p+1].index]][routes[pu_vehicle].route[p+1].gen_idx]
+								+ arcs[routes[pu_vehicle].route[td-1].gen_idx][routes[pu_vehicle].route[td+1].gen_idx];
+			}
+		} else if (p == 1 && td == routes[pu_vehicle].route.size() - 2) {
+			if (td == p + 1) {
+				arc_lengths += 0;
+			} else {
+				arc_lengths += arcs[routes[pu_vehicle].route[p].gen_idx][nearest_depot_gen_idx_p[request]]
+								+ arcs[routes[pu_vehicle].route[td].gen_idx][nearest_depot_gen_idx_d[request]];
+			}
+		} else {
+			cout << "Error calculating costs for transfer insertion!\n";
+		}
 
+		// Delivery change in arcs
+		if (d == tp + 1) {
+			arc_lengths = arc_lengths - arcs[routes[de_vehicle].route[tp].gen_idx][routes[de_vehicle].route[d].gen_idx]
+							- arcs[routes[de_vehicle].route[tp-1].gen_idx][routes[de_vehicle].route[tp].gen_idx]
+							- arcs[routes[de_vehicle].route[d].gen_idx][routes[de_vehicle].route[d-1].gen_idx];
+		} else {
+			arc_lengths = arc_lengths - arcs[routes[de_vehicle].route[tp].gen_idx][routes[de_vehicle].route[tp+1].gen_idx]
+							- arcs[routes[de_vehicle].route[d-1].gen_idx][routes[de_vehicle].route[d].gen_idx]
+							- arcs[routes[de_vehicle].route[tp-1].gen_idx][routes[de_vehicle].route[tp].gen_idx]
+							- arcs[routes[de_vehicle].route[d].gen_idx][routes[de_vehicle].route[d+1].gen_idx];
+		}
+
+		if (tp > 1 && d < routes[de_vehicle].route.size() - 2) {
+			if (d == tp + 1) {
+				arc_lengths += arcs[routes[de_vehicle].route[tp-1].gen_idx][routes[de_vehicle].route[d+1].gen_idx];
+			} else {
+				arc_lengths += arcs[routes[de_vehicle].route[tp-1].gen_idx][routes[de_vehicle].route[tp+1].gen_idx]
+								+ arcs[routes[de_vehicle].route[d-1].gen_idx][routes[de_vehicle].route[d+1].gen_idx];
+			}
+		} else if (tp > 1 && d == routes[de_vehicle].route.size() - 2) {
+			if (d == tp + 1) {
+				arc_lengths += arcs[nearest_depot_gen_idx_d[routes[de_vehicle].route[tp-1].index]][routes[de_vehicle].route[tp-1].gen_idx];
+			} else {
+				arc_lengths += arcs[routes[de_vehicle].route[tp-1].gen_idx][routes[de_vehicle].route[tp+1].gen_idx]
+								+ arcs[nearest_depot_gen_idx_d[routes[de_vehicle].route[d-1].index]][routes[de_vehicle].route[d-1].gen_idx];
+			}
+		} else if (tp == 1 && d < routes[de_vehicle].route.size() - 2) {
+			if (d == tp + 1) {
+				arc_lengths += arcs[routes[de_vehicle].route[d+1].gen_idx][nearest_depot_gen_idx_p[routes[de_vehicle].route[d+1].index]];
+			} else {
+				arc_lengths += arcs[nearest_depot_gen_idx_p[routes[de_vehicle].route[tp+1].index]][routes[de_vehicle].route[tp+1].gen_idx]
+								+ arcs[routes[de_vehicle].route[d-1].gen_idx][routes[de_vehicle].route[d+1].gen_idx];
+			}
+		} else if (tp == 1 && d == routes[de_vehicle].route.size() - 2) {
+			if (d == tp + 1) {
+				arc_lengths += 0;
+			} else {
+				arc_lengths += arcs[routes[de_vehicle].route[tp].gen_idx][nearest_depot_gen_idx_p[request]]
+								+ arcs[routes[de_vehicle].route[d].gen_idx][nearest_depot_gen_idx_d[request]];
+			}
+		} else {
+			cout << "Error calculating costs for transfer insertion!\n";
+		}
 	} else {
 		if (d == p + 1) {
 			arc_lengths = arc_lengths - arcs[routes[de_vehicle].route[p].gen_idx][routes[de_vehicle].route[d].gen_idx]
@@ -118,7 +203,7 @@ double Instance::costs_of_removing_request(size_t request) {
 			arc_lengths = arc_lengths - arcs[routes[de_vehicle].route[p].gen_idx][routes[de_vehicle].route[p+1].gen_idx]
 							- arcs[routes[de_vehicle].route[d-1].gen_idx][routes[de_vehicle].route[d].gen_idx]
 							- arcs[routes[de_vehicle].route[p-1].gen_idx][routes[de_vehicle].route[p].gen_idx]
-							- arcs[routes[de_vehicle].route[d-1].gen_idx][routes[de_vehicle].route[d].gen_idx];
+							- arcs[routes[de_vehicle].route[d].gen_idx][routes[de_vehicle].route[d+1].gen_idx];
 		}
 
 		if (p > 1 && d < routes[de_vehicle].route.size() - 2) {
@@ -135,14 +220,14 @@ double Instance::costs_of_removing_request(size_t request) {
 				arc_lengths += arcs[routes[de_vehicle].route[p-1].gen_idx][routes[de_vehicle].route[p+1].gen_idx]
 								+ arcs[nearest_depot_gen_idx_d[routes[de_vehicle].route[d-1].index]][routes[de_vehicle].route[d-1].gen_idx];
 			}
-		} else if (p == 1 && d < routes[de_vehicle].route.size() - 1) {
+		} else if (p == 1 && d < routes[de_vehicle].route.size() - 2) {
 			if (d == p + 1) {
 				arc_lengths += arcs[routes[de_vehicle].route[d+1].gen_idx][nearest_depot_gen_idx_p[routes[de_vehicle].route[d+1].index]];
 			} else {
 				arc_lengths += arcs[nearest_depot_gen_idx_p[routes[de_vehicle].route[p+1].index]][routes[de_vehicle].route[p+1].gen_idx]
 								+ arcs[routes[de_vehicle].route[d-1].gen_idx][routes[de_vehicle].route[d+1].gen_idx];
 			}
-		} else if (p == 1 && d == routes[de_vehicle].route.size() - 1) {
+		} else if (p == 1 && d == routes[de_vehicle].route.size() - 2) {
 			if (d == p + 1) {
 				arc_lengths += 0;
 			} else {

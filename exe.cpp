@@ -11,10 +11,10 @@ using namespace std;
 // General variables
 //string location = "D://Documenten//Studie//OR analysis//OR Analysis//instances.csv";
 //string location = "C://Users//Hp//Documents//GitHub//OR-Analysis//instances.csv";
-string location = "C://Users//Luuk//Documents//Codeblocks projecten//OR_analysis//instances.csv";
+string location = "C://Users//Luuk//Documents//Codeblocks projecten//OR_analysis//large_instances.csv";
 vector<vector<int>> input_data;
 
-size_t maximum_loops = 10000;
+size_t maximum_loops = 1000;
 
 bool acceptation_criterion_met(double s, double current_solution, size_t loop_count) {
 	double temperature = (double)maximum_loops - (double)loop_count + 1;
@@ -35,7 +35,7 @@ bool stopping_criterion_met(size_t loop_count) {
 }
 
 void ALNS(Instance &i) {
-	transfer_nodes[0].open = true;
+	//transfer_nodes[0].open = true;
 
 	auto start = chrono::high_resolution_clock::now();
 
@@ -58,8 +58,8 @@ void ALNS(Instance &i) {
 
 	//vector<double> insertion_scores = {1};
 	//vector<double> insertion_rewards = {0};
-	vector<double> insertion_scores = {1,1,1,1};
-	vector<double> insertion_rewards = {0,0,0,0};
+	vector<double> insertion_scores = {1,1,1};
+	vector<double> insertion_rewards = {0,0,0};
 
 	while(!stopping_criterion_met(loop_count)) {
 		i.old_routes = i.routes;
@@ -256,7 +256,6 @@ void solve_instance(vector<vector<int>> &input_data, int ins){
     i.calculate_arcs();
     i.preprocess();
     i.initial_solution();
-
 	ALNS(i);
     i.write_output_file(ins);
     clear_global();

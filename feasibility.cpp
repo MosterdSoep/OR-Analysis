@@ -67,10 +67,10 @@ bool Instance::time_windows_met() {
 			// Time windows
             if (idx != 0 && idx != v.route.size() - 1) {
 				if (v.time_at_node[idx] + v.waiting_times[idx] > v.route[idx].upper_bound){
-					cout << "upper bound infeasible, type : " << v.route[idx].type << "  request : " << v.route[idx].index << '\n';
+					//cout << "upper bound infeasible, type : " << v.route[idx].type << "  request : " << v.route[idx].index << '\n';
 					return false;
 				} else if (v.time_at_node[idx] + v.waiting_times[idx] < v.route[idx].lower_bound - 0.00001){
-					cout << "lower bound infeasible, type : "  << v.route[idx].type << "  request : " << v.route[idx].index << "\n";
+					//cout << "lower bound infeasible, type : "  << v.route[idx].type << "  request : " << v.route[idx].index << "\n";
 					return false;
 				}
 			}

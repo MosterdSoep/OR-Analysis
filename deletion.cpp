@@ -120,6 +120,7 @@ vector<size_t> Instance::shaw_deletion(size_t amount){
             }
         }
         //calculate relatedness measure
+        //relatedness[idx].second = alpha * (arcs[request_bank[0]][idx] + arcs[delivery_nodes[request_bank[0]].gen_idx][delivery_nodes[idx].gen_idx]);
         relatedness[idx].second = alpha * (arcs[request_bank[0]][idx] + arcs[delivery_nodes[request_bank[0]].gen_idx][delivery_nodes[idx].gen_idx]) +
                 beta * ( abs(time_at_node_p - tmp) + abs(time_at_node_d - tmp_d) );
     }

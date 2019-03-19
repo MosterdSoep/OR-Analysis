@@ -251,6 +251,9 @@ void Vehicle::remove_node(size_t location){
 		cout << "ERROR: Removing non pickup, non delivery and non transfer node!\n";
 	}
 	route.erase(route.begin() + location);
+	time_at_node.pop_back();
+	current_capacity.pop_back();
+	slack_at_node.pop_back();
 
     if (location == 1){
         change_first_depot();

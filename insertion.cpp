@@ -337,9 +337,9 @@ double Instance::costs_of_inserting_request(Vehicle v, size_t p, size_t d, size_
 		cout << "Error calculating costs for normal insertion!\n";
 		cout << "Pickup transfer - p: " << p << ", d: " << d << ", route size:" << v.route.size() << "\n";
 	}
-	if(arc_lengths < -100000){
+	/*if(arc_lengths < -100000){
         cout << "Error, large negative arc lengths in cost calculation. Request:  " << request << '\n';
-	}
+	}*/
 
 	if (d == p + 1) {
 		information[0] = arc_lengths + pickup_nodes[request].service_time + delivery_nodes[request].service_time;

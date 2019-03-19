@@ -48,9 +48,9 @@ class Instance{
 		void random_request_insertion(size_t request);
 		void greedy_route_insertion(size_t request);
 		void random_route_insertion(size_t request);
-		double costs_of_inserting_request(Vehicle v, size_t p, size_t d, size_t request);
-		double costs_of_inserting_request_with_transfer_pickup(Vehicle v, size_t p, size_t d, size_t request, Transfer_Node tn);
-		double costs_of_inserting_request_with_transfer_delivery(Vehicle v, size_t p, size_t d, size_t request, Transfer_Node tn);
+		double costs_of_inserting_request(Vehicle v, size_t p, size_t d, size_t request, vector<double> &information);
+		double costs_of_inserting_request_with_transfer_pickup(Vehicle v, size_t p, size_t d, size_t request, Transfer_Node tn, vector<double> &information);
+		double costs_of_inserting_request_with_transfer_delivery(Vehicle v, size_t p, size_t d, size_t request, Transfer_Node tn, vector<double> &information);
 
 		// Feasibility
 		bool is_feasible();
@@ -58,6 +58,10 @@ class Instance{
 		bool maximum_ride_time_not_exceeded();
 		bool time_windows_met();
 		bool capacity_feasible();
+
+		double pickup_feasible(Vehicle v, size_t p, size_t request);
+		double delivery_feasible(Vehicle v, size_t p, size_t d, size_t request, double p_delay);
+
 
 		void print_routes();
 };

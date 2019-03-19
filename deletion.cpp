@@ -15,7 +15,6 @@ size_t Instance::greedy_request_deletion(vector<size_t> request_bank) {
             }
 	    }
 	}
-	cout << "Best cost savings deletion:  " << best_costs_saving << "\n";
 	// Found the request to be removed, now remove it
 	if (pickup_vehicle[best_request] != delivery_vehicle[best_request]) {
 		// Transferred request
@@ -84,11 +83,7 @@ double Instance::costs_of_removing_request(size_t request) {
 	size_t pu_vehicle = pickup_vehicle[request];
 	size_t de_vehicle = delivery_vehicle[request];
 	double arc_lengths = 0.0;
-<<<<<<< HEAD
-	
-=======
 
->>>>>>> 44514bb264d15047d31f429dcbbb3b7f002ec7b3
 	int p = -1, d = -1, td = -1, tp = -1;
 	if (pu_vehicle == de_vehicle) {
 		for (size_t i = 1; i < routes[pu_vehicle].route.size() - 1; i++) {
@@ -111,9 +106,94 @@ double Instance::costs_of_removing_request(size_t request) {
 			}
 		}
 	}
-	
-	if (pu_vehicle != de_vehicle) {
 
+	if (pu_vehicle != de_vehicle) {
+		// Pickup change in arcs
+		if (td == p + 1) {
+			arc_lengths = arc_lengths - arcs[routes[pu_vehicle].route[p].gen_idx][routes[pu_vehicle].route[td].gen_idx]
+							- arcs[routes[pu_vehicle].route[p-1].gen_idx][routes[pu_vehicle].route[p].gen_idx]
+							- arcs[routes[pu_vehicle].route[td].gen_idx][routes[pu_vehicle].route[td-1].gen_idx];
+		} else {
+			arc_lengths = arc_lengths - arcs[routes[pu_vehicle].route[p].gen_idx][routes[pu_vehicle].route[p+1].gen_idx]
+							- arcs[routes[pu_vehicle].route[td-1].gen_idx][routes[pu_vehicle].route[td].gen_idx]
+							- arcs[routes[pu_vehicle].route[p-1].gen_idx][routes[pu_vehicle].route[p].gen_idx]
+							- arcs[routes[pu_vehicle].route[td].gen_idx][routes[pu_vehicle].route[td+1].gen_idx];
+		}
+		if (p > 1 && td < routes[pu_vehicle].route.size() - 2) {
+			if (td == p + 1) {
+				arc_lengths += arcs[routes[pu_vehicle].route[p-1].gen_idx][routes[pu_vehicle].route[td+1].gen_idx];
+			} else {
+				arc_lengths += arcs[routes[pu_vehicle].route[p-1].gen_idx][routes[pu_vehicle].route[p+1].gen_idx]
+								+ arcs[routes[pu_vehicle].route[td-1].gen_idx][routes[pu_vehicle].route[td+1].gen_idx];
+			}
+		} else if (p > 1 && td == routes[pu_vehicle].route.size() - 2) {
+			if (td == p + 1) {
+				arc_lengths += arcs[nearest_depot_gen_idx_d[routes[pu_vehicle].route[p-1].index]][routes[pu_vehicle].route[p-1].gen_idx];
+			} else {
+				arc_lengths += arcs[routes[pu_vehicle].route[p-1].gen_idx][routes[pu_vehicle].route[p+1].gen_idx]
+								+ arcs[nearest_depot_gen_idx_d[routes[pu_vehicle].route[td-1].index]][routes[pu_vehicle].route[td-1].gen_idx];
+			}
+		} else if (p == 1 && td < routes[pu_vehicle].route.size() - 2) {
+			if (td == p + 1) {
+				arc_lengths += arcs[routes[pu_vehicle].route[td+1].gen_idx][nearest_depot_gen_idx_p[routes[pu_vehicle].route[td+1].index]];
+			} else {
+				arc_lengths += arcs[nearest_depot_gen_idx_p[routes[pu_vehicle].route[p+1].index]][routes[pu_vehicle].route[p+1].gen_idx]
+								+ arcs[routes[pu_vehicle].route[td-1].gen_idx][routes[pu_vehicle].route[td+1].gen_idx];
+			}
+		} else if (p == 1 && td == routes[pu_vehicle].route.size() - 2) {
+			if (td == p + 1) {
+				arc_lengths += 0;
+			} else {
+				arc_lengths += arcs[routes[pu_vehicle].route[p].gen_idx][nearest_depot_gen_idx_p[request]]
+								+ arcs[routes[pu_vehicle].route[td].gen_idx][nearest_depot_gen_idx_d[request]];
+			}
+		} else {
+			cout << "Error calculating costs for transfer insertion!\n";
+		}
+
+		// Delivery change in arcs
+		if (d == tp + 1) {
+			arc_lengths = arc_lengths - arcs[routes[de_vehicle].route[tp].gen_idx][routes[de_vehicle].route[d].gen_idx]
+							- arcs[routes[de_vehicle].route[tp-1].gen_idx][routes[de_vehicle].route[tp].gen_idx]
+							- arcs[routes[de_vehicle].route[d].gen_idx][routes[de_vehicle].route[d-1].gen_idx];
+		} else {
+			arc_lengths = arc_lengths - arcs[routes[de_vehicle].route[tp].gen_idx][routes[de_vehicle].route[tp+1].gen_idx]
+							- arcs[routes[de_vehicle].route[d-1].gen_idx][routes[de_vehicle].route[d].gen_idx]
+							- arcs[routes[de_vehicle].route[tp-1].gen_idx][routes[de_vehicle].route[tp].gen_idx]
+							- arcs[routes[de_vehicle].route[d].gen_idx][routes[de_vehicle].route[d+1].gen_idx];
+		}
+
+		if (tp > 1 && d < routes[de_vehicle].route.size() - 2) {
+			if (d == tp + 1) {
+				arc_lengths += arcs[routes[de_vehicle].route[tp-1].gen_idx][routes[de_vehicle].route[d+1].gen_idx];
+			} else {
+				arc_lengths += arcs[routes[de_vehicle].route[tp-1].gen_idx][routes[de_vehicle].route[tp+1].gen_idx]
+								+ arcs[routes[de_vehicle].route[d-1].gen_idx][routes[de_vehicle].route[d+1].gen_idx];
+			}
+		} else if (tp > 1 && d == routes[de_vehicle].route.size() - 2) {
+			if (d == tp + 1) {
+				arc_lengths += arcs[nearest_depot_gen_idx_d[routes[de_vehicle].route[tp-1].index]][routes[de_vehicle].route[tp-1].gen_idx];
+			} else {
+				arc_lengths += arcs[routes[de_vehicle].route[tp-1].gen_idx][routes[de_vehicle].route[tp+1].gen_idx]
+								+ arcs[nearest_depot_gen_idx_d[routes[de_vehicle].route[d-1].index]][routes[de_vehicle].route[d-1].gen_idx];
+			}
+		} else if (tp == 1 && d < routes[de_vehicle].route.size() - 2) {
+			if (d == tp + 1) {
+				arc_lengths += arcs[routes[de_vehicle].route[d+1].gen_idx][nearest_depot_gen_idx_p[routes[de_vehicle].route[d+1].index]];
+			} else {
+				arc_lengths += arcs[nearest_depot_gen_idx_p[routes[de_vehicle].route[tp+1].index]][routes[de_vehicle].route[tp+1].gen_idx]
+								+ arcs[routes[de_vehicle].route[d-1].gen_idx][routes[de_vehicle].route[d+1].gen_idx];
+			}
+		} else if (tp == 1 && d == routes[de_vehicle].route.size() - 2) {
+			if (d == tp + 1) {
+				arc_lengths += 0;
+			} else {
+				arc_lengths += arcs[routes[de_vehicle].route[tp].gen_idx][nearest_depot_gen_idx_p[request]]
+								+ arcs[routes[de_vehicle].route[d].gen_idx][nearest_depot_gen_idx_d[request]];
+			}
+		} else {
+			cout << "Error calculating costs for transfer insertion!\n";
+		}
 	} else {
 		if (d == p + 1) {
 			arc_lengths = arc_lengths - arcs[routes[de_vehicle].route[p].gen_idx][routes[de_vehicle].route[d].gen_idx]
@@ -123,18 +203,14 @@ double Instance::costs_of_removing_request(size_t request) {
 			arc_lengths = arc_lengths - arcs[routes[de_vehicle].route[p].gen_idx][routes[de_vehicle].route[p+1].gen_idx]
 							- arcs[routes[de_vehicle].route[d-1].gen_idx][routes[de_vehicle].route[d].gen_idx]
 							- arcs[routes[de_vehicle].route[p-1].gen_idx][routes[de_vehicle].route[p].gen_idx]
-							- arcs[routes[de_vehicle].route[d-1].gen_idx][routes[de_vehicle].route[d].gen_idx];
+							- arcs[routes[de_vehicle].route[d].gen_idx][routes[de_vehicle].route[d+1].gen_idx];
 		}
 
 		if (p > 1 && d < routes[de_vehicle].route.size() - 2) {
 			if (d == p + 1) {
 				arc_lengths += arcs[routes[de_vehicle].route[p-1].gen_idx][routes[de_vehicle].route[d+1].gen_idx];
 			} else {
-<<<<<<< HEAD
-				arc_lengths += arcs[routes[de_vehicle].route[p-1].gen_idx][routes[de_vehicle].route[p+1].gen_idx] 
-=======
 				arc_lengths += arcs[routes[de_vehicle].route[p-1].gen_idx][routes[de_vehicle].route[p+1].gen_idx]
->>>>>>> 44514bb264d15047d31f429dcbbb3b7f002ec7b3
 								+ arcs[routes[de_vehicle].route[d-1].gen_idx][routes[de_vehicle].route[d+1].gen_idx];
 			}
 		} else if (p > 1 && d == routes[de_vehicle].route.size() - 2) {
@@ -144,22 +220,18 @@ double Instance::costs_of_removing_request(size_t request) {
 				arc_lengths += arcs[routes[de_vehicle].route[p-1].gen_idx][routes[de_vehicle].route[p+1].gen_idx]
 								+ arcs[nearest_depot_gen_idx_d[routes[de_vehicle].route[d-1].index]][routes[de_vehicle].route[d-1].gen_idx];
 			}
-		} else if (p == 1 && d < routes[de_vehicle].route.size() - 1) {
+		} else if (p == 1 && d < routes[de_vehicle].route.size() - 2) {
 			if (d == p + 1) {
 				arc_lengths += arcs[routes[de_vehicle].route[d+1].gen_idx][nearest_depot_gen_idx_p[routes[de_vehicle].route[d+1].index]];
 			} else {
 				arc_lengths += arcs[nearest_depot_gen_idx_p[routes[de_vehicle].route[p+1].index]][routes[de_vehicle].route[p+1].gen_idx]
 								+ arcs[routes[de_vehicle].route[d-1].gen_idx][routes[de_vehicle].route[d+1].gen_idx];
 			}
-		} else if (p == 1 && d == routes[de_vehicle].route.size() - 1) {
+		} else if (p == 1 && d == routes[de_vehicle].route.size() - 2) {
 			if (d == p + 1) {
 				arc_lengths += 0;
 			} else {
-<<<<<<< HEAD
-				arc_lengths += arcs[routes[de_vehicle].route[p].gen_idx][nearest_depot_gen_idx_p[request]] 
-=======
 				arc_lengths += arcs[routes[de_vehicle].route[p].gen_idx][nearest_depot_gen_idx_p[request]]
->>>>>>> 44514bb264d15047d31f429dcbbb3b7f002ec7b3
 								+ arcs[routes[de_vehicle].route[d].gen_idx][nearest_depot_gen_idx_d[request]];
 			}
 		} else {

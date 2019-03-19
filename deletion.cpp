@@ -71,6 +71,91 @@ size_t Instance::random_request_deletion(vector<size_t> request_bank) {
 	return request;
 }
 
+bool compareFunc(pair<size_t, double> &a, pair<size_t, double> &b)
+{
+    return a.second > b.second;
+}
+
+vector<size_t> Instance::shaw_deletion(size_t amount){
+    vector<size_t> request_bank = {};
+    request_bank.push_back(rand() % request_amount);
+    vector<pair<size_t, double>> relatedness(request_amount, {0,0});
+
+    double alpha = 1, beta = 1;
+    double tmp = 0, tmp_d = 0;
+    double time_at_node_p = 0, time_at_node_d = 0;
+
+    //determine arrival times for the initial request
+    size_t v = pickup_vehicle[request_bank[0]];
+    for(size_t adx = 1; adx < routes[v].route.size()-1; adx++){
+        if(routes[v].route[adx].request_idx == request_bank[0]){
+            time_at_node_p = routes[v].time_at_node[adx];
+            adx = routes[v].route.size();
+        }
+    }
+
+    v = delivery_vehicle[request_bank[0]];
+    for(size_t adx = 1; adx < routes[v].route.size()-1; adx++){
+        if(routes[v].route[adx].request_idx == request_bank[0]){
+            time_at_node_d = routes[v].time_at_node[adx];
+        }
+    }
+
+    //determine arrival times for all other requests
+    for(size_t idx = 0; idx < request_amount; idx++){
+        relatedness[idx].first = idx;
+
+        v = pickup_vehicle[idx];
+        for(size_t adx = 1; adx < routes[v].route.size()-1; adx++){
+            if(routes[v].route[adx].request_idx == idx){
+                tmp = routes[v].time_at_node[adx];
+                adx = routes[v].route.size();
+            }
+        }
+
+        v = delivery_vehicle[idx];
+        for(size_t adx = 1; adx < routes[v].route.size()-1; adx++){
+            if(routes[v].route[adx].request_idx == idx){
+                tmp_d = routes[v].time_at_node[adx];
+            }
+        }
+        //calculate relatedness measure
+        relatedness[idx].second = alpha * (arcs[request_bank[0]][idx] + arcs[delivery_nodes[request_bank[0]].gen_idx][delivery_nodes[idx].gen_idx]) +
+                beta * ( abs(time_at_node_p - tmp) + abs(time_at_node_d - tmp_d) );
+    }
+    sort(relatedness.begin(), relatedness.end(), compareFunc);
+
+    for(size_t idx = 1; idx < amount; idx++){
+        request_bank.push_back(relatedness[idx].first);
+    }
+
+    for(size_t idx = 0; idx < request_bank.size(); idx++){
+    if (pickup_vehicle[request_bank[idx]] != delivery_vehicle[request_bank[idx]]) {
+		// Transferred request
+		for (size_t i = 1; i < routes[pickup_vehicle[request_bank[idx]]].route.size() - 1; i++) {
+			if (routes[pickup_vehicle[request_bank[idx]]].route[i].request_idx == request_bank[idx]) {
+				routes[pickup_vehicle[request_bank[idx]]].remove_node(i);
+			}
+		}
+		for (size_t i = 1; i < routes[delivery_vehicle[request_bank[idx]]].route.size() - 1; i++) {
+			if (routes[delivery_vehicle[request_bank[idx]]].route[i].request_idx == request_bank[idx]) {
+				routes[delivery_vehicle[request_bank[idx]]].remove_node(i);
+			}
+		}
+	} else {
+		// Non transfer request
+		for (size_t i = 1; i < routes[pickup_vehicle[request_bank[idx]]].route.size() - 1; i++) {
+			if (routes[pickup_vehicle[request_bank[idx]]].route[i].index == request_bank[idx]) {
+				routes[pickup_vehicle[request_bank[idx]]].remove_node(i);
+				i--;
+			}
+		}
+	}
+    }
+    relatedness.clear();
+    return request_bank;
+}
+
 void Instance::greedy_route_deletion(vector<size_t> request_bank) {
 
 }

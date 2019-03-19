@@ -14,7 +14,7 @@ using namespace std;
 string location = "C://Users//Luuk//Documents//Codeblocks projecten//OR_analysis//instances.csv";
 vector<vector<int>> input_data;
 
-size_t maximum_loops = 1000;
+size_t maximum_loops = 10000;
 
 bool acceptation_criterion_met(double s, double current_solution, size_t loop_count) {
 	double temperature = (double)maximum_loops - (double)loop_count + 1;
@@ -35,7 +35,7 @@ bool stopping_criterion_met(size_t loop_count) {
 }
 
 void ALNS(Instance &i) {
-	//transfer_nodes[0].open = true;
+	transfer_nodes[0].open = true;
 
 	auto start = chrono::high_resolution_clock::now();
 
@@ -53,13 +53,13 @@ void ALNS(Instance &i) {
     double costs_rejection = 0;
 	double feasibility_rejection = 0;
 
-	vector<double> deletion_scores = {1,1};
-	vector<double> deletion_rewards = {0,0};
+	vector<double> deletion_scores = {1,1,1};
+	vector<double> deletion_rewards = {0,0,0};
 
 	//vector<double> insertion_scores = {1};
 	//vector<double> insertion_rewards = {0};
-	vector<double> insertion_scores = {1,1,1};
-	vector<double> insertion_rewards = {0,0,0};
+	vector<double> insertion_scores = {1,1,1,1};
+	vector<double> insertion_rewards = {0,0,0,0};
 
 	while(!stopping_criterion_met(loop_count)) {
 		i.old_routes = i.routes;
@@ -79,7 +79,7 @@ void ALNS(Instance &i) {
 
 		size_t amount = (rand() % (int(log(i.request_amount)/log(1.5))+1) ) + 1;
 		//size_t amount = (rand() % 1) + 1;
-		discrete_distribution<> delete_op({deletion_scores[0]});
+		discrete_distribution<> delete_op({deletion_scores[0], deletion_scores[1], deletion_scores[2]});
 		size_t delete_operator = delete_op(gen);
 
 		switch (delete_operator) {
@@ -93,10 +93,13 @@ void ALNS(Instance &i) {
 					request_bank.push_back(i.random_request_deletion(request_bank));
 				}
 				break;
+            case 2 :
+                request_bank = i.shaw_deletion(amount);
+				break;
 		}
 		i.remove_empty_vehicle();
 
-		discrete_distribution<> insert_op({insertion_scores[0],insertion_scores[1]});
+		discrete_distribution<> insert_op({insertion_scores[0],insertion_scores[1], insertion_scores[2], insertion_scores[3]});
 		//discrete_distribution<> insert_op({insertion_scores[0]});
 		size_t insert_operator = insert_op(gen);
 		switch (insert_operator) {
@@ -122,15 +125,15 @@ void ALNS(Instance &i) {
 				}
 				request_bank.clear();
 				break;
-
-			/*case 1 :
+			case 3 :
+			    cout << "insert with transfer\n";
 				//cout << "Transfer insertion with score: " << insertion_scores[insert_operator] << ", at loop: " << loop_count << "\n";
 				for (size_t index = 0; index < request_bank.size(); index++) {
 					i.greedy_route_insertion(request_bank[index]);
 				}
 				//cout << "After transfer insertion\n";
 				request_bank.clear();
-				break;*/
+				break;
 			default : cout << "No insert error\n";
 		}
 		bool accepted1 = false;
@@ -249,9 +252,7 @@ void clear_global(){
 
 void solve_instance(vector<vector<int>> &input_data, int ins){
 	Instance i;
-	        cout << "before before\n";
 	i.create_instance(input_data, ins);
-	        cout << "before before\n";
     i.calculate_arcs();
     i.preprocess();
     i.initial_solution();

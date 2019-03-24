@@ -28,10 +28,10 @@ void Instance::write_output_file(size_t instance_number) {
 				// Node
 				// number of digits : (i > 0 ? (int) log10 ((double) i) + 1 : 1)
 
-				for (size_t i = 0; i < (3-(node.index > 0 ? (int) log10 ((double) node.index) + 1 : 1)); i++) {
+				for (size_t i = 0; i < (3-((node.gen_idx+1) > 0 ? (int) log10 ((double) (node.gen_idx+1)) + 1 : 1)); i++) {
 					rep.append("0");
 				}
-				rep.append(to_string(node.index));
+				rep.append(to_string((node.gen_idx+1)));
 
 				// Request
 
@@ -47,18 +47,18 @@ void Instance::write_output_file(size_t instance_number) {
 			} else {
 				// node is not a transfer node
 				if (element == v.route.size()) {
-					output_file << node.index << '\n';
+					output_file << (node.gen_idx+1) << '\n';
 				} else {
-					output_file << node.index << ',';
+					output_file << (node.gen_idx+1) << ',';
 				}
 			}
 			element++;
 		}
-		for (double service_time : v.time_at_node) {
-			if (service_time == v.time_at_node.back()) {
-				output_file << service_time << '\n';
+		for (size_t idx = 0; idx < v.time_at_node.size(); idx++) {
+			if (v.time_at_node[idx] == v.time_at_node.back()) {
+				output_file << v.time_at_node[idx] + v.waiting_times[idx] << '\n';
 			} else {
-				output_file << service_time << ',';
+				output_file << v.time_at_node[idx] + v.waiting_times[idx] << ',';
 			}
 		}
 	}

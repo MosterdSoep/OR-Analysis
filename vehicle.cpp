@@ -162,7 +162,6 @@ double Vehicle::add_delivery_transfer(size_t location, Transfer_Node &node, size
     fictional_node.pickup = 0;
     fictional_node.request_idx = r;
 	fictional_node.gen_idx = node.gen_idx;
-
     route.insert(route.begin() + location, fictional_node);
 
     if (location == 1){

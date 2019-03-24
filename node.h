@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <limits>
+#include <assert.h>
 using namespace std;
 
 class Node {
@@ -16,7 +17,6 @@ class Node {
     size_t request_idx;
     double lower_bound = 0;
     double upper_bound = numeric_limits<double>::max();
-	Node(int index, int x, int y, int st, int g_idx);
 	Node(){};
 };
 

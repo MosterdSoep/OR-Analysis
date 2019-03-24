@@ -154,7 +154,8 @@ size_t Instance::regret_2_insertion(vector<size_t> request_bank){
 }
 
 size_t Instance::random_request_greedy_insertion(vector<size_t> request_bank){
-    size_t request = request_bank[rand() % request_bank.size()];
+    size_t best_request_loc = rand() % request_bank.size();
+    size_t request = request_bank[best_request_loc];
 
     size_t best_vehicle = routes.size();
 	size_t best_pickup_location = 1;
@@ -213,21 +214,17 @@ size_t Instance::random_request_greedy_insertion(vector<size_t> request_bank){
         routes[insert_loc].add_node(2, delivery_nodes[request]);
 	} else { cout << "insertion failed\n"; }
 
-	size_t best_request_loc = 0;
-	for (size_t idx = 0; idx < request_bank.size(); idx++) {
-        if (request_bank[idx] == request) {
-            best_request_loc  = idx;
-        }
-	}
-
     return best_request_loc;
 }
 
+size_t Instance::greedy_route_insertion(vector<size_t> request_bank) {
+    size_t best_request_loc = rand() % request_bank.size();
+    size_t request = request_bank[best_request_loc];
 
-void Instance::greedy_route_insertion(size_t request) {
 	size_t k1 = 0, k2 = 0, best_p = 0, best_d = 0, best_td = 0, best_tp = 0;
 	double best_costs = numeric_limits<double>::max();
 	Transfer_Node transfer_node;
+	transfer_node.gen_idx == 10000;
 	vector<Transfer_Node> open_facilities;
 
 	for (Transfer_Node tn : transfer_nodes) {
@@ -238,12 +235,14 @@ void Instance::greedy_route_insertion(size_t request) {
 	// Case 2: if there is 1 vehicle -> find one other vehicle and insert a request with transfer in those vehicles
     vector<double> added_times_p(2,0);
     vector<double> added_times_d(2,0);
+    routes.push_back(Vehicle());
+	routes.push_back(Vehicle());
 	for (Transfer_Node tn : open_facilities) {
-		routes.push_back(Vehicle());
-		routes.push_back(Vehicle());
-
-		for (size_t v1 = 0; v1 < routes.size(); v1++) {
-			for (size_t v2 = 0; v2 < routes.size(); v2++) {
+        for(size_t iter = 0; iter <5; iter++){
+        size_t v1 = rand()%routes.size();
+        size_t v2 = rand()%routes.size();
+		//for (size_t v1 = 0; v1 < routes.size(); v1++) {
+		//	for (size_t v2 = 0; v2 < routes.size(); v2++) {
 				if (v1 == v2) {
 					continue;
 				}
@@ -255,7 +254,9 @@ void Instance::greedy_route_insertion(size_t request) {
 						double pickup_costs = costs_of_inserting_request_with_transfer_pickup(routes[v1], p, td, request, tn, added_times_p);
 						//cout << "Pickup costs: " << pickup_costs << "\n";
 						for (size_t tp = 1; tp < routes[v2].route.size(); tp++) {
-
+                            if(routes[v2].time_at_node[tp-1] + *min_element(routes[v2].slack_at_node.begin() + tp-1, routes[v2].slack_at_node.end()) < routes[v1].time_at_node[td-1] + routes[v1].route[td-1].service_time){
+                                continue;
+                            };
 							double minimum_slack = *min_element(routes[v2].slack_at_node.begin(), routes[v2].slack_at_node.end());
 							if (routes[v1].time_at_node[td] + tn.service_time < routes[v2].time_at_node[tp] + minimum_slack) {
 								// Only look for possible transfers, e.g. when time windows are correct for the transfer
@@ -279,13 +280,18 @@ void Instance::greedy_route_insertion(size_t request) {
 
 					}
 				}
-			}
+			//}
 		}
 	}
-	routes[k1].add_node(best_p, pickup_nodes[request]);
-	double time = routes[k1].add_delivery_transfer(best_td, transfer_node, request);
-	routes[k2].add_pickup_transfer(best_tp, transfer_node, time, request);
-	routes[k2].add_node(best_d, delivery_nodes[request]);
+	if(transfer_node.gen_idx != 10000){
+        routes[k1].add_node(best_p, pickup_nodes[request]);
+        double time = routes[k1].add_delivery_transfer(best_td, transfer_node, request);
+        routes[k2].add_pickup_transfer(best_tp, transfer_node, time, request);
+        routes[k2].add_node(best_d, delivery_nodes[request]);
+	}else{
+        best_request_loc = this->random_request_greedy_insertion(request_bank);
+	}
+    return best_request_loc;
 }
 
 double Instance::costs_of_inserting_request(Vehicle v, size_t p, size_t d, size_t request, vector<double> &information) {

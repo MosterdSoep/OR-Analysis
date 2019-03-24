@@ -46,7 +46,7 @@ class Instance{
 		size_t greedy_request_insertion(vector<size_t> request_bank);
 		size_t regret_2_insertion(vector<size_t> request_bank);
 		size_t random_request_greedy_insertion(vector<size_t> request_bank);
-		void greedy_route_insertion(size_t request);
+		size_t greedy_route_insertion(vector<size_t> request_bank);
 		double costs_of_inserting_request(Vehicle v, size_t p, size_t d, size_t request, vector<double> &information);
 		double costs_of_inserting_request_with_transfer_pickup(Vehicle v, size_t p, size_t d, size_t request, Transfer_Node tn, vector<double> &information);
 		double costs_of_inserting_request_with_transfer_delivery(Vehicle v, size_t p, size_t d, size_t request, Transfer_Node tn, vector<double> &information);
@@ -71,7 +71,11 @@ inline void Instance::print_routes(){
     {
         for(size_t adx = 0; adx < routes[idx].route.size(); adx++)
         {
+            if(routes[idx].route[adx].type == 't'){
+            cout << 't' << routes[idx].route[adx].gen_idx << "  ";
+            }else{
             cout << routes[idx].route[adx].gen_idx << "  ";
+            }
         }
         cout << '\n';
     }

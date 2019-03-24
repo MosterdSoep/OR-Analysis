@@ -100,7 +100,6 @@ vector<size_t> Instance::shaw_deletion(size_t amount){
             time_at_node_d = routes[v].time_at_node[adx];
         }
     }
-
     //determine arrival times for all other requests
     for(size_t idx = 0; idx < request_amount; idx++){
         relatedness[idx].first = idx;

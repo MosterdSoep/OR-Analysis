@@ -232,16 +232,16 @@ void Vehicle::add_pickup_transfer(size_t location, Transfer_Node &node, double m
 
 void Vehicle::remove_node(size_t location){
 	waiting_times.erase(waiting_times.begin() + location); // Waiting times not optimal, could possibly wait less in other nodes but that may change feasibility
-
+	current_capacity.erase(current_capacity.begin() + location);
 	// Changing the capacity of the vehicle depends on the node that is being removed
 	if (route[location].type == 'p' || (route[location].pickup && route[location].type == 't')) {
 		// Pickup will be removed
-        for (size_t i = location + 1; i < current_capacity.size(); i++) {
+        for (size_t i = location; i < current_capacity.size(); i++) {
 			current_capacity[i]--;
 		}
     } else if (route[location].type == 'd' || (!route[location].pickup && route[location].type == 't')) {
 		// Delivery will be removed
-		for (size_t i = location + 1; i < current_capacity.size(); i++) {
+		for (size_t i = location; i < current_capacity.size(); i++) {
 			current_capacity[i]++;
 		}
 	} else if (route[location].type == 'o') {
@@ -251,7 +251,6 @@ void Vehicle::remove_node(size_t location){
 	}
 	route.erase(route.begin() + location);
 	time_at_node.pop_back();
-	current_capacity.pop_back();
 	slack_at_node.pop_back();
 
     if (location == 1){

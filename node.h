@@ -17,7 +17,6 @@ class Node {
     size_t request_idx;
     double lower_bound = 0;
     double upper_bound = numeric_limits<double>::max();
-	Node(){};
 };
 
 class Pickup_Node: public Node{

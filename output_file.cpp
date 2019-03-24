@@ -3,7 +3,6 @@
 #include <sstream>
 #include <cmath>
 #include <string>
-#include <windows.h>
 
 void Instance::write_output_file(size_t instance_number) {
 	ostringstream file_name_stream;

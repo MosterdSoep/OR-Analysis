@@ -11,7 +11,8 @@ using namespace std;
 // General variables
 //string location = "D://Documenten//Studie//OR analysis//OR Analysis//instances.csv";
 //string location = "C://Users//Hp//Documents//GitHub//OR-Analysis//instances.csv";
-string location = "C://Users//Luuk//Documents//Codeblocks projecten//OR_analysis//large_instances.csv";
+//string location = "C://Users//Luuk//Documents//Codeblocks projecten//OR_analysis//large_instances.csv";
+string location = "large_instances.csv";
 vector<vector<int>> input_data;
 
 size_t maximum_loops = 30000;

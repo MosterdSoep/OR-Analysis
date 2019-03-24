@@ -169,24 +169,24 @@ double Instance::costs_of_removing_request(size_t request) {
 	size_t de_vehicle = delivery_vehicle[request];
 	double arc_lengths = 0.0;
 
-	int p = -1, d = -1, td = -1, tp = -1;
+	size_t p = 12345, d = 12345, td = 12345, tp = 12345;
 	if (pu_vehicle == de_vehicle) {
 		for (size_t i = 1; i < routes[pu_vehicle].route.size() - 1; i++) {
 			if (routes[pu_vehicle].route[i].index == request) {
-				if (p == -1) p = i;
+				if (p == 12345) p = i;
 				else d = i;
 			}
 		}
 	} else {
 		for (size_t i = 1; i < routes[pu_vehicle].route.size() - 1; i++) {
 			if (routes[pu_vehicle].route[i].index == request) {
-				if (p == -1) p = i;
+				if (p == 12345) p = i;
 				else td = i;
 			}
 		}
 		for (size_t i = 1; i < routes[de_vehicle].route.size() - 1; i++) {
 			if (routes[de_vehicle].route[i].index == request) {
-				if (tp == -1) tp = i;
+				if (tp == 12345) tp = i;
 				else d = i;
 			}
 		}

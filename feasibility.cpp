@@ -6,11 +6,11 @@ bool Instance::is_feasible() {
 		capacity_feasible()){
 		return true;
 	} else {
-	    /*
+	    
 		if (!maximum_ride_time_not_exceeded()) { cout << "Maximum ride time exceeded\n";  }
 		if (!time_windows_met()) { cout << "Time windows not met\n";}
 		if (!capacity_feasible()) { cout << "Capacity not feasible\n";  }
-		cout << "\n";*/
+		cout << "\n";
 		return false;
 	}
 }
@@ -29,7 +29,7 @@ bool Instance::maximum_ride_time_not_exceeded() {
 
 
 	//might want to change this, based on request data
-	bool transfered = false;
+
     for (Vehicle v : routes) {
 		for (size_t idx = 0; idx < v.route.size(); idx++){
             if (v.route[idx].type == 'p') {
@@ -61,7 +61,6 @@ bool Instance::time_windows_met() {
 	vector<double> trans_delivery_time(request_amount, 0);
 
 	//might want to change this, based on request data
-	bool transfered = false;
     for (Vehicle v : routes) {
         for (size_t idx = 0; idx < v.route.size(); idx++){
 			// Time windows

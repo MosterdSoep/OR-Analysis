@@ -224,7 +224,7 @@ size_t Instance::greedy_route_insertion(vector<size_t> request_bank) {
 	size_t k1 = 0, k2 = 0, best_p = 0, best_d = 0, best_td = 0, best_tp = 0;
 	double best_costs = numeric_limits<double>::max();
 	Transfer_Node transfer_node;
-	transfer_node.gen_idx == 10000;
+	transfer_node.gen_idx = 10000;
 	vector<Transfer_Node> open_facilities;
 
 	for (Transfer_Node tn : transfer_nodes) {

@@ -34,23 +34,22 @@ class Instance{
 		void write_output_file(size_t instance_number);
 
 		// Deletion
-		size_t greedy_request_deletion(vector<size_t> request_bank);
-		size_t random_request_deletion(vector<size_t> request_bank);
-		void greedy_route_deletion(vector<size_t> request_bank);
-		void random_route_deletion(vector<size_t> request_bank);
-		double costs_of_removing_request(size_t request);
+		size_t greedy_request_deletion(vector<size_t> &request_bank);
+		size_t random_request_deletion(vector<size_t> &request_bank);
+		void greedy_route_deletion(vector<size_t> &request_bank);
+		void random_route_deletion(vector<size_t> &request_bank);
+		double costs_of_removing_request(size_t &request);
 		void remove_empty_vehicle();
+		vector<size_t> shaw_deletion(size_t &amount);
 
 		// Insertion
-		size_t greedy_request_insertion(vector<size_t> request_bank);
-		size_t regret_2_insertion(vector<size_t> request_bank);
-		size_t random_request_greedy_insertion(vector<size_t> request_bank);
-		void random_request_insertion(size_t request);
-		void greedy_route_insertion(size_t request);
-		void random_route_insertion(size_t request);
-		double costs_of_inserting_request(Vehicle v, size_t p, size_t d, size_t request, vector<double> &information);
-		double costs_of_inserting_request_with_transfer_pickup(Vehicle v, size_t p, size_t d, size_t request, Transfer_Node tn, vector<double> &information);
-		double costs_of_inserting_request_with_transfer_delivery(Vehicle v, size_t p, size_t d, size_t request, Transfer_Node tn, vector<double> &information);
+		size_t greedy_request_insertion(vector<size_t> &request_bank);
+		size_t regret_2_insertion(vector<size_t> &request_bank);
+		size_t random_request_greedy_insertion(vector<size_t> &request_bank);
+		size_t greedy_route_insertion(vector<size_t> &request_bank);
+		double costs_of_inserting_request(Vehicle &v, size_t p, size_t d, size_t request, vector<double> &information);
+		double costs_of_inserting_request_with_transfer_pickup(Vehicle &v, size_t p, size_t d, size_t request, Transfer_Node tn, vector<double> &information);
+		double costs_of_inserting_request_with_transfer_delivery(Vehicle &v, size_t p, size_t d, size_t request, Transfer_Node tn, vector<double> &information);
 
 		// Feasibility
 		bool is_feasible();
@@ -59,8 +58,9 @@ class Instance{
 		bool time_windows_met();
 		bool capacity_feasible();
 
-		double pickup_feasible(Vehicle v, size_t p, size_t request);
-		double delivery_feasible(Vehicle v, size_t p, size_t d, size_t request, double p_delay);
+		double pickup_feasible(Vehicle &v, size_t &p, size_t &request);
+		double delivery_feasible(Vehicle &v, size_t p, size_t d, size_t request, double p_delay, double &added_time);
+		bool check_slack_times(Vehicle &v, size_t first, size_t last, double delay);
 
 
 		void print_routes();
@@ -71,7 +71,11 @@ inline void Instance::print_routes(){
     {
         for(size_t adx = 0; adx < routes[idx].route.size(); adx++)
         {
+            if(routes[idx].route[adx].type == 't'){
+            cout << 't' << routes[idx].route[adx].gen_idx << "  ";
+            }else{
             cout << routes[idx].route[adx].gen_idx << "  ";
+            }
         }
         cout << '\n';
     }

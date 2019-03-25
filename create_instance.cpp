@@ -22,7 +22,7 @@ void Instance::create_instance(vector<vector<int>> &input_data, int ins){
     size_t ride_times_idx = time_window_idx + 4 * request_amount;
     size_t service_time_idx = ride_times_idx + request_amount;
 
-    for(int idx = 0; idx < request_amount; idx++){
+    for(size_t idx = 0; idx < request_amount; idx++){
         // Create pickup nodes
         pickup_nodes.push_back(Pickup_Node());
         pickup_nodes[idx].index = idx;
@@ -47,7 +47,7 @@ void Instance::create_instance(vector<vector<int>> &input_data, int ins){
         delivery_nodes[idx].type = 'd';
     }
 
-    for(int idx = 0; idx < transfer_location_amount; idx++){
+    for(size_t idx = 0; idx < transfer_location_amount; idx++){
         //Create transfer nodes
         transfer_nodes.push_back(Transfer_Node());
         transfer_nodes[idx].index = idx;
@@ -57,9 +57,10 @@ void Instance::create_instance(vector<vector<int>> &input_data, int ins){
         transfer_nodes[idx].gen_idx = 2 * request_amount + idx;
         transfer_nodes[idx].costs = input_data[ins][transfer_cost_idx + idx];
         transfer_nodes[idx].type = 't';
+        transfer_nodes[idx].open = 1;
     }
 
-    for(int idx = 0; idx < depot_amount; idx++){
+    for(size_t idx = 0; idx < depot_amount; idx++){
         //Create depot nodes
         depot_nodes.push_back(Depot_Node());
         depot_nodes[idx].index = idx;
@@ -70,7 +71,7 @@ void Instance::create_instance(vector<vector<int>> &input_data, int ins){
         depot_nodes[idx].type = 'o';
     }
 
-    for(int idx = 0; idx < request_amount; idx++){
+    for(size_t idx = 0; idx < request_amount; idx++){
         ride_times.push_back(input_data[ins][ride_times_idx + idx]);
     }
 
@@ -85,7 +86,7 @@ void Instance::create_instance(vector<vector<int>> &input_data, int ins){
 void Instance::preprocess(){
     double big_M = 50000000000;
 
-    for(int idx = 0; idx < request_amount; idx++){
+    for(size_t idx = 0; idx < request_amount; idx++){
         // e_i+n < e_i + s_i + t_i,i+n
         if(delivery_nodes[idx].lower_bound < pickup_nodes[idx].lower_bound + pickup_nodes[idx].service_time + arcs[idx][request_amount + idx])
             delivery_nodes[idx].lower_bound = pickup_nodes[idx].lower_bound + pickup_nodes[idx].service_time + arcs[idx][request_amount + idx];
@@ -102,13 +103,13 @@ void Instance::preprocess(){
         arcs[idx + request_amount][idx] = big_M;
 
         // no routes directly from depot to delivery, or pickup to depot
-        for(int adx = depot_nodes[0].gen_idx; adx < depot_nodes[0].gen_idx + depot_amount; adx++){
+        for(size_t adx = depot_nodes[0].gen_idx; adx < depot_nodes[0].gen_idx + depot_amount; adx++){
             arcs[adx][idx + request_amount] = big_M;
             arcs[idx][adx] = big_M;
         }
     }
-    for(int idx = 0; idx < request_amount; idx++){
-        for(int adx = 0; adx < request_amount; adx++){
+    for(size_t idx = 0; idx < request_amount; idx++){
+        for(size_t adx = 0; adx < request_amount; adx++){
             if(pickup_nodes[idx].lower_bound + arcs[idx][adx] + pickup_nodes[idx].service_time > pickup_nodes[adx].upper_bound){
                 arcs[idx][adx] = big_M;
             }
@@ -123,7 +124,7 @@ void Instance::preprocess(){
             }
         }
     }
-    for(int idx = 0; idx < request_amount; idx++){
+    for(size_t idx = 0; idx < request_amount; idx++){
         if(pickup_nodes[idx].lower_bound > pickup_nodes[idx].upper_bound){cout << "Time window pickups infeasible\n";}
         if(delivery_nodes[idx].lower_bound > delivery_nodes[idx].upper_bound){cout << "Time window deliveries infeasible\n";}
     }
@@ -131,27 +132,25 @@ void Instance::preprocess(){
 
 void Instance::calculate_arcs() {
 	arcs.resize(node_amount);
-	for (int i = 0; i < node_amount; i++) {
+	for (size_t i = 0; i < node_amount; i++) {
 		arcs[i].resize(node_amount);
 	}
-	for (int i = 0; i < node_amount; i++) {
-		for (int j = i + 1; j < node_amount; j++) {
+	for (size_t i = 0; i < node_amount; i++) {
+		for (size_t j = i + 1; j < node_amount; j++) {
 			arcs[i][j] = euclidian_distance(all_nodes[i],all_nodes[j]);
 			arcs[j][i] = arcs[i][j];
 		}
 	}
 
-    for(int idx = 0; idx < request_amount; idx++){
-            cout << "before\n";
+    for(size_t idx = 0; idx < request_amount; idx++){
         nearest_depot_gen_idx_p.push_back(min_element(arcs[pickup_nodes[idx].gen_idx].begin() + depot_nodes[0].gen_idx, arcs[pickup_nodes[idx].gen_idx].begin() +
                                 depot_nodes[0].gen_idx + depot_nodes.size()) - arcs[pickup_nodes[idx].gen_idx].begin());
         nearest_depot_gen_idx_d.push_back(min_element(arcs[delivery_nodes[idx].gen_idx].begin() + depot_nodes[0].gen_idx, arcs[delivery_nodes[idx].gen_idx].begin() +
                                 depot_nodes[0].gen_idx + depot_nodes.size()) - arcs[delivery_nodes[idx].gen_idx].begin());
         nearest_depot_insertion_cost.push_back( (arcs[pickup_nodes[idx].gen_idx][delivery_nodes[idx].gen_idx] + arcs[nearest_depot_gen_idx_p[idx]][pickup_nodes[idx].gen_idx] +
                                                arcs[delivery_nodes[idx].gen_idx][nearest_depot_gen_idx_d[idx]] ) * travel_cost );
-    cout << "after\n";
     }
-    for(int idx = 0; idx < transfer_location_amount; idx++){
+    for(size_t idx = 0; idx < transfer_location_amount; idx++){
         nearest_depot_gen_idx_t.push_back(min_element(arcs[transfer_nodes[idx].index].begin() + depot_nodes[0].gen_idx, arcs[transfer_nodes[idx].index].begin() +
                                 depot_nodes[0].gen_idx + depot_nodes.size()) - arcs[transfer_nodes[idx].index].begin());
     }

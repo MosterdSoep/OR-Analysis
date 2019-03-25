@@ -6,11 +6,6 @@ bool Instance::is_feasible() {
 		capacity_feasible()){
 		return true;
 	} else {
-	    
-		if (!maximum_ride_time_not_exceeded()) { cout << "Maximum ride time exceeded\n";  }
-		if (!time_windows_met()) { cout << "Time windows not met\n";}
-		if (!capacity_feasible()) { cout << "Capacity not feasible\n";  }
-		cout << "\n";
 		return false;
 	}
 }
@@ -45,9 +40,11 @@ bool Instance::maximum_ride_time_not_exceeded() {
 	}
     for(size_t idx = 0; idx < request_amount; idx++){
         if(delivery_time[idx] - pickup_time[idx] > ride_times[idx]){
+            cout << "ride times infeasible\n";
             return false;
         }
         if(trans_pickup_time[idx] < trans_delivery_time[idx]){
+            cout << "transfers infeasible\n";
             return false;
         }
 	}
@@ -66,10 +63,10 @@ bool Instance::time_windows_met() {
 			// Time windows
             if (idx != 0 && idx != v.route.size() - 1) {
 				if (v.time_at_node[idx] + v.waiting_times[idx] > v.route[idx].upper_bound){
-					//cout << "upper bound infeasible, type : " << v.route[idx].type << "  request : " << v.route[idx].index << '\n';
+					//cout << "time windows upper bound infeasible\n";
 					return false;
 				} else if (v.time_at_node[idx] + v.waiting_times[idx] < v.route[idx].lower_bound - 0.00001){
-					//cout << "lower bound infeasible, type : "  << v.route[idx].type << "  request : " << v.route[idx].index << "\n";
+					//cout << "time window lower bound infeasible\n";
 					return false;
 				}
 			}
@@ -88,9 +85,11 @@ bool Instance::time_windows_met() {
 	// Maximum ride time
 	for(size_t idx = 0; idx < request_amount; idx++){
         if(delivery_time[idx] - pickup_time[idx] > ride_times[idx]){
+            //cout << "ride times infeasible\n";
             return false;
         }
         if(trans_pickup_time[idx] < trans_delivery_time[idx]){
+            //cout << "transfers infeasible\n";
             return false;
         }
 	}
@@ -108,7 +107,7 @@ bool Instance::capacity_feasible() {
 	return true;
 }
 
-double Instance::pickup_feasible(Vehicle v, size_t p, size_t request){
+double Instance::pickup_feasible(Vehicle &v, size_t &p, size_t &request){
     if(p==1){
         if(arcs[nearest_depot_gen_idx_p[request]][request] < pickup_nodes[request].lower_bound){
             return pickup_nodes[request].lower_bound - arcs[nearest_depot_gen_idx_p[request]][request];
@@ -128,7 +127,7 @@ double Instance::pickup_feasible(Vehicle v, size_t p, size_t request){
     }
 }
 
-double Instance::delivery_feasible(Vehicle v, size_t p, size_t d, size_t request, double p_delay, double added_time){
+double Instance::delivery_feasible(Vehicle &v, size_t p, size_t d, size_t request, double p_delay, double &added_time){
     double arr = 0;
     double sum_wait = 0;
     if(p==d-1){
@@ -160,7 +159,7 @@ double Instance::delivery_feasible(Vehicle v, size_t p, size_t d, size_t request
     }
 }
 
-bool Instance::check_slack_times(Vehicle v, size_t first, size_t last, double delay){
+bool Instance::check_slack_times(Vehicle &v, size_t first, size_t last, double delay){
     for(size_t idx = first; idx < last; idx++){
         if(delay > v.slack_at_node[idx]){
             return false;
@@ -173,3 +172,5 @@ bool Instance::check_slack_times(Vehicle v, size_t first, size_t last, double de
     }
     return true;
 }
+
+//bool Instance::check_ride_times(Vehicle v){}

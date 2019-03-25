@@ -1,7 +1,7 @@
 #include "instance.h"
 #include <algorithm>
 
-size_t Instance::greedy_request_deletion(vector<size_t> request_bank) {
+size_t Instance::greedy_request_deletion(vector<size_t> &request_bank) {
 	double best_costs_saving = numeric_limits<double>::max();
 	size_t best_request = 0;
 	for (size_t i = 0; i < request_amount; i++) {
@@ -40,7 +40,7 @@ size_t Instance::greedy_request_deletion(vector<size_t> request_bank) {
 	return best_request;
 }
 
-size_t Instance::random_request_deletion(vector<size_t> request_bank) {
+size_t Instance::random_request_deletion(vector<size_t> &request_bank) {
 	size_t request = rand() % (request_amount);
 	if(!request_bank.empty()){
         while (find(request_bank.begin(), request_bank.end(), request) != request_bank.end()) {
@@ -76,7 +76,7 @@ bool compareFunc(pair<size_t, double> &a, pair<size_t, double> &b)
     return a.second > b.second;
 }
 
-vector<size_t> Instance::shaw_deletion(size_t amount){
+vector<size_t> Instance::shaw_deletion(size_t &amount){
     vector<size_t> request_bank = {};
     request_bank.push_back(rand() % request_amount);
     vector<pair<size_t, double>> relatedness(request_amount, {0,0});
@@ -156,15 +156,15 @@ vector<size_t> Instance::shaw_deletion(size_t amount){
     return request_bank;
 }
 
-void Instance::greedy_route_deletion(vector<size_t> request_bank) {
+void Instance::greedy_route_deletion(vector<size_t> &request_bank) {
 
 }
 
-void Instance::random_route_deletion(vector<size_t> request_bank) {
+void Instance::random_route_deletion(vector<size_t> &request_bank) {
 
 }
 
-double Instance::costs_of_removing_request(size_t request) {
+double Instance::costs_of_removing_request(size_t &request) {
 	size_t pu_vehicle = pickup_vehicle[request];
 	size_t de_vehicle = delivery_vehicle[request];
 	double arc_lengths = 0.0;
@@ -178,20 +178,18 @@ double Instance::costs_of_removing_request(size_t request) {
 			}
 		}
 	} else {
+	    cout << "test\n";
 		for (size_t i = 1; i < routes[pu_vehicle].route.size() - 1; i++) {
-			if (routes[pu_vehicle].route[i].index == request) {
-				if (p == 12345) p = i;
-				else td = i;
-			}
+		    if (routes[pu_vehicle].route[i].request_idx == request){td=i;}
+			if (routes[pu_vehicle].route[i].index == request) {p=i;}
 		}
 		for (size_t i = 1; i < routes[de_vehicle].route.size() - 1; i++) {
-			if (routes[de_vehicle].route[i].index == request) {
-				if (tp == 12345) tp = i;
-				else d = i;
-			}
+		    if (routes[de_vehicle].route[i].request_idx == request){tp=i;}
+			if (routes[de_vehicle].route[i].index == request) {d=i;}
 		}
 	}
-
+	if(tp != 12345){print_routes();}
+    cout << p << "  " << d  << "   " << td << "   " << tp << '\n';
 	if (pu_vehicle != de_vehicle) {
 		// Pickup change in arcs
 		if (td == p + 1) {

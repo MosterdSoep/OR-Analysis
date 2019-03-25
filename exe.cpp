@@ -15,7 +15,7 @@ using namespace std;
 string location = "large_instances.csv";
 vector<vector<int>> input_data;
 
-size_t maximum_loops = 30000;
+size_t maximum_loops = 1000000;
 
 bool acceptation_criterion_met(double s, double current_solution, size_t loop_count) {
 	double temperature = ((double)maximum_loops - (double)loop_count + 1)/100;
@@ -82,6 +82,7 @@ void ALNS(Instance &i) {
 	vector<size_t> request_bank = {};
 
 	while(!stopping_criterion_met(loop_count) && !time_based_criterion(start)) {
+        i.old_routes.clear();
 		i.old_routes = i.routes;
 		i.old_pickup_vehicle = pickup_vehicle;
 		i.old_delivery_vehicle = delivery_vehicle;
@@ -107,15 +108,18 @@ void ALNS(Instance &i) {
 		switch (delete_operator) {
 			case 0 :
 				for (size_t j = 0; j < amount; j++) {
+                    cout << "greedy deletion\n";
 					request_bank.push_back(i.greedy_request_deletion(request_bank));
 				}
 				break;
 			case 1 :
 				for (size_t j = 0; j < amount; j++) {
+                    cout << "random deletion\n";
 					request_bank.push_back(i.random_request_deletion(request_bank));
 				}
 				break;
             case 2 :
+                cout << "shaw deletion\n";
                 request_bank = i.shaw_deletion(amount);
 				break;
 		}
@@ -131,7 +135,6 @@ void ALNS(Instance &i) {
         size_t max_iters = request_bank.size();
 		switch (insert_operator) {
 			case 0 :
-				//cout << "Greedy insertion with score: " << insertion_scores[insert_operator] << ", at loop: " << loop_count << "\n";
                 cout << "insert greedy\n";
 				for (size_t r = 0; r < max_iters; r++) {
 					size_t req_loc = i.greedy_request_insertion(request_bank);
@@ -157,7 +160,6 @@ void ALNS(Instance &i) {
 				break;
 			case 3 :
 			    cout << "insert with transfer\n";
-				//cout << "Transfer insertion with score: " << insertion_scores[insert_operator] << ", at loop: " << loop_count << "\n";
                 for (size_t r = 0; r < max_iters; r++) {
 					size_t req_loc = i.greedy_route_insertion(request_bank);
 					request_bank.erase(request_bank.begin() + req_loc);
@@ -198,8 +200,10 @@ void ALNS(Instance &i) {
 				best_solution = s;
                 current_solution = s;
                 i.obj_val = s;
+                best_routes.clear();
                 best_routes = i.routes;
 			} else {
+			    i.routes.clear();
 				i.routes = i.old_routes;
 				pickup_vehicle = i.old_pickup_vehicle;
 				delivery_vehicle = i.old_delivery_vehicle;
@@ -211,6 +215,7 @@ void ALNS(Instance &i) {
 				insertion_rewards[insert_operator] += 20;
                 current_solution = s;
 			} else {
+			    i.routes.clear();
 				i.routes = i.old_routes;
 				pickup_vehicle = i.old_pickup_vehicle;
 				delivery_vehicle = i.old_delivery_vehicle;
@@ -222,6 +227,7 @@ void ALNS(Instance &i) {
 				insertion_rewards[insert_operator] += 15;
                 current_solution = s;
 			} else {
+			    i.routes.clear();
 				i.routes = i.old_routes;
 				pickup_vehicle = i.old_pickup_vehicle;
 				delivery_vehicle = i.old_delivery_vehicle;
@@ -229,6 +235,7 @@ void ALNS(Instance &i) {
 			}
 		} else {
 			// Did not accept the solution, hence no need to check feasibility and return to previous solution
+			i.routes.clear();
 			i.routes = i.old_routes;
 			pickup_vehicle = i.old_pickup_vehicle;
 			delivery_vehicle = i.old_delivery_vehicle;

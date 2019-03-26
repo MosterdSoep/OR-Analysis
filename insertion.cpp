@@ -25,9 +25,9 @@ size_t Instance::greedy_request_insertion(vector<size_t> &request_bank) {
 				if (candidate_costs < best_costs) {
 
                 //Calculate waiting times for insertions
-                double p_waiting = pickup_feasible(routes[v], p, request);
+                double p_waiting = pickup_feasible(routes[v], p, request, pickup_nodes[request]);
                 if(p_waiting != -1234567){
-                double d_waiting = delivery_feasible(routes[v], p, d, request, p_waiting, added_times[1]);
+                double d_waiting = delivery_feasible(routes[v], p, d, request, p_waiting, added_times[1], pickup_nodes[request], delivery_nodes[request]);
                 if(d_waiting != -1234567){
                 //end waiting calculations
                     if(p==d-1){
@@ -97,9 +97,9 @@ size_t Instance::regret_2_insertion(vector<size_t> &request_bank){
                     if (candidate_costs < second_cost[idx]) {
 
                     //Calculate waiting times for insertions
-                    double p_waiting = pickup_feasible(routes[v], p, request_bank[idx]);
+                    double p_waiting = pickup_feasible(routes[v], p, request_bank[idx], pickup_nodes[request_bank[idx]]);
                     if(p_waiting != -1234567){
-                    double d_waiting = delivery_feasible(routes[v], p, d, request_bank[idx], p_waiting, added_times[1]);
+                    double d_waiting = delivery_feasible(routes[v], p, d, request_bank[idx], p_waiting, added_times[1], pickup_nodes[request_bank[idx]], delivery_nodes[request_bank[idx]]);
                     if(d_waiting != -1234567){
                     //end waiting calculations
 
@@ -163,32 +163,30 @@ size_t Instance::random_request_greedy_insertion(vector<size_t> &request_bank){
 				if (candidate_costs < best_costs) {
 
                 //Calculate waiting times for insertions
-                double p_waiting = pickup_feasible(routes[v], p, request);
+                double p_waiting = pickup_feasible(routes[v], p, request , pickup_nodes[request]);
                 if(p_waiting != -1234567){
-                double d_waiting = delivery_feasible(routes[v], p, d, request, p_waiting, added_times[0]);
+                double d_waiting = delivery_feasible(routes[v], p, d, request, p_waiting, added_times[0], pickup_nodes[request], delivery_nodes[request]);
                 if(d_waiting != -1234567){
                 //end waiting calculations
 
                     if(p==d-1){
-                        if(*max_element(routes[v].current_capacity.begin() + p-1, routes[v].current_capacity.begin() + p-1) < vehicle_capacity){
-                            if(check_slack_times(routes[v], d-1, routes[v].route.size(), added_times[1] + p_waiting + d_waiting)){
+                        if(*max_element(routes[v].current_capacity.begin() + p-1, routes[v].current_capacity.begin() + p-1) < vehicle_capacity &&
+                            check_slack_times(routes[v], d-1, routes[v].route.size(), added_times[1] + p_waiting + d_waiting)){
                                 best_costs = candidate_costs;
                                 best_vehicle = v;
                                 best_pickup_location = p;
                                 best_delivery_location = d;
-                            }
                         }
                     }else{
-                    if(*max_element(routes[v].current_capacity.begin() + p-1, routes[v].current_capacity.begin() + d-1) < vehicle_capacity){
-                        if(check_slack_times(routes[v], d-1, routes[v].route.size(), added_times[1] + added_times[0] + p_waiting + d_waiting)){
-                            if(check_slack_times(routes[v], p, d-1, added_times[0] + p_waiting)){
+                        if(*max_element(routes[v].current_capacity.begin() + p-1, routes[v].current_capacity.begin() + d-1) < vehicle_capacity &&
+                            check_slack_times(routes[v], d-1, routes[v].route.size(), added_times[1] + added_times[0] + p_waiting + d_waiting) &&
+                            check_slack_times(routes[v], p, d-1, added_times[0] + p_waiting)){
                                 best_costs = candidate_costs;
                                 best_vehicle = v;
                                 best_pickup_location = p;
                                 best_delivery_location = d;
-                            }
+
                         }
-                    }
                     }
                 }
                 }
@@ -228,34 +226,52 @@ size_t Instance::greedy_route_insertion(vector<size_t> &request_bank) {
 	// Case 2: if there is 1 vehicle -> find one other vehicle and insert a request with transfer in those vehicles
     vector<double> added_times_p(2,0);
     vector<double> added_times_d(2,0);
-    routes.push_back(Vehicle());
-	routes.push_back(Vehicle());
 	for (Transfer_Node tn : open_facilities) {
-        for(size_t iter = 0; iter <10; iter++){
+        for(size_t iter = 0; iter < 20; iter++){
         size_t v1 = rand()%routes.size();
         size_t v2 = rand()%routes.size();
 		//for (size_t v1 = 0; v1 < routes.size(); v1++) {
 		//	for (size_t v2 = 0; v2 < routes.size(); v2++) {
-				if (v1 == v2) {
-					continue;
-				}
-				//cout << "v1: " << v1 << ", v2: " << v2 << ""
+				if (v1 == v2) {continue;}
 				for (size_t p = 1; p < routes[v1].route.size(); p++) {
-
 					for (size_t td = p + 1; td < routes[v1].route.size() + 1; td++) {
-
 						double pickup_costs = costs_of_inserting_request_with_transfer_pickup(routes[v1], p, td, request, tn, added_times_p);
-						//cout << "Pickup costs: " << pickup_costs << "\n";
-						for (size_t tp = 1; tp < routes[v2].route.size(); tp++) {
-                            if(routes[v2].time_at_node[tp-1] + *min_element(routes[v2].slack_at_node.begin() + tp-1, routes[v2].slack_at_node.end()) < routes[v1].time_at_node[td-1] + routes[v1].route[td-1].service_time){
-                                continue;
-                            };
-							double minimum_slack = *min_element(routes[v2].slack_at_node.begin(), routes[v2].slack_at_node.end());
-							if (routes[v1].time_at_node[td] + tn.service_time < routes[v2].time_at_node[tp] + minimum_slack) {
-								// Only look for possible transfers, e.g. when time windows are correct for the transfer
+						//Check feasibility for pickup vehicle
+                        double p_waiting = pickup_feasible(routes[v1], p, request, pickup_nodes[request]);
+                        if(p_waiting == -1234567){continue;}
+                        double td_waiting = delivery_feasible(routes[v1], p, td, request, p_waiting, added_times_p[0], pickup_nodes[request], tn);
+                        if(td_waiting == -1234567){continue;}
+                        if(p==td-1){
+                            if(*max_element(routes[v1].current_capacity.begin() + p-1, routes[v1].current_capacity.begin() + p-1) >= vehicle_capacity ||
+                                !check_slack_times(routes[v1], td-1, routes[v1].route.size(), added_times_p[1] + p_waiting + td_waiting)){continue;}
+                            tn.lower_bound = routes[v1].time_at_node[td-1] + added_times_p[1] + p_waiting + td_waiting;
+                        }else{
+                            if(*max_element(routes[v1].current_capacity.begin() + p-1, routes[v1].current_capacity.begin() + td-1) >= vehicle_capacity ||
+                                !check_slack_times(routes[v1], td-1, routes[v1].route.size(), added_times_p[1] + added_times_p[0] + p_waiting + td_waiting) ||
+                                !check_slack_times(routes[v1], p, td-1, added_times_p[0] + p_waiting)){continue;}
+                            tn.lower_bound = routes[v1].time_at_node[td-1] + added_times_p[0] + added_times_p[1] + p_waiting + td_waiting;
+                        }
 
+						//Delivery vehicle
+						for (size_t tp = 1; tp < routes[v2].route.size(); tp++) {
+								// Only look for possible transfers, e.g. when time windows are correct for the transfer
+								if(routes[v1].time_at_node[td-2] + routes[v1].waiting_times[td-2] + routes[v1].route[td-2].service_time > routes[v2].time_at_node[tp-1] + routes[v2].waiting_times[tp-1] + routes[v2].route[tp-1].service_time){continue;}
 								for (size_t d = tp + 1; d < routes[v2].route.size() + 1; d++) {
+
 									double delivery_costs = costs_of_inserting_request_with_transfer_delivery(routes[v2], tp, d, request, tn, added_times_d);
+									//feasibility check delivery vehicle
+                                    double tp_waiting = pickup_feasible(routes[v2], tp, request, tn);
+                                    if(p_waiting == -1234567){continue;}
+                                    double d_waiting = delivery_feasible(routes[v2], tp, d, request, tp_waiting, added_times_d[0], tn, delivery_nodes[request]);
+                                    if(td_waiting == -1234567){continue;}
+                                    if(tp==d-1){
+                                        if(*max_element(routes[v2].current_capacity.begin() + tp-1, routes[v2].current_capacity.begin() + tp-1) >= vehicle_capacity ||
+                                            !check_slack_times(routes[v2], d-1, routes[v2].route.size(), added_times_d[1] + tp_waiting + d_waiting)){continue;}
+                                    }else{
+                                        if(*max_element(routes[v2].current_capacity.begin() + tp-1, routes[v2].current_capacity.begin() + d-1) >= vehicle_capacity ||
+                                            !check_slack_times(routes[v2], d-1, routes[v2].route.size(), added_times_d[1] + added_times_d[0] + tp_waiting + d_waiting) ||
+                                            !check_slack_times(routes[v2], tp, d-1, added_times_d[0] + tp_waiting)){continue;}
+                                    }
 									//cout << "Delivery costs: " << delivery_costs << "\n";
 									if (pickup_costs + delivery_costs < best_costs) {
 										best_costs = pickup_costs + delivery_costs;
@@ -267,7 +283,6 @@ size_t Instance::greedy_route_insertion(vector<size_t> &request_bank) {
 										best_tp = tp;
 										transfer_node = tn;
 									}
-								}
 							}
 						}
 
@@ -351,7 +366,7 @@ double Instance::costs_of_inserting_request(Vehicle &v, size_t p, size_t d, size
 	}
 }
 
-double Instance::costs_of_inserting_request_with_transfer_pickup(Vehicle &v, size_t p, size_t d, size_t request, Transfer_Node tn, vector<double> &information) {
+double Instance::costs_of_inserting_request_with_transfer_pickup(Vehicle &v, size_t p, size_t d, size_t request, Transfer_Node &tn, vector<double> &information) {
 	double arc_lengths = 0.0, arc_lengths_right = 0.0;
 	if (d == p + 1) {
 		arc_lengths += arcs[pickup_nodes[request].gen_idx][tn.gen_idx]
@@ -411,7 +426,7 @@ double Instance::costs_of_inserting_request_with_transfer_pickup(Vehicle &v, siz
 	}
 }
 
-double Instance::costs_of_inserting_request_with_transfer_delivery(Vehicle &v, size_t p, size_t d, size_t request, Transfer_Node tn, vector<double> &information) {
+double Instance::costs_of_inserting_request_with_transfer_delivery(Vehicle &v, size_t p, size_t d, size_t request, Transfer_Node &tn, vector<double> &information) {
 	double arc_lengths = 0.0, arc_lengths_right = 0.0;
 	if (d == p + 1) {
 		arc_lengths += arcs[tn.gen_idx][delivery_nodes[request].gen_idx]

@@ -15,10 +15,10 @@ using namespace std;
 string location = "large_instances.csv";
 vector<vector<int>> input_data;
 
-size_t maximum_loops = 1000000;
+size_t maximum_loops = 10000;
 
 bool acceptation_criterion_met(double s, double current_solution, size_t loop_count) {
-	double temperature = ((double)maximum_loops - (double)loop_count + 1)/100;
+	double temperature = ((double)maximum_loops - (double)loop_count + 1)/1000;
 	double minimum = min(current_solution - s,0.0);
 	double probability = (double)exp(minimum/temperature);
 	double percentage = probability*100;
@@ -38,7 +38,7 @@ bool stopping_criterion_met(size_t loop_count) {
 bool time_based_criterion(auto start){
     auto end_time = chrono::high_resolution_clock::now();
     chrono::duration<double> elapsed = end_time - start;
-    if(elapsed.count() > 30){
+    if(elapsed.count() > 60){
         return true;
     }
     return false;
@@ -81,6 +81,10 @@ void ALNS(Instance &i) {
 
 	vector<size_t> request_bank = {};
 
+	size_t transfer_count = 0;
+	size_t transfer_cost_accept = 0;
+	size_t transfer_accept = 0;
+
 	while(!stopping_criterion_met(loop_count) && !time_based_criterion(start)) {
         i.old_routes.clear();
 		i.old_routes = i.routes;
@@ -108,18 +112,15 @@ void ALNS(Instance &i) {
 		switch (delete_operator) {
 			case 0 :
 				for (size_t j = 0; j < amount; j++) {
-                    cout << "greedy deletion\n";
 					request_bank.push_back(i.greedy_request_deletion(request_bank));
 				}
 				break;
 			case 1 :
 				for (size_t j = 0; j < amount; j++) {
-                    cout << "random deletion\n";
 					request_bank.push_back(i.random_request_deletion(request_bank));
 				}
 				break;
             case 2 :
-                cout << "shaw deletion\n";
                 request_bank = i.shaw_deletion(amount);
 				break;
 		}
@@ -135,7 +136,7 @@ void ALNS(Instance &i) {
         size_t max_iters = request_bank.size();
 		switch (insert_operator) {
 			case 0 :
-                cout << "insert greedy\n";
+                //cout << "insert greedy\n";
 				for (size_t r = 0; r < max_iters; r++) {
 					size_t req_loc = i.greedy_request_insertion(request_bank);
 					request_bank.erase(request_bank.begin() + req_loc);
@@ -143,7 +144,7 @@ void ALNS(Instance &i) {
 				request_bank.clear();
 				break;
             case 1:
-                cout << "insert regret\n";
+                //cout << "insert regret\n";
                 for (size_t r = 0; r < max_iters; r++) {
 					size_t req_loc = i.regret_2_insertion(request_bank);
 					request_bank.erase(request_bank.begin() + req_loc);
@@ -151,7 +152,7 @@ void ALNS(Instance &i) {
 				request_bank.clear();
 				break;
             case 2:
-                cout << "insert semigreedy\n";
+                //cout << "insert semigreedy\n";
                 for (size_t r = 0; r < max_iters; r++) {
 					size_t req_loc = i.random_request_greedy_insertion(request_bank);
 					request_bank.erase(request_bank.begin() + req_loc);
@@ -159,7 +160,8 @@ void ALNS(Instance &i) {
 				request_bank.clear();
 				break;
 			case 3 :
-			    cout << "insert with transfer\n";
+			    //cout << "insert with transfer\n";
+			    transfer_count  += 1;
                 for (size_t r = 0; r < max_iters; r++) {
 					size_t req_loc = i.greedy_route_insertion(request_bank);
 					request_bank.erase(request_bank.begin() + req_loc);
@@ -191,9 +193,10 @@ void ALNS(Instance &i) {
 			//cout << "New solution\n";
 			accepted3 = true;
 		}
-
+		if((accepted1 || accepted2 || accepted3) && insert_operator == 3){transfer_cost_accept +=1; }
 		if (accepted1) {
 			if(i.is_feasible()) {
+                if(insert_operator==3){transfer_accept+=1;}
 				//cout << "Feasible new best solution?\n";
 				deletion_rewards[delete_operator] += 33;
 				insertion_rewards[insert_operator] += 33;
@@ -211,6 +214,7 @@ void ALNS(Instance &i) {
 			}
 		} else if (accepted2) {
 			if(i.is_feasible()) {
+                    if(insert_operator==3){transfer_accept+=1;}
 				deletion_rewards[delete_operator] += 20;
 				insertion_rewards[insert_operator] += 20;
                 current_solution = s;
@@ -223,6 +227,7 @@ void ALNS(Instance &i) {
 			}
 		} else if (accepted3) {
 			if(i.is_feasible()) {
+                if(insert_operator==3){transfer_accept+=1;}
 				deletion_rewards[delete_operator] += 15;
 				insertion_rewards[insert_operator] += 15;
                 current_solution = s;
@@ -245,7 +250,10 @@ void ALNS(Instance &i) {
 	auto finish = chrono::high_resolution_clock::now();
 	chrono::duration<double> elapsed = finish - start;
 	i.routes = best_routes;
+
+
 	i.print_routes();
+	cout << "Transfer counts : " << transfer_count << "   "  << transfer_cost_accept << "   " << transfer_accept << '\n';
 	cout << "Times  :  " << op_time[0]/insertion_count[0] << "    " << op_time[1]/insertion_count[1]<< "    " << op_time[2]/insertion_count[2]<< "    " << op_time[3]/insertion_count[3]<<  '\n';
 	cout << "Full greedy was called : " << deletion_count[0] << " times in a total of "<< loop_count << " loops. \n";
 	cout << "Elapsed time: " << elapsed.count() << " s\n";
@@ -258,6 +266,18 @@ void ALNS(Instance &i) {
 	cout << "\n";
 
 	i.routes = best_routes;
+    for(size_t idx = 0; idx < transfer_nodes.size(); idx++){
+        transfer_nodes[idx].open = 0;
+	}
+
+	for(size_t idx = 0; idx < i.routes.size(); idx++){
+        for(size_t adx = 0; adx < i.routes[idx].route.size(); adx++){
+            if(i.routes[idx].route[adx].type == 't'){
+                assert(i.routes[idx].route[adx].index < transfer_nodes.size());
+                transfer_nodes[i.routes[idx].route[adx].index].open = 1;
+            }
+        }
+	}
 }
 
 
@@ -321,7 +341,7 @@ int main() {
         {
         case 'a':
         case 'A':
-            for(size_t idx = 0; idx < input_data.size(); idx++){
+            for(size_t idx = 95; idx < input_data.size(); idx++){
 				solve_instance(input_data, idx);
 				cout << "Instance " << idx << " succesfully solved!\n";
 				cout << "\n";
@@ -339,6 +359,7 @@ int main() {
                 } else {
                     solve_instance(input_data, resp);
 					cout << "Instance " << resp << " succesfully solved!\n\n";
+
                 }
             } else {
 				cout << "Not a number, please try again\n";

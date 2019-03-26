@@ -33,6 +33,7 @@ void Instance::create_instance(vector<vector<int>> &input_data, int ins){
         pickup_nodes[idx].lower_bound = input_data[ins][time_window_idx + 2* idx];
         pickup_nodes[idx].upper_bound = input_data[ins][time_window_idx + 2* idx + 1];
         pickup_nodes[idx].type = 'p';
+        pickup_nodes[idx].request_idx = idx;
 
 
         // Create delivery nodes
@@ -45,6 +46,7 @@ void Instance::create_instance(vector<vector<int>> &input_data, int ins){
         delivery_nodes[idx].lower_bound = input_data[ins][time_window_idx + 2 * request_amount + 2 * idx];
         delivery_nodes[idx].upper_bound = input_data[ins][time_window_idx + 2 * request_amount + 2 * idx + 1];
         delivery_nodes[idx].type = 'd';
+        delivery_nodes[idx].request_idx = idx;
     }
 
     for(size_t idx = 0; idx < transfer_location_amount; idx++){

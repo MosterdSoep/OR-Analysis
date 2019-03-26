@@ -48,8 +48,8 @@ class Instance{
 		size_t random_request_greedy_insertion(vector<size_t> &request_bank);
 		size_t greedy_route_insertion(vector<size_t> &request_bank);
 		double costs_of_inserting_request(Vehicle &v, size_t p, size_t d, size_t request, vector<double> &information);
-		double costs_of_inserting_request_with_transfer_pickup(Vehicle &v, size_t p, size_t d, size_t request, Transfer_Node tn, vector<double> &information);
-		double costs_of_inserting_request_with_transfer_delivery(Vehicle &v, size_t p, size_t d, size_t request, Transfer_Node tn, vector<double> &information);
+		double costs_of_inserting_request_with_transfer_pickup(Vehicle &v, size_t p, size_t d, size_t request, Transfer_Node &tn, vector<double> &information);
+		double costs_of_inserting_request_with_transfer_delivery(Vehicle &v, size_t p, size_t d, size_t request, Transfer_Node &tn, vector<double> &information);
 
 		// Feasibility
 		bool is_feasible();
@@ -58,8 +58,8 @@ class Instance{
 		bool time_windows_met();
 		bool capacity_feasible();
 
-		double pickup_feasible(Vehicle &v, size_t &p, size_t &request);
-		double delivery_feasible(Vehicle &v, size_t p, size_t d, size_t request, double p_delay, double &added_time);
+		double pickup_feasible(Vehicle &v, size_t &p, size_t &request, Node &pick);
+		double delivery_feasible(Vehicle &v, size_t p, size_t d, size_t request, double p_delay, double &added_time, Node &pick, Node &del);
 		bool check_slack_times(Vehicle &v, size_t first, size_t last, double delay);
 
 

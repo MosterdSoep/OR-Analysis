@@ -107,52 +107,66 @@ bool Instance::capacity_feasible() {
 	return true;
 }
 
-double Instance::pickup_feasible(Vehicle &v, size_t &p, size_t &request){
+double Instance::pickup_feasible(Vehicle &v, size_t &p, size_t &request, Node &pick){
     if(p==1){
-        if(arcs[nearest_depot_gen_idx_p[request]][request] < pickup_nodes[request].lower_bound){
-            return pickup_nodes[request].lower_bound - arcs[nearest_depot_gen_idx_p[request]][request];
-        }else{
-            return 0;
+        assert(pick.type =='p' || pick.type =='t');
+        if(pick.type == 'p'){
+            if(arcs[nearest_depot_gen_idx_p[pick.gen_idx]][pick.gen_idx] < pick.lower_bound){
+                return pick.lower_bound - arcs[nearest_depot_gen_idx_p[pick.gen_idx]][pick.gen_idx];
+            }else{
+                return 0;
+            }
+        }else if(pick.type == 't'){
+            if(arcs[nearest_depot_gen_idx_t[pick.index]][pick.gen_idx] < pick.lower_bound){
+                return pick.lower_bound - arcs[nearest_depot_gen_idx_t[pick.index]][pick.gen_idx];
+            }else{
+                return 0;
+            }
         }
     }else{
-        if(v.time_at_node[p-1] + v.route[p-1].service_time + v.waiting_times[p-1] + arcs[v.route[p-1].gen_idx][request] > pickup_nodes[request].upper_bound){
+        if(v.time_at_node[p-1] + v.route[p-1].service_time + v.waiting_times[p-1] + arcs[v.route[p-1].gen_idx][pick.gen_idx] > pick.upper_bound){
             return -1234567;
         }else{
-            if(v.time_at_node[p-1] + v.route[p-1].service_time + v.waiting_times[p-1] + arcs[v.route[p-1].gen_idx][request] < pickup_nodes[request].lower_bound){
-                return pickup_nodes[request].lower_bound - v.time_at_node[p-1] - v.route[p-1].service_time - v.waiting_times[p-1] - arcs[v.route[p-1].gen_idx][request];
+            if(v.time_at_node[p-1] + v.route[p-1].service_time + v.waiting_times[p-1] + arcs[v.route[p-1].gen_idx][pick.gen_idx] < pick.lower_bound){
+                return pick.lower_bound - v.time_at_node[p-1] - v.route[p-1].service_time - v.waiting_times[p-1] - arcs[v.route[p-1].gen_idx][pick.gen_idx];
             }else{
                 return 0;
             }
         }
     }
+    return -1234567;
 }
 
-double Instance::delivery_feasible(Vehicle &v, size_t p, size_t d, size_t request, double p_delay, double &added_time){
+double Instance::delivery_feasible(Vehicle &v, size_t p, size_t d, size_t request, double p_delay, double &added_time, Node &pick, Node &del){
     double arr = 0;
     double sum_wait = 0;
     if(p==d-1){
         if(p==1)
         {
-            arr = arcs[nearest_depot_gen_idx_p[request]][request] + pickup_nodes[request].service_time + p_delay + arcs[request][delivery_nodes[request].gen_idx];
+            if(pick.type == 'p'){
+                arr = arcs[nearest_depot_gen_idx_p[pick.gen_idx]][pick.gen_idx] + pick.service_time + p_delay + arcs[request][del.gen_idx];
+            }else if(pick.type == 't'){
+                arr = arcs[nearest_depot_gen_idx_t[pick.gen_idx]][pick.gen_idx] + pick.service_time + p_delay + arcs[request][del.gen_idx];
+            }
         }else{
-            arr = arcs[v.route[p-1].gen_idx][request] + v.time_at_node[p-1] + v.route[p-1].service_time + v.waiting_times[p-1] +
-                    pickup_nodes[request].service_time + p_delay + arcs[request][delivery_nodes[request].gen_idx];
+            arr = arcs[v.route[p-1].gen_idx][pick.gen_idx] + v.time_at_node[p-1] + v.route[p-1].service_time + v.waiting_times[p-1] +
+                    pick.service_time + p_delay + arcs[pick.gen_idx][del.gen_idx];
         }
     }else{
         for(size_t idx = p; idx < d-1; idx++){
             sum_wait = v.waiting_times[idx];
         }
         if(sum_wait > p_delay + added_time){
-            arr = v.time_at_node[d-2] + v.waiting_times[d-2] + v.route[d-2].service_time + arcs[v.route[d-2].gen_idx][delivery_nodes[request].gen_idx] + sum_wait;
+            arr = v.time_at_node[d-2] + v.waiting_times[d-2] + v.route[d-2].service_time + arcs[v.route[d-2].gen_idx][del.gen_idx] + sum_wait;
             sum_wait = p_delay + added_time;
         }else{
-            arr = v.time_at_node[d-2] + v.waiting_times[d-2] + v.route[d-2].service_time + arcs[v.route[d-2].gen_idx][delivery_nodes[request].gen_idx] + p_delay + added_time;
+            arr = v.time_at_node[d-2] + v.waiting_times[d-2] + v.route[d-2].service_time + arcs[v.route[d-2].gen_idx][del.gen_idx] + p_delay + added_time;
         }
     }
 
-    if(arr < delivery_nodes[request].lower_bound){
-        return delivery_nodes[request].lower_bound - arr - sum_wait;
-    }else if (arr > delivery_nodes[request].upper_bound){
+    if(arr < del.lower_bound){
+        return del.lower_bound - arr - sum_wait;
+    }else if (arr > del.upper_bound){
         return -1234567;
     }else{
         return -sum_wait;
@@ -173,4 +187,4 @@ bool Instance::check_slack_times(Vehicle &v, size_t first, size_t last, double d
     return true;
 }
 
-//bool Instance::check_ride_times(Vehicle v){}
+

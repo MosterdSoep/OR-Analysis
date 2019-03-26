@@ -20,9 +20,9 @@ void Instance::write_output_file(size_t instance_number) {
 		for (Node node : v.route) {
 			if (node.type == 't') {
 				// node is a transfer node
-				string rep = "";
-				if (node.type == 'p') { rep.append("0"); }
-				else { rep.append("1"); }
+				string rep = "1";
+				if (node.pickup) { rep.append("1"); }
+				else { rep.append("0"); }
 
 				// Node
 				// number of digits : (i > 0 ? (int) log10 ((double) i) + 1 : 1)
@@ -34,9 +34,10 @@ void Instance::write_output_file(size_t instance_number) {
 
 				// Request
 
-				for (size_t i = 0; i < (3-(node.request_idx > 0 ? (int) log10 ((double) node.request_idx) + 1 : 1)); i++) {
-					rep.append(to_string(node.request_idx));
+				for (size_t i = 0; i < (3-((node.request_idx+1) > 0 ? (int) log10 ((double) (node.request_idx+1)) + 1 : 1)); i++) {
+					rep.append("0");
 				}
+				rep.append(to_string(node.request_idx + 1));
 
 				if (node.gen_idx == v.route.back().gen_idx) {
 					output_file << rep << '\n';

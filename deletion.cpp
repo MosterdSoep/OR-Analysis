@@ -178,20 +178,21 @@ double Instance::costs_of_removing_request(size_t &request) {
 			}
 		}
 	} else {
-	    cout << "test\n";
 		for (size_t i = 1; i < routes[pu_vehicle].route.size() - 1; i++) {
-		    if (routes[pu_vehicle].route[i].request_idx == request){td=i;}
-			if (routes[pu_vehicle].route[i].index == request) {p=i;}
+		    if (routes[pu_vehicle].route[i].request_idx == request){
+		        if(p==12345){p=i;}
+		        else{td = i;}
+		    }
 		}
 		for (size_t i = 1; i < routes[de_vehicle].route.size() - 1; i++) {
-		    if (routes[de_vehicle].route[i].request_idx == request){tp=i;}
-			if (routes[de_vehicle].route[i].index == request) {d=i;}
+		    if (routes[de_vehicle].route[i].request_idx == request){
+                if(tp==12345){tp=i;}
+                else{d=i;}
+		    }
 		}
 	}
-	if(tp != 12345){print_routes();}
-    cout << p << "  " << d  << "   " << td << "   " << tp << '\n';
 	if (pu_vehicle != de_vehicle) {
-		// Pickup change in arcs
+		// Pickup change in arc
 		if (td == p + 1) {
 			arc_lengths = arc_lengths - arcs[routes[pu_vehicle].route[p].gen_idx][routes[pu_vehicle].route[td].gen_idx]
 							- arcs[routes[pu_vehicle].route[p-1].gen_idx][routes[pu_vehicle].route[p].gen_idx]
@@ -233,7 +234,6 @@ double Instance::costs_of_removing_request(size_t &request) {
 		} else {
 			cout << "Error calculating costs for transfer insertion!\n";
 		}
-
 		// Delivery change in arcs
 		if (d == tp + 1) {
 			arc_lengths = arc_lengths - arcs[routes[de_vehicle].route[tp].gen_idx][routes[de_vehicle].route[d].gen_idx]

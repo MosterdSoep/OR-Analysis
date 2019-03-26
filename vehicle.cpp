@@ -159,10 +159,13 @@ void Vehicle::add_node(size_t location, Delivery_Node &node){
 double Vehicle::add_delivery_transfer(size_t location, Transfer_Node &node, size_t r){
     //Creates fictional new node
     Transfer_Node fictional_node = node;
-    fictional_node.pickup = 0;
-    fictional_node.request_idx = r;
-	fictional_node.gen_idx = node.gen_idx;
     route.insert(route.begin() + location, fictional_node);
+
+    route[location].pickup = 0;
+    route[location].request_idx = r;
+	route[location].gen_idx = node.gen_idx;
+	route[location].type = 't';
+	route[location].index = node.index;
 
     if (location == 1){
         change_first_depot();
@@ -196,12 +199,15 @@ double Vehicle::add_delivery_transfer(size_t location, Transfer_Node &node, size
 void Vehicle::add_pickup_transfer(size_t location, Transfer_Node &node, double min_time, size_t r){
     //Creates fictional new node
     Transfer_Node fictional_node = node;
-    fictional_node.pickup = 1;
-    fictional_node.request_idx = r;
-    fictional_node.lower_bound = min_time; //update the lower bound for pickup to the time at which the transfer is ready
-	fictional_node.gen_idx = node.gen_idx;
 
     route.insert(route.begin() + location, fictional_node);
+
+    route[location].pickup = 1;
+    route[location].request_idx = r;
+    route[location].lower_bound = min_time; //update the lower bound for pickup to the time at which the transfer is ready
+	route[location].gen_idx = node.gen_idx;
+	route[location].type = 't';
+	route[location].index = node.index;
 
     if (location == 1){
         change_first_depot();

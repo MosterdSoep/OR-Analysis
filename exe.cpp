@@ -341,7 +341,7 @@ int main() {
         {
         case 'a':
         case 'A':
-            for(size_t idx = 95; idx < input_data.size(); idx++){
+            for(size_t idx = 160; idx < input_data.size(); idx++){
 				solve_instance(input_data, idx);
 				cout << "Instance " << idx << " succesfully solved!\n";
 				cout << "\n";

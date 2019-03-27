@@ -22,6 +22,8 @@ extern vector<size_t> nearest_depot_gen_idx_d;
 extern vector<size_t> nearest_depot_gen_idx_t;
 extern vector<double> nearest_depot_insertion_cost;
 
+extern size_t transfer_infeasible_count;
+
 class Vehicle {
   public:
 	size_t v_index = 0;

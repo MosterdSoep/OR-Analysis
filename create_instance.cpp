@@ -59,7 +59,7 @@ void Instance::create_instance(vector<vector<int>> &input_data, int ins){
         transfer_nodes[idx].gen_idx = 2 * request_amount + idx;
         transfer_nodes[idx].costs = input_data[ins][transfer_cost_idx + idx];
         transfer_nodes[idx].type = 't';
-        transfer_nodes[idx].open = 1;
+        transfer_nodes[idx].open = 0;
     }
 
     for(size_t idx = 0; idx < depot_amount; idx++){

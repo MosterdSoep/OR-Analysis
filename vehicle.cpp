@@ -22,6 +22,8 @@ vector<size_t> nearest_depot_gen_idx_d = {};
 vector<size_t> nearest_depot_gen_idx_t = {};
 vector<double> nearest_depot_insertion_cost = {};
 
+size_t transfer_infeasible_count = 0;
+
 Vehicle::Vehicle(){ //vehicles get initialized with a random depot node
     route.push_back(depot_nodes[0]);
     route.push_back(depot_nodes[0]);
@@ -166,6 +168,7 @@ double Vehicle::add_delivery_transfer(size_t location, Transfer_Node &node, size
 	route[location].gen_idx = node.gen_idx;
 	route[location].type = 't';
 	route[location].index = node.index;
+	route[location].service_time = node.service_time;
 
     if (location == 1){
         change_first_depot();
@@ -193,7 +196,7 @@ double Vehicle::add_delivery_transfer(size_t location, Transfer_Node &node, size
     }
 
 	// Returns the time at which pickup can start
-    return time_at_node[location] + node.service_time;
+    return time_at_node[location] + node.service_time + waiting_times[location];
 }
 
 void Vehicle::add_pickup_transfer(size_t location, Transfer_Node &node, double min_time, size_t r){
@@ -208,6 +211,7 @@ void Vehicle::add_pickup_transfer(size_t location, Transfer_Node &node, double m
 	route[location].gen_idx = node.gen_idx;
 	route[location].type = 't';
 	route[location].index = node.index;
+	route[location].service_time = node.service_time;
 
     if (location == 1){
         change_first_depot();

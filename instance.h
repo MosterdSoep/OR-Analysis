@@ -38,6 +38,8 @@ class Instance{
 		size_t random_request_deletion(vector<size_t> &request_bank);
 		void greedy_route_deletion(vector<size_t> &request_bank);
 		void random_route_deletion(vector<size_t> &request_bank);
+		vector<size_t> cluster_deletion(vector<size_t> &request_bank, size_t k);
+		vector<size_t> transfer_swap(vector<size_t> &request_bank);
 		double costs_of_removing_request(size_t &request);
 		void remove_empty_vehicle();
 		vector<size_t> shaw_deletion(size_t &amount);
@@ -61,6 +63,8 @@ class Instance{
 		double pickup_feasible(Vehicle &v, size_t &p, size_t &request, Node &pick);
 		double delivery_feasible(Vehicle &v, size_t p, size_t d, size_t request, double p_delay, double &added_time, Node &pick, Node &del);
 		bool check_slack_times(Vehicle &v, size_t first, size_t last, double delay);
+		bool insertion_ride_times_feasible(Vehicle &v, size_t p, double delay);
+		bool insertion_delivery_times_feasible(Vehicle &v, size_t p, size_t d, double delay_p, double delay_d);
 
 
 		void print_routes();

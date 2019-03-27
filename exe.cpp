@@ -18,10 +18,10 @@ vector<vector<int>> input_data;
 size_t start_temperature = 1000;
 size_t added_temperature = 0;
 
-size_t maximum_loops = 10000;
+size_t maximum_loops = 100000;
 
 bool acceptation_criterion_met(double s, double current_solution, size_t loop_count) {
-	double temperature = ((double)start_temperature + added_temperature - (double)loop_count + 1)/100;
+	double temperature = ((double)start_temperature + added_temperature - (double)loop_count/100 + 1)/100;
 	double minimum = min(current_solution - s,0.0);
 	double probability = (double)exp(minimum/temperature);
 	double percentage = probability*100;
@@ -41,7 +41,7 @@ bool stopping_criterion_met(size_t loop_count) {
 bool time_based_criterion(auto start){
     auto end_time = chrono::high_resolution_clock::now();
     chrono::duration<double> elapsed = end_time - start;
-    if(elapsed.count() > 60){
+    if(elapsed.count() > 600){
         return true;
     }
     return false;
@@ -131,7 +131,7 @@ void ALNS(Instance &i) {
 			}
 		}
 		size_t transfer_operator;
-		if (loop_count % 100 == 0) {
+		if (loop_count % 1000 == 0) {
 			percentage+=1;
 			cout << percentage << "% completed\n";
 
@@ -165,7 +165,7 @@ void ALNS(Instance &i) {
 			transfer_loop_count++;
 			if (transfer_loop_count % 10 == 0 || transfer_loop_count == transfer_nodes.size()){
 				// Update weights
-				for (size_t i = 0; i < transfer_nodes.size(); i++) {
+				for (size_t i = 0; i < transfer_nodes.size() + 1; i++) {
 					transfer_scores[i] += transfer_rewards[i];
 					transfer_rewards[i] = 0;
 				}
@@ -336,7 +336,8 @@ void ALNS(Instance &i) {
 	cout << "infeasible transfers : " << transfer_infeasible_count << '\n';
 	cout << "Transfer counts : " << transfer_count << "   "  << transfer_cost_accept << "   " << transfer_accept << '\n';
 	cout << "Times  :  " << op_time[0]/insertion_count[0] << "    " << op_time[1]/insertion_count[1]<< "    " << op_time[2]/insertion_count[2]<< "    " << op_time[3]/insertion_count[3]<<  '\n';
-	cout << "Full greedy was called : " << deletion_count[0] << " times in a total of "<< loop_count << " loops. \n";
+    cout << "Deletion operators : " << deletion_count[0] << "  " << deletion_count[1] << "   " << deletion_count[2] << "  " << deletion_count[3] << "   " << deletion_count[4] << '\n';
+    cout << "Insertion operators : " << insertion_count[0] << "  " << insertion_count[1]  << "  " << insertion_count[2] << "  " << insertion_count[3] << '\n';
 	cout << "Elapsed time: " << elapsed.count() << " s\n";
 	cout << "Total number of rejections: " << (costs_rejection + feasibility_rejection) << "\n";
 	cout << "Amount of costs rejection: " << costs_rejection << "\n";

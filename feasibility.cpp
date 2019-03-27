@@ -40,11 +40,11 @@ bool Instance::maximum_ride_time_not_exceeded() {
 	}
     for(size_t idx = 0; idx < request_amount; idx++){
         if(delivery_time[idx] - pickup_time[idx] > ride_times[idx]){
-            cout << "ride times infeasible\n";
+            //cout << "ride times infeasible\n";
             return false;
         }
         if(trans_pickup_time[idx] < trans_delivery_time[idx]){
-            cout << "transfers infeasible\n";
+            //cout << "transfers infeasible\n";
             return false;
         }
 	}
@@ -63,11 +63,10 @@ bool Instance::time_windows_met() {
 			// Time windows
             if (idx != 0 && idx != v.route.size() - 1) {
 				if (v.time_at_node[idx] + v.waiting_times[idx] > v.route[idx].upper_bound){
-					cout << "time windows upper bound infeasible\n";
-					cout << v.route[idx].type << '\n';
+					//cout << "time windows upper bound infeasible\n";
 					return false;
 				} else if (v.time_at_node[idx] + v.waiting_times[idx] < v.route[idx].lower_bound - 0.00001){
-					cout << "time window lower bound infeasible\n";
+					//cout << "time window lower bound infeasible\n";
 					return false;
 				}
 			}
@@ -84,17 +83,16 @@ bool Instance::time_windows_met() {
         }
     }
 	// Maximum ride time
-	for(size_t idx = 0; idx < request_amount; idx++){
-        if(delivery_time[idx] - pickup_time[idx] > ride_times[idx]){
-            cout << "ride times infeasible\n";
+    for(size_t idx = 0; idx < request_amount; idx++){
+        if(delivery_time[idx] - pickup_time[idx] > ride_times[idx] - 0.00001){
             return false;
         }
         if(trans_pickup_time[idx] < trans_delivery_time[idx] - 0.000001){
-            cout << "transfers infeasible\n";
+        //cout << "transfers infeasible\n";
             transfer_infeasible_count += 1;
             return false;
         }
-	}
+    }
 	return true;
 }
 

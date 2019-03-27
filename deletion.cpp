@@ -1,6 +1,121 @@
 #include "instance.h"
 #include <algorithm>
 
+bool compareFunc_sizet(pair<size_t, size_t> &a, pair<size_t, size_t> &b)
+{
+    return a.second > b.second;
+}
+
+vector<size_t> Instance::transfer_swap(vector<size_t> &request_bank) {
+	size_t amount = 0;
+	vector<pair <size_t, size_t>> open_amounts;
+
+	// Find worst #amount transfer facilities
+	for (size_t tn = 0; tn < transfer_nodes.size(); tn++) {
+		if (transfer_nodes[tn].open) {
+			// Check the amount of vehicle going through this transfer node
+			size_t amount_of_vehicles = 0;
+			for (Vehicle v : routes) {
+				for (size_t i = 0; i < v.route.size(); i++) {
+					if (v.route[i].gen_idx == transfer_nodes[tn].gen_idx) {
+						// Found a route going through this transfer facility
+						amount_of_vehicles++;
+					}
+				}
+			}
+			open_amounts.push_back({tn, amount_of_vehicles});
+		}
+	}
+
+	// Open #amount random transfer facilites which aren't open yet
+	size_t amount_opened = 0;
+	while (amount_opened < amount) {
+		size_t to_be_opened = rand() % transfer_nodes.size();
+		if (!transfer_nodes[to_be_opened].open) {
+			transfer_nodes[to_be_opened].open = true;
+			amount_opened++;
+		}
+	}
+
+	sort(open_amounts.begin(), open_amounts.end(), compareFunc_sizet);
+	for (size_t i = 0; i < amount; i++) {
+		transfer_nodes[open_amounts[i].first].open = false;
+		for (size_t v = 0; v < routes.size(); v++) {
+			for (size_t r = 0; r < routes[v].route.size(); r++) {
+				if (transfer_nodes[open_amounts[i].first].gen_idx == routes[v].route[r].gen_idx) {
+					request_bank.push_back(routes[v].route[r].request_idx);
+					routes[v].remove_node(r);
+					r--;
+				}
+			}
+		}
+	}
+	return request_bank;
+}
+
+vector<size_t> Instance::cluster_deletion(vector<size_t> &request_bank, size_t k) {
+	size_t random_request = rand() % request_amount;
+	vector<double> distances (k, 0);
+
+	for (size_t i = 0; i < request_amount && i != random_request; i++) {
+		if (distances.size() == 0) {
+			distances.push_back(arcs[pickup_nodes[random_request].gen_idx][pickup_nodes[i].gen_idx]);
+			request_bank.push_back(i);
+			continue;
+		}
+		for (size_t t = 0; t < distances.size(); t++) {
+			if (distances[t] >= arcs[pickup_nodes[random_request].gen_idx][pickup_nodes[i].gen_idx]) {
+				distances.insert(distances.begin() + t, arcs[pickup_nodes[random_request].gen_idx][pickup_nodes[i].gen_idx]);
+				request_bank.insert(request_bank.begin() + t, i);
+				if (distances.size() == k) {
+					distances.erase(distances.end() - 1);
+					request_bank.erase(request_bank.end() - 1);
+				}
+				break;
+			} else {
+				if (t == distances.size() - 1 && distances.size() < k - 1) {
+					distances.push_back(arcs[pickup_nodes[random_request].gen_idx][pickup_nodes[i].gen_idx]);
+					request_bank.push_back(i);
+					break;
+				}
+				continue;
+			}
+		}
+	}
+	request_bank.push_back(random_request);
+
+	for (size_t i = 0; i < request_bank.size(); i++) {
+		size_t best_request = request_bank[i];
+		if (pickup_vehicle[best_request] != delivery_vehicle[best_request]) {
+			// Transferred request
+			for (size_t i = 1; i < routes[pickup_vehicle[best_request]].route.size() - 1; i++) {
+				if (routes[pickup_vehicle[best_request]].route[i].request_idx == best_request) {
+					routes[pickup_vehicle[best_request]].remove_node(i);
+					i--;
+				}
+			}
+			for (size_t i = 1; i < routes[delivery_vehicle[best_request]].route.size() - 1; i++) {
+				if (routes[delivery_vehicle[best_request]].route[i].request_idx == best_request) {
+					routes[delivery_vehicle[best_request]].remove_node(i);
+					i--;
+				}
+			}
+		} else {
+			// Non transfer request
+			for (size_t i = 1; i < routes[pickup_vehicle[best_request]].route.size() - 1; i++) {
+				if (routes[pickup_vehicle[best_request]].route[i].request_idx == best_request) {
+					routes[pickup_vehicle[best_request]].remove_node(i);
+					i--;
+				}
+			}
+		}
+	}
+
+	return request_bank;
+}
+
+
+
 size_t Instance::greedy_request_deletion(vector<size_t> &request_bank) {
 	double best_costs_saving = numeric_limits<double>::max();
 	size_t best_request = 0;
@@ -21,17 +136,19 @@ size_t Instance::greedy_request_deletion(vector<size_t> &request_bank) {
 		for (size_t i = 1; i < routes[pickup_vehicle[best_request]].route.size() - 1; i++) {
 			if (routes[pickup_vehicle[best_request]].route[i].request_idx == best_request) {
 				routes[pickup_vehicle[best_request]].remove_node(i);
+                i--;
 			}
 		}
 		for (size_t i = 1; i < routes[delivery_vehicle[best_request]].route.size() - 1; i++) {
 			if (routes[delivery_vehicle[best_request]].route[i].request_idx == best_request) {
 				routes[delivery_vehicle[best_request]].remove_node(i);
+                i--;
 			}
 		}
 	} else {
 		// Non transfer request
 		for (size_t i = 1; i < routes[pickup_vehicle[best_request]].route.size() - 1; i++) {
-			if (routes[pickup_vehicle[best_request]].route[i].index == best_request) {
+			if (routes[pickup_vehicle[best_request]].route[i].request_idx == best_request) {
 				routes[pickup_vehicle[best_request]].remove_node(i);
 				i--;
 			}
@@ -49,20 +166,22 @@ size_t Instance::random_request_deletion(vector<size_t> &request_bank) {
 	}
 	if (pickup_vehicle[request] != delivery_vehicle[request]) {
 		// Transferred request
-		for (size_t i = 1; i < routes[pickup_vehicle[request]].route.size() - 1; i++) {
+ 		for (size_t i = 1; i < routes[pickup_vehicle[request]].route.size() - 1; i++) {
 			if (routes[pickup_vehicle[request]].route[i].request_idx == request) {
 				routes[pickup_vehicle[request]].remove_node(i);
+                i--;
 			}
 		}
 		for (size_t i = 1; i < routes[delivery_vehicle[request]].route.size() - 1; i++) {
 			if (routes[delivery_vehicle[request]].route[i].request_idx == request) {
 				routes[delivery_vehicle[request]].remove_node(i);
+                i--;
 			}
 		}
 	} else {
 		// Non transfer request
 		for (size_t i = 1; i < routes[pickup_vehicle[request]].route.size() - 1; i++) {
-			if (routes[pickup_vehicle[request]].route[i].index == request) {
+			if (routes[pickup_vehicle[request]].route[i].request_idx == request) {
 				routes[pickup_vehicle[request]].remove_node(i);
 				i--;
 			}
@@ -135,17 +254,19 @@ vector<size_t> Instance::shaw_deletion(size_t &amount){
 		for (size_t i = 1; i < routes[pickup_vehicle[request_bank[idx]]].route.size() - 1; i++) {
 			if (routes[pickup_vehicle[request_bank[idx]]].route[i].request_idx == request_bank[idx]) {
 				routes[pickup_vehicle[request_bank[idx]]].remove_node(i);
+				i--;
 			}
 		}
 		for (size_t i = 1; i < routes[delivery_vehicle[request_bank[idx]]].route.size() - 1; i++) {
 			if (routes[delivery_vehicle[request_bank[idx]]].route[i].request_idx == request_bank[idx]) {
 				routes[delivery_vehicle[request_bank[idx]]].remove_node(i);
+				i--;
 			}
 		}
 	} else {
 		// Non transfer request
 		for (size_t i = 1; i < routes[pickup_vehicle[request_bank[idx]]].route.size() - 1; i++) {
-			if (routes[pickup_vehicle[request_bank[idx]]].route[i].index == request_bank[idx]) {
+			if (routes[pickup_vehicle[request_bank[idx]]].route[i].request_idx == request_bank[idx]) {
 				routes[pickup_vehicle[request_bank[idx]]].remove_node(i);
 				i--;
 			}
@@ -168,6 +289,7 @@ double Instance::costs_of_removing_request(size_t &request) {
 	size_t pu_vehicle = pickup_vehicle[request];
 	size_t de_vehicle = delivery_vehicle[request];
 	double arc_lengths = 0.0;
+
 
 	size_t p = 12345, d = 12345, td = 12345, tp = 12345;
 	if (pu_vehicle == de_vehicle) {
@@ -232,7 +354,7 @@ double Instance::costs_of_removing_request(size_t &request) {
 								+ arcs[routes[pu_vehicle].route[td].gen_idx][nearest_depot_gen_idx_d[request]];
 			}
 		} else {
-			cout << "Error calculating costs for transfer insertion!\n";
+			cout << "Error calculating costs for transfer deletion!\n";
 		}
 		// Delivery change in arcs
 		if (d == tp + 1) {
@@ -275,7 +397,7 @@ double Instance::costs_of_removing_request(size_t &request) {
 								+ arcs[routes[de_vehicle].route[d].gen_idx][nearest_depot_gen_idx_d[request]];
 			}
 		} else {
-			cout << "Error calculating costs for transfer insertion!\n";
+			cout << "Error calculating costs for transfer deletion!\n";
 		}
 	} else {
 		if (d == p + 1) {
@@ -318,9 +440,10 @@ double Instance::costs_of_removing_request(size_t &request) {
 								+ arcs[routes[de_vehicle].route[d].gen_idx][nearest_depot_gen_idx_d[request]];
 			}
 		} else {
-			cout << "Error calculating costs for transfer insertion!\n";
+			cout << "Error calculating costs for regular deletion!\n";
 		}
 	}
+
 	return travel_cost*arc_lengths;
 }
 

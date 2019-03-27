@@ -14,7 +14,7 @@ class Node {
 	char type;
 	bool pickup;
 	bool delivery;
-    size_t request_idx;
+    size_t request_idx = 0;
     double lower_bound = 0;
     double upper_bound = numeric_limits<double>::max();
 };

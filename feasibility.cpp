@@ -63,10 +63,11 @@ bool Instance::time_windows_met() {
 			// Time windows
             if (idx != 0 && idx != v.route.size() - 1) {
 				if (v.time_at_node[idx] + v.waiting_times[idx] > v.route[idx].upper_bound){
-					//cout << "time windows upper bound infeasible\n";
+					cout << "time windows upper bound infeasible\n";
+					cout << v.route[idx].type << '\n';
 					return false;
 				} else if (v.time_at_node[idx] + v.waiting_times[idx] < v.route[idx].lower_bound - 0.00001){
-					//cout << "time window lower bound infeasible\n";
+					cout << "time window lower bound infeasible\n";
 					return false;
 				}
 			}
@@ -85,11 +86,12 @@ bool Instance::time_windows_met() {
 	// Maximum ride time
 	for(size_t idx = 0; idx < request_amount; idx++){
         if(delivery_time[idx] - pickup_time[idx] > ride_times[idx]){
-            //cout << "ride times infeasible\n";
+            cout << "ride times infeasible\n";
             return false;
         }
-        if(trans_pickup_time[idx] < trans_delivery_time[idx]){
-            //cout << "transfers infeasible\n";
+        if(trans_pickup_time[idx] < trans_delivery_time[idx] - 0.000001){
+            cout << "transfers infeasible\n";
+            transfer_infeasible_count += 1;
             return false;
         }
 	}
@@ -144,9 +146,9 @@ double Instance::delivery_feasible(Vehicle &v, size_t p, size_t d, size_t reques
         if(p==1)
         {
             if(pick.type == 'p'){
-                arr = arcs[nearest_depot_gen_idx_p[pick.gen_idx]][pick.gen_idx] + pick.service_time + p_delay + arcs[request][del.gen_idx];
+                arr = arcs[nearest_depot_gen_idx_p[pick.index]][pick.gen_idx] + pick.service_time + p_delay + arcs[pick.gen_idx][del.gen_idx];
             }else if(pick.type == 't'){
-                arr = arcs[nearest_depot_gen_idx_t[pick.gen_idx]][pick.gen_idx] + pick.service_time + p_delay + arcs[request][del.gen_idx];
+                arr = arcs[nearest_depot_gen_idx_t[pick.index]][pick.gen_idx] + pick.service_time + p_delay + arcs[pick.gen_idx][del.gen_idx];
             }
         }else{
             arr = arcs[v.route[p-1].gen_idx][pick.gen_idx] + v.time_at_node[p-1] + v.route[p-1].service_time + v.waiting_times[p-1] +
@@ -187,4 +189,82 @@ bool Instance::check_slack_times(Vehicle &v, size_t first, size_t last, double d
     return true;
 }
 
+bool Instance::insertion_ride_times_feasible(Vehicle &v, size_t p, double delay){ //delay is edited, dont pass by reference
+    for(size_t idx = 1; idx < p; idx++){
+        bool found = false;
+        if(v.route[idx].type == 'p'){
+            for(size_t adx = 2; adx < p; adx++){
+                if((v.route[adx].type == 'd' || v.route[adx].type == 't')&& v.route[idx].request_idx == v.route[adx].request_idx){
+                    found = true;
+                    break;
+                }
+            }
+        }
+        if(found == false){
+            size_t d_vehicle = delivery_vehicle[v.route[idx].request_idx];
+            if(d_vehicle == v.v_index){
+                for(size_t adx = p; adx < routes[d_vehicle].route.size(); adx++){
+                    double delay_p = delay;
+                    if(delay_p - v.waiting_times[adx] > 0){
+                    delay_p -= v.waiting_times[adx];
+                    }else{delay_p  = 0;}
+                    if(routes[d_vehicle].route[adx].type == 'd'  && routes[d_vehicle].route[adx].request_idx == v.route[idx].request_idx){
+                        if(v.time_at_node[adx] + v.waiting_times[adx] - v.time_at_node[idx] - v.waiting_times[idx] - v.route[idx].service_time + delay_p > ride_times[v.route[idx].request_idx]){
+                            return false;
+                        }else{
+                            continue;
+                        }
+                    }
+                }
+            }else{/*
+                for(size_t adx = 1; adx < routes[d_vehicle].route.size(); adx++){
+                    if(routes[d_vehicle].route[adx].type == 'd'  && routes[d_vehicle].route[adx].request_idx == v.route[idx].request_idx){
+                        continue;
+                    }
+                }*/
+            }
+        }
+    }
+    return true;
+}
 
+bool Instance::insertion_delivery_times_feasible(Vehicle &v, size_t p, size_t d, double delay_first, double delay_second){
+    for(size_t idx = 1; idx < d-1; idx++){
+        bool found = false;
+        if(v.route[idx].type == 'p'){
+            for(size_t adx = 2; adx < d-1; adx++){
+                if((v.route[adx].type == 'd' || v.route[adx].type == 't')&& v.route[idx].request_idx == v.route[adx].request_idx){
+                    found = true;
+                    break;
+                }
+            }
+        }
+        if(found == false){
+            size_t d_vehicle = delivery_vehicle[v.route[idx].request_idx];
+            if(d_vehicle == v.v_index){
+                for(size_t adx = d-1; adx < routes[d_vehicle].route.size(); adx++){
+                    double delay_p = 0;
+                    if(idx < p){delay_p = delay_first;}
+                    else{delay_p = 0;}
+                    double delay_d = delay_second;
+                    if(delay_p + delay_d - v.waiting_times[adx] > 0){
+                    delay_d -= v.waiting_times[adx];
+                    }else{
+                    delay_p  = 0;
+                    delay_d = 0;
+                    }
+                    if(routes[d_vehicle].route[adx].type == 'd'  && routes[d_vehicle].route[adx].request_idx == v.route[idx].request_idx){
+                        if(v.time_at_node[adx] + v.waiting_times[adx] - v.time_at_node[idx] - v.waiting_times[idx] - v.route[idx].service_time + delay_p + delay_d > ride_times[v.route[idx].request_idx]){
+                            return false;
+                        }else{
+                            continue;
+                        }
+                    }
+                }
+            }else{
+
+            }
+        }
+    }
+    return true;
+}

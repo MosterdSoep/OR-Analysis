@@ -85,6 +85,27 @@ void Instance::create_instance(vector<vector<int>> &input_data, int ins){
     all_nodes.insert(all_nodes.end(), depot_nodes.begin(), depot_nodes.end());
 }
 
+// -----------------------------------
+// HAS TO BE DONE BEFORE PREPROCESSING
+// -----------------------------------
+vector<double> Instance::facility_weights() {
+	vector<double> averages;
+	for (size_t t = 0; t < transfer_nodes.size(); t++) {
+		vector<double> distances;
+		for (size_t n = 0; n < all_nodes.size(); n++) {
+			distances.push_back(arcs[transfer_nodes[t].gen_idx][all_nodes[n].gen_idx]);
+		}
+		averages.push_back(accumulate(distances.begin(), distances.end(), 0.0)/distances.size());
+	}
+	double normalizing_constant = accumulate(averages.begin(), averages.end(), 0.0);
+	for (size_t i = 0; i < averages.size(); i++) {
+		averages[i] /= normalizing_constant;
+		averages[i] = 1/(averages[i]*averages[i]);
+	}
+	
+	return averages;
+}
+
 void Instance::preprocess(){
     double big_M = 50000000000;
 

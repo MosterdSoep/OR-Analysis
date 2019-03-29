@@ -1,17 +1,18 @@
 #include "instance.h"
 #include <algorithm>
+#include <random>
 
 bool compareFunc_sizet(pair<size_t, size_t> &a, pair<size_t, size_t> &b)
 {
     return a.second > b.second;
 }
 
-vector<size_t> Instance::transfer_swap(vector<size_t> &request_bank) {
+vector<size_t> Instance::transfer_swap(vector<size_t> &request_bank, vector<double> &transfer_weights) {
 	size_t amount = 0;
 	vector<pair <size_t, size_t>> open_amounts;
-
-	// Find worst #amount transfer facilities
+	
 	for (size_t tn = 0; tn < transfer_nodes.size(); tn++) {
+	// Find worst #amount transfer facilities
 		if (transfer_nodes[tn].open) {
 			// Check the amount of vehicle going through this transfer node
 			size_t amount_of_vehicles = 0;
@@ -26,17 +27,20 @@ vector<size_t> Instance::transfer_swap(vector<size_t> &request_bank) {
 			open_amounts.push_back({tn, amount_of_vehicles});
 		}
 	}
-
+	random_device rd;
+	mt19937 gen(rd());
+	discrete_distribution<size_t> transfer_op(transfer_weights.begin(), transfer_weights.end());
+	
 	// Open #amount random transfer facilites which aren't open yet
 	size_t amount_opened = 0;
 	while (amount_opened < amount) {
-		size_t to_be_opened = rand() % transfer_nodes.size();
+		size_t to_be_opened = transfer_op(gen);
 		if (!transfer_nodes[to_be_opened].open) {
 			transfer_nodes[to_be_opened].open = true;
 			amount_opened++;
 		}
 	}
-
+	
 	sort(open_amounts.begin(), open_amounts.end(), compareFunc_sizet);
 	for (size_t i = 0; i < amount; i++) {
 		transfer_nodes[open_amounts[i].first].open = false;
@@ -113,8 +117,6 @@ vector<size_t> Instance::cluster_deletion(vector<size_t> &request_bank, size_t k
 
 	return request_bank;
 }
-
-
 
 size_t Instance::greedy_request_deletion(vector<size_t> &request_bank) {
 	double best_costs_saving = numeric_limits<double>::max();

@@ -65,3 +65,14 @@ void Instance::write_output_file(size_t instance_number) {
 	output_file << "\n";
 	output_file.close();
 }
+
+void Instance::output_vector(vector<double> &v) {
+	ostringstream file_name_stream;
+	file_name_stream << "vector" << ".csv";
+	string file_name = file_name_stream.str();
+	ofstream output_file(file_name.c_str());
+	for (size_t i = 0; i < v.size(); i++) {
+		output_file << v[i] << "\n";
+	}
+	output_file.close();
+}

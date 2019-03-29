@@ -26,6 +26,7 @@ class Instance{
 
 	public:
 		Instance(){};
+		vector<double> facility_weights();
 		void create_instance(vector<vector<int>> &input_data, int ins);
 		void preprocess();
 		void calculate_arcs();
@@ -39,7 +40,7 @@ class Instance{
 		void greedy_route_deletion(vector<size_t> &request_bank);
 		void random_route_deletion(vector<size_t> &request_bank);
 		vector<size_t> cluster_deletion(vector<size_t> &request_bank, size_t k);
-		vector<size_t> transfer_swap(vector<size_t> &request_bank);
+		vector<size_t> transfer_swap(vector<size_t> &request_bank, vector<double> &transfer_weights);
 		double costs_of_removing_request(size_t &request);
 		void remove_empty_vehicle();
 		vector<size_t> shaw_deletion(size_t &amount);
@@ -66,8 +67,8 @@ class Instance{
 		bool insertion_ride_times_feasible(Vehicle &v, size_t p, double delay);
 		bool insertion_delivery_times_feasible(Vehicle &v, size_t p, size_t d, double delay_p, double delay_d);
 
-
 		void print_routes();
+		void output_vector(vector<double> &v);
 };
 
 inline void Instance::print_routes(){

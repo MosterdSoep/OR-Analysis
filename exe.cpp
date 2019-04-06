@@ -15,11 +15,11 @@ using namespace std;
 string location = "large_instances.csv";
 vector<vector<int>> input_data;
 vector<double> transfer_weights;
-size_t start_temperature = 100;
-size_t maximum_loops = 500000;
+double start_temperature = 5.0;
+size_t maximum_loops = 50000;
 
 bool acceptation_criterion_met(double s, double current_solution, size_t loop_count) {
-	double temperature = ((double)start_temperature - (double)(((double)loop_count)/5000) + 1);
+	double temperature = start_temperature * ((double)maximum_loops - (double)loop_count) / ((double)maximum_loops/10);
 	double minimum = min(current_solution - s,0.0);
 	double probability = (double)exp(minimum/temperature);
 	double percentage = probability*100;
@@ -35,7 +35,7 @@ bool stopping_criterion_met(size_t loop_count) {
 	if (loop_count < maximum_loops) return false;
 	else return true;
 }
-
+/*
 bool time_based_criterion(auto start){
     auto end_time = chrono::high_resolution_clock::now();
     chrono::duration<double> elapsed = end_time - start;
@@ -43,17 +43,42 @@ bool time_based_criterion(auto start){
         return true;
     }
     return false;
-}
+}*/
 
 void ALNS(Instance &i) {
 	auto start = chrono::high_resolution_clock::now();
-
+	
 	double best_solution = i.calculate_obj_val();
 	double current_solution = best_solution;
 	vector<Vehicle> best_routes = i.routes;
+	
+	vector<vector<Vehicle>> best_routes_all (transfer_nodes.size() + 1, best_routes);
+	vector<vector<Vehicle>> current_solution_routes (transfer_nodes.size() + 1, best_routes);
+	vector<vector<size_t>> pickup_vehicle_all (transfer_nodes.size() + 1, pickup_vehicle);
+	vector<vector<size_t>> delivery_vehicle_all (transfer_nodes.size() + 1, delivery_vehicle);
+	vector<vector<bool>> transfer_nodes_opened (transfer_nodes.size() + 1, {true});
+	cout << "transfer size: " << transfer_nodes.size() << "\n";
+	for (size_t i = 0; i < transfer_nodes.size() + 1; i++) {
+		transfer_nodes_opened[i].clear();
+		for (size_t j = 0; j < i; j++) {
+			transfer_nodes_opened[i].push_back(true);
+		}
+		for (size_t j = i; j < transfer_nodes.size(); j++) {
+			transfer_nodes_opened[i].push_back(false);
+		}
+	}
+	for (size_t t = 0;  t < transfer_nodes.size() + 1; t++) {
+		for (size_t i = 0; i < transfer_nodes.size(); i++) {
+			cout << transfer_nodes_opened[t][i] << " ";
+		}
+		cout << "\n";
+	}
 	size_t loop_count = 0;
 
 	i.print_routes();
+	for (size_t i = 0; i < transfer_nodes.size(); i++) {
+			transfer_nodes[i].open = false;
+	}
 	cout << "Objective value: " << i.calculate_obj_val() << "\n";
     double initialval = i.calculate_obj_val();
 	random_device rd;
@@ -69,9 +94,8 @@ void ALNS(Instance &i) {
 	for (size_t i = 0; i < transfer_nodes.size() + 1; i++) {
 		transfer_scores.push_back(1);
 		transfer_rewards.push_back(0);
-		transfer_scores_normal.push_back(transfer_nodes.size() + 2 - i);
+		transfer_scores_normal.push_back(transfer_nodes.size() + 1 - i);
 	}
-	cout << "\n";
 
 	vector<double> deletion_scores = {1,1,1,1,1};
 	vector<double> deletion_rewards = {0,0,0,0,0};
@@ -85,8 +109,14 @@ void ALNS(Instance &i) {
 	vector<size_t> deletion_count(deletion_scores.size(),0);
 	vector<size_t> insertion_count(insertion_scores.size(), 0);
 	vector<size_t> transfer_count_vector(transfer_scores.size(), 0);
+	
+	vector<vector<size_t>> interactive_all(4, {0,0,0,0,0});
+	vector<vector<size_t>> interactive_acc1(4, {0,0,0,0,0});
+	vector<vector<size_t>> interactive_acc2(4, {0,0,0,0,0});
+	vector<vector<size_t>> interactive_acc3(4, {0,0,0,0,0});
 
 	vector<double> op_time = {0,0,0,0};
+	vector<double> op_del_time = {0,0,0,0,0};
 
 	vector<size_t> request_bank = {};
 
@@ -94,14 +124,15 @@ void ALNS(Instance &i) {
 	size_t transfer_cost_accept = 0;
 	size_t transfer_accept = 0;
 	
-	size_t percentage = 0;
+	double percentage = 0;
 	vector<double> best_results;
+	size_t transfer_operator = 0;
 	while(!stopping_criterion_met(loop_count)) {// && !time_based_criterion(start)) {
-        i.old_routes.clear();
+		i.old_routes.clear();
 		i.old_routes = i.routes;
 		i.old_pickup_vehicle = pickup_vehicle;
 		i.old_delivery_vehicle = delivery_vehicle;
-
+		
 		loop_count++;
 		if (loop_count % 100 == 0) {
 			for (size_t i = 0; i < deletion_scores.size(); i++) {
@@ -117,45 +148,80 @@ void ALNS(Instance &i) {
 		}
 		
 		// Choosing the amount of transfer facilities to be open
-		size_t transfer_operator = 0;
-		if (loop_count % 5000 == 0) {
-				percentage+=1;
-				cout << percentage << "% completed\n";
-			}
+		if (loop_count % (maximum_loops/100) == 0) {
+			percentage+=1;
+			cout << percentage << "% completed\n";
+		}
+		
 		if (loop_count % 1000 == 0) {
-
+			// Save information before changing the amount of transfer facilities opened
+			best_routes_all[transfer_operator].clear();
+			best_routes_all[transfer_operator] = best_routes;
+			current_solution_routes[transfer_operator].clear();
+			current_solution_routes[transfer_operator] = i.routes;
+			pickup_vehicle_all[transfer_operator].clear();
+			pickup_vehicle_all[transfer_operator] = pickup_vehicle;
+			delivery_vehicle_all[transfer_operator].clear();
+			delivery_vehicle_all[transfer_operator] = delivery_vehicle;
+			//cout << "previous amount of transfers: " << transfer_operator << "\n";
+			for (size_t i = 0; i < transfer_nodes.size(); i++) {
+				transfer_nodes_opened[transfer_operator][i] = transfer_nodes[i].open;
+				//cout << transfer_nodes_opened[transfer_operator][i] << " ";
+			}
+			//cout << "\n";
+			
+			// Change the amount of transfer facilities opened
 			discrete_distribution<size_t> transfer_op(transfer_scores_normal.begin(), transfer_scores_normal.end());
 			transfer_operator = transfer_op(gen);
+			//cout << "Opening " << transfer_operator << " amount of transfer facilities\n";
 			
-			for (size_t j = 0; j < transfer_operator; j++) {
-				transfer_nodes[j].open = true;
-				//transfer_nodes[j].open = false;
+			// Load the new information of the new amount of transfer facilities opened
+			best_routes.clear();
+			best_routes = best_routes_all[transfer_operator];
+			i.routes.clear();
+			i.routes = best_routes;
+			best_solution = i.calculate_obj_val();
+			i.routes.clear();
+			i.old_routes.clear();
+			i.old_routes = current_solution_routes[transfer_operator];
+			i.routes = i.old_routes;
+			current_solution = i.calculate_obj_val();
+			i.old_pickup_vehicle.clear();
+			i.old_pickup_vehicle = pickup_vehicle_all[transfer_operator];
+			pickup_vehicle.clear();
+			pickup_vehicle = i.old_pickup_vehicle;
+			i.old_delivery_vehicle.clear();
+			i.old_delivery_vehicle = delivery_vehicle_all[transfer_operator];
+			delivery_vehicle.clear();
+			delivery_vehicle = i.old_delivery_vehicle;
+			//cout << "new amount of transfers: " << transfer_operator << "\n";
+			for (size_t i = 0; i < transfer_nodes.size(); i++) {
+				transfer_nodes[i].open = transfer_nodes_opened[transfer_operator][i];
+				//cout << transfer_nodes_opened[transfer_operator][i] << " ";
 			}
-			for (size_t i = transfer_operator; i < transfer_nodes.size(); i++) {
-				transfer_nodes[i].open = false;
-				//transfer_nodes[i].open = true;
-			}
-			
-			cout << "Opening " << transfer_operator << " transfers\n"; 
+			//cout << "\n";
 			
 			transfer_loop_count++;
-			if (transfer_loop_count % 10 == 0){
+			if (transfer_loop_count % 5 == 0){
 				// Update weights
+				//cout << "Updating weights\n";
 				for (size_t i = 0; i < transfer_scores.size(); i++) {
+					//cout << "transfer reward: " << transfer_rewards[i] << "\n";
 					transfer_scores[i] += transfer_rewards[i];
 					transfer_rewards[i] = 0;
 					transfer_scores_normal[i] = transfer_scores[i] / (1 + transfer_count_vector[i]);
 				}
 			}
-		}/*
-		for (size_t i = 0; i < transfer_nodes.size(); i++) {
-			transfer_nodes[i].open = false;
-		}*/
+		}
 		
-		size_t amount = (rand() % (int(log(i.request_amount)/log(1.5))+1) ) + 1;
+		size_t amount = (rand() % ((int)(i.request_amount/25))) + 1;
 		assert(amount < i.request_amount);
 		discrete_distribution<> delete_op(deletion_scores_normal.begin(), deletion_scores_normal.end());
-		size_t delete_operator = delete_op(gen);		
+		size_t delete_operator = delete_op(gen);	
+		auto begin_op_del = chrono::high_resolution_clock::now();	
+		
+		vector<bool> backup = {};
+		if (transfer_operator == 0 && delete_operator  == 4) { delete_operator = 1; }
 		switch (delete_operator) {
 			case 0 :
 				//cout << "Greedy deletion\n";
@@ -179,9 +245,15 @@ void ALNS(Instance &i) {
 				break;
 			case 4 :
 				//cout << "Transfer swap\n";
-				request_bank = i.transfer_swap(request_bank, transfer_weights);
+				backup = transfer_nodes_opened[transfer_operator];
+				request_bank = i.transfer_swap(request_bank, transfer_weights, transfer_nodes_opened[transfer_operator]);
 				break;
 		}
+		
+		auto end_op_del = chrono::high_resolution_clock::now();
+        chrono::duration<double, milli> elapsed_op_del = chrono::duration_cast<chrono::duration<double>>(end_op_del - begin_op_del);
+		op_del_time[delete_operator] += elapsed_op_del.count();
+		
 		i.remove_empty_vehicle();
 		
 		discrete_distribution<> insert_op(insertion_scores_normal.begin(), insertion_scores_normal.end());
@@ -190,7 +262,6 @@ void ALNS(Instance &i) {
         auto begin_op = chrono::high_resolution_clock::now();
         assert(insert_operator <= 3);
         size_t max_iters = request_bank.size();
-		
 		switch (insert_operator) {
 			case 0 :
                 //cout << "insert greedy\n";
@@ -233,23 +304,28 @@ void ALNS(Instance &i) {
         auto end_op = chrono::high_resolution_clock::now();
         chrono::duration<double, milli> elapsed_op = chrono::duration_cast<chrono::duration<double>>(end_op - begin_op);
         op_time[insert_operator] += elapsed_op.count();
+		
 
         operator_count[delete_operator*insertion_scores.size() + insert_operator] += 1;
         insertion_count[insert_operator] += 1;
         deletion_count[delete_operator] += 1;
 		transfer_count_vector[transfer_operator] += 1;
 		
+		interactive_all[insert_operator][delete_operator]++;
+		
 		bool accepted1 = false;
 		bool accepted2 = false;
 		bool accepted3 = false;
 		double s = i.calculate_obj_val();
+		//cout << "Best solution: " << best_solution << ", current solution: " << current_solution << ", new solution: " << s << "\n"; 
 		if (s < best_solution) {
+			//cout << "New solution best\n";
 			accepted1 = true;
 		} else if (s < current_solution) {
-			//cout << "New solution\n";
+			//cout << "New solution current\n";
 			accepted2 = true;
 		} else if (acceptation_criterion_met(s, current_solution, loop_count)) {
-			//cout << "New solution\n";
+			//cout << "New solution criterion\n";
 			accepted3 = true;
 		}
 		
@@ -266,40 +342,72 @@ void ALNS(Instance &i) {
                 i.obj_val = s;
                 best_routes.clear();
                 best_routes = i.routes;
+				
+				interactive_acc1[insert_operator][delete_operator]++;
 			} else {
 			    i.routes.clear();
 				i.routes = i.old_routes;
 				pickup_vehicle = i.old_pickup_vehicle;
 				delivery_vehicle = i.old_delivery_vehicle;
 				feasibility_rejection++;
+				
+				// Resetting which transfer facilities are opened if transfer swap has failed
+				if (delete_operator == 4) {
+					for (size_t i = 0; i < transfer_nodes.size(); i++) {
+						transfer_nodes_opened[transfer_operator][i] = backup[i];
+						transfer_nodes[i].open = transfer_nodes_opened[transfer_operator][i];
+					}
+				}
 			}
 		} else if (accepted2) {
 			if(i.is_feasible()) {
-                    if(insert_operator==3){transfer_accept+=1;}
+				//cout << "accepted 2\n";
+                if(insert_operator==3){transfer_accept+=1;}
 				deletion_rewards[delete_operator] += 20;
 				insertion_rewards[insert_operator] += 20;
 				transfer_rewards[transfer_operator] += 20;
                 current_solution = s;
+				
+				interactive_acc2[insert_operator][delete_operator]++;
 			} else {
 			    i.routes.clear();
 				i.routes = i.old_routes;
 				pickup_vehicle = i.old_pickup_vehicle;
 				delivery_vehicle = i.old_delivery_vehicle;
 				feasibility_rejection++;
+				
+				// Resetting which transfer facilities are opened if transfer swap has failed
+				if (delete_operator == 4) {
+					for (size_t i = 0; i < transfer_nodes.size(); i++) {
+						transfer_nodes_opened[transfer_operator][i] = backup[i];
+						transfer_nodes[i].open = transfer_nodes_opened[transfer_operator][i];
+					}
+				}
 			}
 		} else if (accepted3) {
 			if(i.is_feasible()) {
+				//cout << "accepted 3\n";
                 if(insert_operator==3){transfer_accept+=1;}
 				deletion_rewards[delete_operator] += 15;
 				insertion_rewards[insert_operator] += 15;
 				transfer_rewards[transfer_operator] += 10;
                 current_solution = s;
+				
+				interactive_acc3[insert_operator][delete_operator]++;
 			} else {
 			    i.routes.clear();
 				i.routes = i.old_routes;
 				pickup_vehicle = i.old_pickup_vehicle;
 				delivery_vehicle = i.old_delivery_vehicle;
 				feasibility_rejection++;
+				
+				// Resetting which transfer facilities are opened if transfer swap has failed
+				if (delete_operator == 4) {
+					for (size_t i = 0; i < transfer_nodes.size(); i++) {
+						transfer_nodes_opened[transfer_operator][i] = backup[i];
+						transfer_nodes[i].open = transfer_nodes_opened[transfer_operator][i];
+					}
+				}
 			}
 		} else {
 			// Did not accept the solution, hence no need to check feasibility and return to previous solution
@@ -308,6 +416,14 @@ void ALNS(Instance &i) {
 			pickup_vehicle = i.old_pickup_vehicle;
 			delivery_vehicle = i.old_delivery_vehicle;
 			costs_rejection++;
+			
+			// Resetting which transfer facilities are opened if transfer swap has failed
+			if (delete_operator == 4) {
+				for (size_t i = 0; i < transfer_nodes.size(); i++) {
+					transfer_nodes_opened[transfer_operator][i] = backup[i];
+					transfer_nodes[i].open = transfer_nodes_opened[transfer_operator][i];
+				}
+			}
 		}
 		best_results.push_back(best_solution);
 	}
@@ -328,24 +444,43 @@ void ALNS(Instance &i) {
 	cout << "Amount of feasibility rejection: " << feasibility_rejection << "\n";
 	cout << "\n";
 	cout << "Initial solution value: "<< initialval << "\n";
-	cout << "Best solution: " << best_solution << "\n";
+	best_solution = 10000;
+	size_t best_solution_index = -1;
+	for (size_t j = 0; j < best_routes_all.size(); j++) {
+		for (size_t i = 0; i < transfer_nodes.size(); i++)  {
+			transfer_nodes[i].open = false;
+		}
+		i.routes.clear();
+		i.routes = best_routes_all[j];
+		for (size_t r = 0; r < i.routes.size(); r++) {
+			for (size_t c = 0; c < i.routes[r].route.size(); c++) {
+				if (i.routes[r].route[c].type == 't') {
+					transfer_nodes[i.routes[r].route[c].index].open = true;
+				}
+			}
+		}
+		double candid_solution = i.calculate_obj_val();
+		if (candid_solution < best_solution) { 
+			best_solution = candid_solution;
+			best_solution_index = j;
+		}
+	}
+	
+	i.routes.clear();
+	i.routes = best_routes_all[best_solution_index];
 	cout << "\n";
-	
-	i.output_vector(best_results);
-	
-	i.routes = best_routes;
-    for(size_t idx = 0; idx < transfer_nodes.size(); idx++){
-        transfer_nodes[idx].open = 0;
+	cout << "Best solution: " << best_solution << "\n";
+	cout << "Amount of facilities open: " << best_solution_index << "\n";
+	cout << "\n";
+	for (size_t t = 0;  t < transfer_nodes.size() + 1; t++) {
+		for (size_t i = 0; i < transfer_nodes.size(); i++) {
+			cout << transfer_nodes_opened[t][i] << " ";
+		}
+		cout << "\n";
 	}
-
-	for(size_t idx = 0; idx < i.routes.size(); idx++){
-        for(size_t adx = 0; adx < i.routes[idx].route.size(); adx++){
-            if(i.routes[idx].route[adx].type == 't'){
-                assert(i.routes[idx].route[adx].index < transfer_nodes.size());
-                transfer_nodes[i.routes[idx].route[adx].index].open = 1;
-            }
-        }
-	}
+	
+	i.output_vector(best_results, i.index);
+	i.output_data(interactive_all,interactive_acc1,interactive_acc2,interactive_acc3,op_time,op_del_time,i.index,costs_rejection,feasibility_rejection,elapsed.count());
 }
 
 void read_csv() {
@@ -396,9 +531,10 @@ void solve_instance(vector<vector<int>> &input_data, int ins){
 	ALNS(i);
     i.write_output_file(ins);
     clear_global();
+	
 }
 
-int main() {
+int main(int argc, char *argv[]) {
 	read_csv();
 	bool eol = 0;
 	while(!eol) {

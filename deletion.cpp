@@ -2,14 +2,14 @@
 #include <algorithm>
 #include <random>
 
-bool compareFunc_sizet(pair<size_t, size_t> &a, pair<size_t, size_t> &b)
+bool compareFunc_sizet(pair<size_t, size_t> a, pair<size_t, size_t> b)
 {
     return a.second > b.second;
 }
 
-vector<size_t> Instance::transfer_swap(vector<size_t> &request_bank, vector<double> &transfer_weights) {
+vector<size_t> Instance::transfer_swap(vector<size_t> &request_bank, vector<double> &transfer_weights, vector<bool> &transfer_nodes_opened) {
 	size_t amount = 0;
-	vector<pair <size_t, size_t>> open_amounts;
+	vector<pair <size_t, size_t>> open_amounts(0, {0,0});
 	
 	for (size_t tn = 0; tn < transfer_nodes.size(); tn++) {
 	// Find worst #amount transfer facilities
@@ -37,6 +37,7 @@ vector<size_t> Instance::transfer_swap(vector<size_t> &request_bank, vector<doub
 		size_t to_be_opened = transfer_op(gen);
 		if (!transfer_nodes[to_be_opened].open) {
 			transfer_nodes[to_be_opened].open = true;
+			transfer_nodes_opened[to_be_opened] = true;
 			amount_opened++;
 		}
 	}
@@ -44,6 +45,7 @@ vector<size_t> Instance::transfer_swap(vector<size_t> &request_bank, vector<doub
 	sort(open_amounts.begin(), open_amounts.end(), compareFunc_sizet);
 	for (size_t i = 0; i < amount; i++) {
 		transfer_nodes[open_amounts[i].first].open = false;
+		transfer_nodes_opened[open_amounts[i].first] = false;
 		for (size_t v = 0; v < routes.size(); v++) {
 			for (size_t r = 0; r < routes[v].route.size(); r++) {
 				if (transfer_nodes[open_amounts[i].first].gen_idx == routes[v].route[r].gen_idx) {
@@ -192,7 +194,7 @@ size_t Instance::random_request_deletion(vector<size_t> &request_bank) {
 	return request;
 }
 
-bool compareFunc(pair<size_t, double> &a, pair<size_t, double> &b)
+bool compareFunc(pair<size_t, double> a, pair<size_t, double> b)
 {
     return a.second > b.second;
 }
@@ -200,12 +202,18 @@ bool compareFunc(pair<size_t, double> &a, pair<size_t, double> &b)
 vector<size_t> Instance::shaw_deletion(size_t &amount){
     vector<size_t> request_bank = {};
     request_bank.push_back(rand() % request_amount);
-    vector<pair<size_t, double>> relatedness(request_amount, {0,0});
+	pair<size_t, double> tmp2 = {0,0};
+    vector<pair<size_t, double>> relatedness(request_amount, tmp2);
 
-    double alpha = 1, beta = 1;
+	double beta = 0;
+	for (size_t r = 0; r < routes.size(); r++) {
+		if (routes[r].time_at_node[routes[r].time_at_node.size() - 1] > beta) {
+			beta = routes[r].time_at_node[routes[r].time_at_node.size() - 1];
+		}
+	}
     double tmp = 0, tmp_d = 0;
     double time_at_node_p = 0, time_at_node_d = 0;
-
+	
     //determine arrival times for the initial request
     size_t v = pickup_vehicle[request_bank[0]];
     for(size_t adx = 1; adx < routes[v].route.size()-1; adx++){

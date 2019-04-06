@@ -12,6 +12,7 @@ void Instance::write_output_file(size_t instance_number) {
 	if (output_file.fail()) { cout << "failed\n"; }
 	output_file << "2\n";
 	output_file << (instance_number + 1) << "\n";
+	cout << "Now calculating costs for file\n";
 	output_file << (roundf(this->calculate_obj_val() * 100) / 100) << "\n";
 	output_file << routes.size() << "\n";
 	for (Vehicle v : routes) {
@@ -66,13 +67,82 @@ void Instance::write_output_file(size_t instance_number) {
 	output_file.close();
 }
 
-void Instance::output_vector(vector<double> &v) {
+void Instance::output_vector(vector<double> &v, size_t instance_number) {
 	ostringstream file_name_stream;
-	file_name_stream << "vector" << ".csv";
+	file_name_stream << "vector_" << instance_number << ".csv";
 	string file_name = file_name_stream.str();
 	ofstream output_file(file_name.c_str());
+	if (output_file.fail()) { cout << "failed\n"; }
 	for (size_t i = 0; i < v.size(); i++) {
 		output_file << v[i] << "\n";
 	}
+	output_file.close();
+}
+
+void Instance::output_data(vector<vector<size_t>> interactive_all, vector<vector<size_t>> interactive_acc1, vector<vector<size_t>> interactive_acc2,vector<vector<size_t>> interactive_acc3, vector<double> op_time, vector<double> op_del_time, size_t instance_number, size_t cost_rejection, size_t feasibility_rejection, double elapsed) {
+	ostringstream file_name_stream;
+	file_name_stream << "data_" << instance_number << ".csv";
+	string file_name = file_name_stream.str();
+	ofstream output_file(file_name.c_str());
+	if (output_file.fail()) { cout << "failed\n"; }
+	for (size_t i = 0; i < 4; i++) {
+		for  (size_t j = 0; j < 5; j++) {
+			if (j != 4) {
+				output_file << interactive_all[i][j] << ",";
+			} else {
+				output_file << interactive_all[i][j] << "\n";
+			}
+		}
+	}
+	output_file << "\n";
+	for (size_t i = 0; i < 4; i++) {
+		for  (size_t j = 0; j < 5; j++) {
+			if (j != 4) {
+				output_file << interactive_acc1[i][j] << ",";
+			} else {
+				output_file << interactive_acc1[i][j] << "\n";
+			}
+		}
+	}
+	output_file << "\n";
+	for (size_t i = 0; i < 4; i++) {
+		for  (size_t j = 0; j < 5; j++) {
+			if (j != 4) {
+				output_file << interactive_acc2[i][j] << ",";
+			} else {
+				output_file << interactive_acc2[i][j] << "\n";
+			}
+		}
+	}
+	output_file << "\n";
+	for (size_t i = 0; i < 4; i++) {
+		for  (size_t j = 0; j < 5; j++) {
+			if (j != 4) {
+				output_file << interactive_acc3[i][j] << ",";
+			} else {
+				output_file << interactive_acc3[i][j] << "\n";
+			}
+		}
+	}
+	output_file << "\n";
+	for (size_t i = 0; i < op_time.size(); i++) {
+		if (i != op_time.size()-1) {
+			output_file << op_time[i] << ",";
+		} else {
+			output_file << op_time[i] << "\n";
+		}
+	}
+	output_file << "\n";
+	for (size_t i = 0; i < op_del_time.size(); i++) {
+		if (i != op_del_time.size()-1) {
+			output_file << op_del_time[i] << ",";
+		} else {
+			output_file << op_del_time[i] << "\n";
+		}
+	}
+	output_file << "\n";
+	output_file << cost_rejection << "\n";
+	output_file << feasibility_rejection << "\n";
+	output_file << elapsed << "\n";
 	output_file.close();
 }

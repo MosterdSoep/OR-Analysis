@@ -226,8 +226,8 @@ size_t Instance::greedy_route_insertion(vector<size_t> &request_bank) {
 	size_t transfer_node = 10000;
 	vector<Transfer_Node> open_facilities;
 
-	for (Transfer_Node tn : transfer_nodes) {
-		if (tn.open) { open_facilities.push_back(tn); }
+	for (size_t i = 0; i < transfer_nodes.size(); i++) {
+		if (transfer_nodes[i].open) { open_facilities.push_back(transfer_nodes[i]); }
 	}
 
 	// Case 1: if there are 0 vehicles -> find best 2 vehicles and insert a request with transfer
@@ -235,7 +235,7 @@ size_t Instance::greedy_route_insertion(vector<size_t> &request_bank) {
     vector<double> added_times_p(2,0);
     vector<double> added_times_d(2,0);
 	for (Transfer_Node tn : open_facilities) {
-        for(size_t iter = 0; iter < 10; iter++){
+        for(size_t iter = 0; iter < 20; iter++){
         size_t v1 = rand()%routes.size();
         size_t v2 = rand()%routes.size();
 		//for (size_t v1 = 0; v1 < routes.size(); v1++) {

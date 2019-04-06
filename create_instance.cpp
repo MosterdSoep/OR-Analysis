@@ -158,12 +158,16 @@ void Instance::calculate_arcs() {
 	for (size_t i = 0; i < node_amount; i++) {
 		arcs[i].resize(node_amount);
 	}
+	double max_length = 0;
 	for (size_t i = 0; i < node_amount; i++) {
 		for (size_t j = i + 1; j < node_amount; j++) {
 			arcs[i][j] = euclidian_distance(all_nodes[i],all_nodes[j]);
 			arcs[j][i] = arcs[i][j];
+			if (i == 0 && j == 1) { max_length = arcs[j][i]; }
+			if (arcs[i][j] > max_length) { max_length = arcs[i][j]; }
 		}
 	}
+	alpha = max_length;
 
     for(size_t idx = 0; idx < request_amount; idx++){
         nearest_depot_gen_idx_p.push_back(min_element(arcs[pickup_nodes[idx].gen_idx].begin() + depot_nodes[0].gen_idx, arcs[pickup_nodes[idx].gen_idx].begin() +
@@ -187,9 +191,10 @@ double Instance::calculate_obj_val() {
 		}
 	}
 	double facility_costs = 0;
-	for (Transfer_Node node : transfer_nodes) {
-		if (node.open) {
-			facility_costs += node.costs;
+	for (size_t i = 0; i < transfer_nodes.size(); i++) {
+		if (transfer_nodes[i].open) {
+			//cout << "transfer node open hence costs of: " << transfer_nodes[i].costs << "\n";
+			facility_costs +=  transfer_nodes[i].costs;
 		}
 	}
 	return travel_cost*total_distance + facility_costs;

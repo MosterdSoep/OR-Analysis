@@ -23,6 +23,8 @@ class Instance{
 	vector<size_t> old_pickup_vehicle = {};
 	vector<size_t> old_delivery_vehicle = {};
 	double obj_val = 0;
+	double alpha = 0;
+	double beta = 0;
 
 	public:
 		Instance(){};
@@ -40,11 +42,11 @@ class Instance{
 		void greedy_route_deletion(vector<size_t> &request_bank);
 		void random_route_deletion(vector<size_t> &request_bank);
 		vector<size_t> cluster_deletion(vector<size_t> &request_bank, size_t k);
-		vector<size_t> transfer_swap(vector<size_t> &request_bank, vector<double> &transfer_weights);
+		vector<size_t> transfer_swap(vector<size_t> &request_bank, vector<double> &transfer_weights, vector<bool> &transfer_nodes_opened);
 		double costs_of_removing_request(size_t &request);
 		void remove_empty_vehicle();
 		vector<size_t> shaw_deletion(size_t &amount);
-
+		
 		// Insertion
 		size_t greedy_request_insertion(vector<size_t> &request_bank);
 		size_t regret_2_insertion(vector<size_t> &request_bank);
@@ -68,7 +70,8 @@ class Instance{
 		bool insertion_delivery_times_feasible(Vehicle &v, size_t p, size_t d, double delay_p, double delay_d);
 
 		void print_routes();
-		void output_vector(vector<double> &v);
+		void output_vector(vector<double> &v, size_t instance_number);
+		void output_data(vector<vector<size_t>> interactive_all, vector<vector<size_t>> interactive_acc1, vector<vector<size_t>> interactive_acc2,vector<vector<size_t>> interactive_acc3, vector<double> op_time, vector<double> op_del_time, size_t instance_number, size_t cost_rejection, size_t feasibility_rejection, double elapsed);
 };
 
 inline void Instance::print_routes(){

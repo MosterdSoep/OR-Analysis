@@ -6,6 +6,8 @@ bool Instance::is_feasible() {
 		capacity_feasible()){
 		return true;
 	} else {
+		//if (!time_windows_met()) { cout << "Time windows and ride times incorrect!\n"; }
+		//if (!capacity_feasible()) { cout << "Capacity infeasible!\n"; }
 		return false;
 	}
 }
@@ -84,10 +86,10 @@ bool Instance::time_windows_met() {
     }
 	// Maximum ride time
     for(size_t idx = 0; idx < request_amount; idx++){
-        if(delivery_time[idx] - pickup_time[idx] > ride_times[idx] - 0.00001){
+        if(delivery_time[idx] - pickup_time[idx] > ride_times[idx]){
             return false;
         }
-        if(trans_pickup_time[idx] < trans_delivery_time[idx] - 0.000001){
+        if(trans_pickup_time[idx] < trans_delivery_time[idx]){
         //cout << "transfers infeasible\n";
             transfer_infeasible_count += 1;
             return false;

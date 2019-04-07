@@ -102,7 +102,6 @@ vector<double> Instance::facility_weights() {
 		averages[i] /= normalizing_constant;
 		averages[i] = 1/(averages[i]*averages[i]);
 	}
-	
 	return averages;
 }
 

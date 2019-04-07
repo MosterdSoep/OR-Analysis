@@ -8,7 +8,7 @@ bool compareFunc_sizet(pair<size_t, size_t> a, pair<size_t, size_t> b)
 }
 
 vector<size_t> Instance::transfer_swap(vector<size_t> &request_bank, vector<double> &transfer_weights, vector<bool> &transfer_nodes_opened) {
-	size_t amount = 0;
+	size_t amount = 1;
 	vector<pair <size_t, size_t>> open_amounts(0, {0,0});
 	
 	for (size_t tn = 0; tn < transfer_nodes.size(); tn++) {
@@ -27,6 +27,7 @@ vector<size_t> Instance::transfer_swap(vector<size_t> &request_bank, vector<doub
 			open_amounts.push_back({tn, amount_of_vehicles});
 		}
 	}
+	
 	random_device rd;
 	mt19937 gen(rd());
 	discrete_distribution<size_t> transfer_op(transfer_weights.begin(), transfer_weights.end());
@@ -89,7 +90,7 @@ vector<size_t> Instance::cluster_deletion(vector<size_t> &request_bank, size_t k
 		}
 	}
 	request_bank.push_back(random_request);
-
+	
 	for (size_t i = 0; i < request_bank.size(); i++) {
 		size_t best_request = request_bank[i];
 		if (pickup_vehicle[best_request] != delivery_vehicle[best_request]) {
@@ -116,7 +117,6 @@ vector<size_t> Instance::cluster_deletion(vector<size_t> &request_bank, size_t k
 			}
 		}
 	}
-
 	return request_bank;
 }
 

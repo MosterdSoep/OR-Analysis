@@ -16,7 +16,7 @@ string location = "large_instances.csv";
 vector<vector<int>> input_data;
 vector<double> transfer_weights;
 double start_temperature = 5.0;
-size_t maximum_loops = 50000;
+size_t maximum_loops = 10000;
 
 bool acceptation_criterion_met(double s, double current_solution, size_t loop_count) {
 	double temperature = start_temperature * ((double)maximum_loops - (double)loop_count) / ((double)maximum_loops/10);
@@ -134,7 +134,7 @@ void ALNS(Instance &i) {
 		i.old_delivery_vehicle = delivery_vehicle;
 		
 		loop_count++;
-		if (loop_count % 100 == 0) {
+		if (loop_count % 1000 == 0) {
 			for (size_t i = 0; i < deletion_scores.size(); i++) {
 				deletion_scores[i] += deletion_rewards[i];
 				deletion_rewards[i] = 0;
@@ -153,7 +153,7 @@ void ALNS(Instance &i) {
 			cout << percentage << "% completed\n";
 		}
 		
-		if (loop_count % 1000 == 0) {
+		if (loop_count % 100 == 0) {
 			// Save information before changing the amount of transfer facilities opened
 			best_routes_all[transfer_operator].clear();
 			best_routes_all[transfer_operator] = best_routes;
@@ -202,7 +202,7 @@ void ALNS(Instance &i) {
 			//cout << "\n";
 			
 			transfer_loop_count++;
-			if (transfer_loop_count % 5 == 0){
+			if (transfer_loop_count % 100 == 0){
 				// Update weights
 				//cout << "Updating weights\n";
 				for (size_t i = 0; i < transfer_scores.size(); i++) {
@@ -221,7 +221,9 @@ void ALNS(Instance &i) {
 		auto begin_op_del = chrono::high_resolution_clock::now();	
 		
 		vector<bool> backup = {};
-		if (transfer_operator == 0 && delete_operator  == 4) { delete_operator = 1; }
+		while ((transfer_operator == 0 || transfer_operator == transfer_nodes.size()) && delete_operator  == 4) {
+			delete_operator = delete_op(gen);
+		}
 		switch (delete_operator) {
 			case 0 :
 				//cout << "Greedy deletion\n";
@@ -247,6 +249,9 @@ void ALNS(Instance &i) {
 				//cout << "Transfer swap\n";
 				backup = transfer_nodes_opened[transfer_operator];
 				request_bank = i.transfer_swap(request_bank, transfer_weights, transfer_nodes_opened[transfer_operator]);
+				for ( size_t j = request_bank.size(); j < amount; j++){
+					request_bank.push_back(i.random_request_deletion(request_bank));
+				}
 				break;
 		}
 		
@@ -313,6 +318,7 @@ void ALNS(Instance &i) {
 		
 		interactive_all[insert_operator][delete_operator]++;
 		
+		if (insert_operator == 3) { start_temperature = 1000;}
 		bool accepted1 = false;
 		bool accepted2 = false;
 		bool accepted3 = false;
@@ -425,13 +431,13 @@ void ALNS(Instance &i) {
 				}
 			}
 		}
+		if (insert_operator == 3) { start_temperature = 5;}
 		best_results.push_back(best_solution);
 	}
 	auto finish = chrono::high_resolution_clock::now();
 	chrono::duration<double> elapsed = finish - start;
 	i.routes = best_routes;
 
-	i.print_routes();
 	cout << "Transfer counts : " << transfer_count << "   "  << transfer_cost_accept << "   " << transfer_accept << '\n';
 	cout << "Times  :  " << op_time[0]/insertion_count[0] << "    " << op_time[1]/insertion_count[1] << "    " << op_time[2]/insertion_count[2]<< "    " << op_time[3]/insertion_count[3]<<  '\n';
 	cout << "Transfer scores: ";
@@ -468,9 +474,22 @@ void ALNS(Instance &i) {
 	
 	i.routes.clear();
 	i.routes = best_routes_all[best_solution_index];
+	i.print_routes();
+	size_t amount_facilities_opened = 0;
+	for (size_t i = 0; i < transfer_nodes.size(); i++)  {
+			transfer_nodes[i].open = false;
+		}
+		for (size_t r = 0; r < i.routes.size(); r++) {
+			for (size_t c = 0; c < i.routes[r].route.size(); c++) {
+				if (i.routes[r].route[c].type == 't') {
+					transfer_nodes[i.routes[r].route[c].index].open = true;
+					amount_facilities_opened++;
+				}
+			}
+		}
 	cout << "\n";
-	cout << "Best solution: " << best_solution << "\n";
-	cout << "Amount of facilities open: " << best_solution_index << "\n";
+	cout << "Best solution: " << i.calculate_obj_val() << "\n";
+	cout << "Amount of facilities open: " << amount_facilities_opened << "\n";
 	cout << "\n";
 	for (size_t t = 0;  t < transfer_nodes.size() + 1; t++) {
 		for (size_t i = 0; i < transfer_nodes.size(); i++) {

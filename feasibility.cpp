@@ -244,20 +244,55 @@ bool Instance::insertion_delivery_times_feasible(Vehicle &v, size_t p, size_t d,
             if(d_vehicle == v.v_index){
                 for(size_t adx = d-1; adx < routes[d_vehicle].route.size(); adx++){
                     double delay_p = 0;
-                    if(idx < p){delay_p = delay_first;}
-                    else{delay_p = 0;}
-                    double delay_d = delay_second;
-                    if(delay_p + delay_d - v.waiting_times[adx] > 0){
-                    delay_d -= v.waiting_times[adx];
-                    }else{
-                    delay_p  = 0;
-                    delay_d = 0;
-                    }
-                    if(routes[d_vehicle].route[adx].type == 'd'  && routes[d_vehicle].route[adx].request_idx == v.route[idx].request_idx){
-                        if(v.time_at_node[adx] + v.waiting_times[adx] - v.time_at_node[idx] - v.waiting_times[idx] - v.route[idx].service_time + delay_p + delay_d > ride_times[v.route[idx].request_idx]){
-                            return false;
+                    if(idx < p){  //ride starts before p, and ends after d-1
+                        delay_p = delay_first;
+                        for(size_t odx = p; odx < d-1; odx++){
+                          delay_p -= v.waiting_times[odx];
+                        }
+                        delay_p = (delay_p < 0) ? 0 : delay_p;
+                        double delay_d = delay_second;
+                        if(delay_p + delay_d - v.waiting_times[adx] > 0){
+                          delay_d -= v.waiting_times[adx];
                         }else{
+                          delay_p  = 0;
+                          delay_d = 0;
+                        }
+                        if(routes[d_vehicle].route[adx].type == 'd'  && routes[d_vehicle].route[adx].request_idx == v.route[idx].request_idx){
+                          if(v.time_at_node[adx] + v.waiting_times[adx] - v.time_at_node[idx] - v.waiting_times[idx] - v.route[idx].service_time + delay_p + delay_d > ride_times[v.route[idx].request_idx]){
+                            return false;
+                          }else{
                             continue;
+                          }
+                        }
+                    }else{  // ride starts between p and d-1, but ends after d-1
+                        double sum_waiting = 0;
+                        for(size_t odx = idx; odx < d - 1; odx++){
+                          sum_waiting += v.waiting_times[odx];
+                        }
+                        delay_p = delay_first;
+                        for(size_t odx = p; odx < idx; odx++){
+                          delay_p -= v.waiting_times[odx];
+                        }
+                        delay_p = (delay_p < 0) ? 0 : delay_p;
+                        sum_waiting = (delay_p < sum_waiting) ? delay_p : sum_waiting;
+                        for(size_t odx = idx; odx < d-1; odx++){
+                          delay_p -= v.waiting_times[odx];
+                        }
+                        delay_p = (delay_p < 0) ? 0 : delay_p;
+                        double delay_d = delay_second;
+                        if(delay_p + delay_d - v.waiting_times[adx] > 0){
+                          delay_d -= v.waiting_times[adx];
+                        }else{
+                          delay_p  = 0;
+                          delay_d = 0;
+                        }
+
+                        if(routes[d_vehicle].route[adx].type == 'd'  && routes[d_vehicle].route[adx].request_idx == v.route[idx].request_idx){
+                          if(v.time_at_node[adx] + v.waiting_times[adx] - v.time_at_node[idx] - v.waiting_times[idx] - v.route[idx].service_time - sum_waiting + delay_p + delay_d > ride_times[v.route[idx].request_idx]){
+                            return false;
+                          }else{
+                            continue;
+                          }
                         }
                     }
                 }
